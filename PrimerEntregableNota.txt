@@ -1,0 +1,8 @@
+Link Repositorio: https://github.com/EliasMateo-dev/EDM-Hardware-Group-inc
+Grupo: EDM Hardware Group inc. 
+
+Entregable hasta ahora: maqueté toda la capa visual responsiva del e-commerce (layout con navbar sticky y búsqueda, hero principal, grilla de cards con filtros por categoría, vistas de categoría y carrito con resumen persistido, y sección PC Builder con roadmap). También configuré el estado global con Zustand y persistencia local del carrito para la demo.
+Inconvenientes/dudas: sigo trabajando en conectar Supabase y en meter las imágenes finales de cada componente; además necesito validar la lógica de compatibilidad del PC Builder antes de publicarla.
+
+
+Aclaración: El usuario "CRUFTYY" en githubs soy yo, Elías Mateo. Uso la cuenta de "CRUFTY" por comodidad, debido a que gestiono varios repositorios con esta misma cuenta! 
