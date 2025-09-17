@@ -9,7 +9,7 @@
     - `orders` - Órdenes de compra
     - `order_items` - Items de cada orden
 
-  2. Seguridad
+  2. Seguridad:
     - Habilitar RLS en todas las tablas
     - Políticas para usuarios autenticados
     - Políticas de admin para gestión de productos
