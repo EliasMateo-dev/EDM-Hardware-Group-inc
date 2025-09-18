@@ -78,6 +78,4 @@ supabase db reset
 - [ ] Añadir tests.
 
 ## Autor
-Hecho con dedicación por **Elías Mateo**.
-
-Si tenés sugerencias o querés colaborar, ¡abrí un issue o mandame un mensaje!
+Hecho con dedicación por **Elías Mateo**, gracias por leer.
