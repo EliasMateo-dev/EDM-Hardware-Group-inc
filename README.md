@@ -1,4 +1,4 @@
-﻿﻿# EDM Hardware Kit
+﻿﻿# EDM Hardware 
 
 Proyecto web creado por **Elías Mateo** para presentar un catálogo interactivo de componentes de hardware con modo oscuro predeterminado, integración con Supabase y estado global mediante Zustand. El objetivo es ofrecer una experiencia moderna para explorar, filtrar y preparar una PC personalizada.
 
