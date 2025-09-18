@@ -1,8 +1,9 @@
-Link Repositorio: https://github.com/EliasMateo-dev/EDM-Hardware-Group-inc
-Grupo: EDM Hardware Group inc. 
+﻿Link Repositorio: https://github.com/EliasMateo-dev/EDM-Hardware-Group-inc
 
-Entregable hasta ahora: maqueté toda la capa visual responsiva del e-commerce (layout con navbar sticky y búsqueda, hero principal, grilla de cards con filtros por categoría, vistas de categoría y carrito con resumen persistido, y sección PC Builder con roadmap). También configuré el estado global con Zustand y persistencia local del carrito para la demo.
-Inconvenientes/dudas: sigo trabajando en conectar Supabase y en meter las imágenes finales de cada componente; además necesito validar la lógica de compatibilidad del PC Builder antes de publicarla.
+Grupo: EDM Hardware Group Inc.
 
+Entregable hasta ahora: Completé la maquetación completa y responsiva del e-commerce, incluyendo el layout general con navbar sticky y modo oscuro, la barra de búsqueda con filtros en vivo conectada al estado global, el hero principal con llamada a la acción hacia el Constructor PC, la grilla de tarjetas tanto para el catálogo general como para las vistas filtradas por categoría, las pantallas de categoría con mensajes vacíos controlados, el carrito con resumen persistente, controles de cantidad y totales calculados, la sección Constructor PC con roadmap público y componentes destacados, además de las tiendas de Zustand para productos, carrito y tema con persistencia en localStorage.
 
-Aclaración: El usuario "CRUFTYY" en githubs soy yo, Elías Mateo. Uso la cuenta de "CRUFTY" por comodidad, debido a que gestiono varios repositorios con esta misma cuenta! 
+Inconvenientes/dudas: Actualmente sigo trabajando en la integración de Supabase y en la actualización de las imágenes finales para cada componente. También necesito validar la lógica de compatibilidad del PC Builder antes de lanzarlo.
+
+Aclaración: El usuario "CRUFTYY" en GitHub soy yo, Elías Mateo. Utilizo la cuenta "CRUFTY" por comodidad, ya que gestiono varios repositorios desde esa misma cuenta.
