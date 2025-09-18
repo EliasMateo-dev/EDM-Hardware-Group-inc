@@ -1,39 +1,39 @@
 ﻿import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Cpu, Menu, Moon, Search, ShoppingCart, Sun, X } from 'lucide-react';
-import { useCartStore } from '../stores/cartStore';
-import { useProductsStore } from '../stores/productsStore';
-import { useThemeStore } from '../stores/themeStore';
+import { useTiendaCarrito } from '../stores/tiendaCarrito';
+import { useTiendaProductos } from '../stores/tiendaProductos';
+import { useTiendaTema } from '../stores/tiendaTema';
 
-export default function Navbar() {
-  const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const totalItems = useCartStore((state) => state.getTotalItems());
-  const categories = useProductsStore((state) => state.categories);
-  const searchTerm = useProductsStore((state) => state.searchTerm);
-  const setSearchTerm = useProductsStore((state) => state.setSearchTerm);
-  const setSelectedCategory = useProductsStore((state) => state.setSelectedCategory);
-  const fetchProducts = useProductsStore((state) => state.fetchProducts);
-  const theme = useThemeStore((state) => state.theme);
-  const toggleTheme = useThemeStore((state) => state.toggleTheme);
+export default function BarraNavegacion() {
+  const navegar = useNavigate();
+  const [menuAbierto, establecerMenuAbierto] = useState(false);
+  const totalArticulos = useTiendaCarrito((estado) => estado.obtenerTotalArticulos());
+  const categorias = useTiendaProductos((estado) => estado.categorias);
+  const terminoBusqueda = useTiendaProductos((estado) => estado.terminoBusqueda);
+  const establecerTerminoBusqueda = useTiendaProductos((estado) => estado.establecerTerminoBusqueda);
+  const establecerCategoriaSeleccionada = useTiendaProductos((estado) => estado.establecerCategoriaSeleccionada);
+  const cargarProductos = useTiendaProductos((estado) => estado.cargarProductos);
+  const tema = useTiendaTema((estado) => estado.tema);
+  const alternarTema = useTiendaTema((estado) => estado.alternarTema);
 
-  const handleCategoryChange = (slug: string | null) => {
-    setSelectedCategory(slug);
-    fetchProducts(slug);
-    setIsMenuOpen(false);
-    if (slug) {
-      navigate(`/category/${slug}`);
+  const manejarCambioCategoria = (alias: string | null) => {
+    establecerCategoriaSeleccionada(alias);
+    cargarProductos(alias);
+    establecerMenuAbierto(false);
+    if (alias) {
+      navegar(`/categoria/${alias}`);
     } else {
-      navigate('/');
+      navegar('/');
     }
   };
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
+  const manejarCambioBusqueda = (evento: React.ChangeEvent<HTMLInputElement>) => {
+    establecerTerminoBusqueda(evento.target.value);
   };
 
-  const themeIcon = theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />;
-  const themeLabel = theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro';
+  const iconoTema = tema === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />;
+  const etiquetaTema = tema === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro';
 
   return (
     <nav className="sticky top-0 z-40 border-b border-slate-200/60 bg-white/80 backdrop-blur transition-colors duration-300 dark:border-slate-800/60 dark:bg-slate-950/75">
@@ -43,7 +43,7 @@ export default function Navbar() {
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-900">
               <Cpu className="h-5 w-5" />
             </span>
-            <span className="text-lg font-semibold tracking-wide">Hardware Kit</span>
+            <span className="text-lg font-semibold tracking-wide">Hardware</span>
           </Link>
 
           <div className="hidden w-full max-w-md items-center rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900 md:flex">
@@ -51,36 +51,36 @@ export default function Navbar() {
             <input
               type="search"
               placeholder="Buscar CPU, GPU, RAM..."
-              value={searchTerm}
-              onChange={handleSearchChange}
+              value={terminoBusqueda}
+              onChange={manejarCambioBusqueda}
               className="w-full border-none bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none dark:text-slate-200 dark:placeholder:text-slate-500"
             />
           </div>
 
           <div className="flex items-center gap-3">
             <button
-              onClick={toggleTheme}
+              onClick={alternarTema}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:text-white"
-              aria-label={themeLabel}
+              aria-label={etiquetaTema}
               type="button"
             >
-              {themeIcon}
+              {iconoTema}
             </button>
 
             <Link
-              to="/cart"
+              to="/carrito"
               className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:text-white"
             >
               <ShoppingCart className="h-5 w-5" />
-              {totalItems > 0 && (
+              {totalArticulos > 0 && (
                 <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white dark:bg-white dark:text-slate-900">
-                  {totalItems}
+                  {totalArticulos}
                 </span>
               )}
             </Link>
 
             <button
-              onClick={() => setIsMenuOpen(true)}
+              onClick={() => establecerMenuAbierto(true)}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:text-white md:hidden"
               aria-label="Abrir menu"
               type="button"
@@ -93,40 +93,40 @@ export default function Navbar() {
         <div className="hidden items-center justify-between py-4 md:flex">
           <div className="flex items-center gap-2 overflow-x-auto">
             <button
-              onClick={() => handleCategoryChange(null)}
+              onClick={() => manejarCambioCategoria(null)}
               className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
               type="button"
             >
               Todos
             </button>
-            {categories.map((category) => (
+            {categorias.map((categoria) => (
               <button
-                key={category.id}
-                onClick={() => handleCategoryChange(category.slug)}
+                key={categoria.id}
+                onClick={() => manejarCambioCategoria(categoria.alias)}
                 className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-900 hover:text-white dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-white dark:hover:text-slate-900"
                 type="button"
               >
-                {category.name}
+                {categoria.nombre}
               </button>
             ))}
           </div>
 
           <Link
-            to="/pc-builder"
+            to="/constructor-pc"
             className="inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-800 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:text-white"
           >
-            PC Builder
+            Constructor PC
           </Link>
         </div>
       </div>
 
-      {isMenuOpen && (
+      {menuAbierto && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 px-6 py-8 backdrop-blur md:hidden">
           <div className="mx-auto w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
             <div className="mb-4 flex items-center justify-between">
               <span className="text-base font-semibold text-slate-900 dark:text-slate-100">Navegacion</span>
               <button
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => establecerMenuAbierto(false)}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-white"
                 aria-label="Cerrar menu"
                 type="button"
@@ -140,36 +140,36 @@ export default function Navbar() {
               <input
                 type="search"
                 placeholder="Buscar producto"
-                value={searchTerm}
-                onChange={handleSearchChange}
+                value={terminoBusqueda}
+                onChange={manejarCambioBusqueda}
                 className="w-full border-none bg-transparent text-sm text-slate-700 focus:outline-none dark:text-slate-200"
               />
             </div>
 
             <div className="space-y-2">
               <button
-                onClick={() => handleCategoryChange(null)}
+                onClick={() => manejarCambioCategoria(null)}
                 className="w-full rounded-xl bg-slate-900 px-4 py-3 text-left text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
                 type="button"
               >
                 Todos los productos
               </button>
-              {categories.map((category) => (
+              {categorias.map((categoria) => (
                 <button
-                  key={category.id}
-                  onClick={() => handleCategoryChange(category.slug)}
+                  key={categoria.id}
+                  onClick={() => manejarCambioCategoria(categoria.alias)}
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-800"
                   type="button"
                 >
-                  {category.name}
+                  {categoria.nombre}
                 </button>
               ))}
               <Link
-                to="/pc-builder"
-                onClick={() => setIsMenuOpen(false)}
+                to="/constructor-pc"
+                onClick={() => establecerMenuAbierto(false)}
                 className="block rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-800 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:text-white"
               >
-                PC Builder
+                Constructor PC
               </Link>
             </div>
           </div>

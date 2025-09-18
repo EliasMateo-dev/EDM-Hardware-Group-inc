@@ -1,50 +1,50 @@
 ﻿import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import { useProductsStore } from '../stores/productsStore';
-import ProductCard from '../components/ProductCard';
+import { useTiendaProductos } from '../stores/tiendaProductos';
+import TarjetaProducto from '../components/TarjetaProducto';
 
-export default function Category() {
-  const { slug } = useParams<{ slug: string }>();
-  const fetchProducts = useProductsStore((state) => state.fetchProducts);
-  const categories = useProductsStore((state) => state.categories);
-  const loading = useProductsStore((state) => state.loading);
-  const getFilteredProducts = useProductsStore((state) => state.getFilteredProducts);
-  const products = getFilteredProducts();
+export default function Categoria() {
+  const { alias } = useParams<{ alias: string }>();
+  const cargarProductos = useTiendaProductos((estado) => estado.cargarProductos);
+  const categorias = useTiendaProductos((estado) => estado.categorias);
+  const cargando = useTiendaProductos((estado) => estado.cargando);
+  const obtenerProductosFiltrados = useTiendaProductos((estado) => estado.obtenerProductosFiltrados);
+  const productos = obtenerProductosFiltrados();
 
   useEffect(() => {
-    fetchProducts(slug ?? null);
-  }, [fetchProducts, slug]);
+    cargarProductos(alias ?? null);
+  }, [cargarProductos, alias]);
 
-  const currentCategory = categories.find((category) => category.slug === slug);
+  const categoriaActual = categorias.find((categoria) => categoria.alias === alias);
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <header className="mb-10 space-y-3">
         <p className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Categoria</p>
         <h1 className="text-4xl font-semibold text-slate-900 dark:text-slate-100">
-          {currentCategory?.name ?? 'Componentes'}
+          {categoriaActual?.nombre ?? 'Componentes'}
         </h1>
-        {currentCategory?.description && (
-          <p className="max-w-2xl text-sm text-slate-500 dark:text-slate-400">{currentCategory.description}</p>
+        {categoriaActual?.descripcion && (
+          <p className="max-w-2xl text-sm text-slate-500 dark:text-slate-400">{categoriaActual.descripcion}</p>
         )}
       </header>
 
-      {loading ? (
+      {cargando ? (
         <div className="flex min-h-[240px] items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white transition-colors dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center gap-3 text-sm font-medium text-slate-500 dark:text-slate-400">
             <Loader2 className="h-5 w-5 animate-spin" />
             Cargando componentes...
           </div>
         </div>
-      ) : products.length === 0 ? (
+      ) : productos.length === 0 ? (
         <div className="flex min-h-[240px] items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white transition-colors dark:border-slate-800 dark:bg-slate-900">
           <p className="text-sm text-slate-500 dark:text-slate-400">No hay productos disponibles en esta categoria.</p>
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {productos.map((producto) => (
+            <TarjetaProducto key={producto.id} producto={producto} />
           ))}
         </div>
       )}

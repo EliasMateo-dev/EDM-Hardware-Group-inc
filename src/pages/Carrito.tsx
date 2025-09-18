@@ -1,27 +1,27 @@
 ﻿import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
-import { useCartStore } from '../stores/cartStore';
+import { useTiendaCarrito } from '../stores/tiendaCarrito';
 
-const formatPrice = (price: number) =>
+const formatearPrecio = (precio: number) =>
   new Intl.NumberFormat('es-AR', {
     style: 'currency',
     currency: 'ARS',
-  }).format(price);
+  }).format(precio);
 
-export default function Cart() {
-  const items = useCartStore((state) => state.items);
-  const fetchCart = useCartStore((state) => state.fetchCart);
-  const updateQuantity = useCartStore((state) => state.updateQuantity);
-  const removeFromCart = useCartStore((state) => state.removeFromCart);
-  const clearCart = useCartStore((state) => state.clearCart);
-  const getTotalPrice = useCartStore((state) => state.getTotalPrice);
+export default function Carrito() {
+  const elementos = useTiendaCarrito((estado) => estado.elementos);
+  const cargarCarrito = useTiendaCarrito((estado) => estado.cargarCarrito);
+  const actualizarCantidad = useTiendaCarrito((estado) => estado.actualizarCantidad);
+  const eliminarDelCarrito = useTiendaCarrito((estado) => estado.eliminarDelCarrito);
+  const vaciarCarrito = useTiendaCarrito((estado) => estado.vaciarCarrito);
+  const obtenerTotalPrecio = useTiendaCarrito((estado) => estado.obtenerTotalPrecio);
 
   useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
+    cargarCarrito();
+  }, [cargarCarrito]);
 
-  if (items.length === 0) {
+  if (elementos.length === 0) {
     return (
       <section className="mx-auto flex max-w-3xl flex-col items-center gap-6 px-4 py-24 text-center text-slate-900 dark:text-slate-100">
         <ShoppingBag className="h-16 w-16 text-slate-300 dark:text-slate-600" />
@@ -49,7 +49,7 @@ export default function Cart() {
           <h1 className="text-4xl font-semibold">Componentes seleccionados</h1>
         </div>
         <button
-          onClick={clearCart}
+          onClick={vaciarCarrito}
           className="self-start rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-white"
           type="button"
         >
@@ -59,40 +59,40 @@ export default function Cart() {
 
       <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
         <div className="space-y-4">
-          {items.map((item) => (
+          {elementos.map((elemento) => (
             <article
-              key={item.product.id}
+              key={elemento.producto.id}
               className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 md:flex-row md:items-center"
             >
               <img
-                src={item.product.image}
-                alt={item.product.name}
+                src={elemento.producto.imagen}
+                alt={elemento.producto.nombre}
                 className="h-28 w-28 rounded-2xl object-cover"
               />
               <div className="flex-1 space-y-2">
                 <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{item.product.name}</h2>
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{elemento.producto.nombre}</h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {item.product.brand} - {item.product.model}
+                      {elemento.producto.marca} - {elemento.producto.modelo}
                     </p>
                   </div>
-                  <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{formatPrice(item.product.price)}</p>
+                  <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{formatearPrecio(elemento.producto.precio)}</p>
                 </div>
-                <p className="text-xs text-slate-400 dark:text-slate-500">Stock disponible: {item.product.stock}</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">Existencias: {elemento.producto.existencias}</p>
               </div>
 
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                  onClick={() => actualizarCantidad(elemento.producto.id, elemento.cantidad - 1)}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-white"
                   type="button"
                 >
                   <Minus className="h-4 w-4" />
                 </button>
-                <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{item.quantity}</span>
+                <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{elemento.cantidad}</span>
                 <button
-                  onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                  onClick={() => actualizarCantidad(elemento.producto.id, elemento.cantidad + 1)}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-white"
                   type="button"
                 >
@@ -101,7 +101,7 @@ export default function Cart() {
               </div>
 
               <button
-                onClick={() => removeFromCart(item.product.id)}
+                onClick={() => eliminarDelCarrito(elemento.producto.id)}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-red-500 hover:text-red-500 dark:border-slate-800 dark:text-slate-400 dark:hover:border-red-400 dark:hover:text-red-400"
                 aria-label="Quitar del carrito"
                 type="button"
@@ -119,14 +119,14 @@ export default function Cart() {
           </p>
 
           <div className="mt-6 space-y-3">
-            {items.map((item) => (
-              <div key={item.product.id} className="flex justify-between text-sm text-slate-600 dark:text-slate-300">
+            {elementos.map((elemento) => (
+              <div key={elemento.producto.id} className="flex justify-between text-sm text-slate-600 dark:text-slate-300">
                 <span>
-                  {item.product.name}
-                  <span className="text-slate-400 dark:text-slate-500"> x {item.quantity}</span>
+                  {elemento.producto.nombre}
+                  <span className="text-slate-400 dark:text-slate-500"> x {elemento.cantidad}</span>
                 </span>
                 <span className="font-medium text-slate-900 dark:text-slate-100">
-                  {formatPrice(item.product.price * item.quantity)}
+                  {formatearPrecio(elemento.producto.precio * elemento.cantidad)}
                 </span>
               </div>
             ))}
@@ -134,7 +134,7 @@ export default function Cart() {
 
           <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-6 text-slate-600 dark:border-slate-800 dark:text-slate-300">
             <span className="text-sm font-medium">Total</span>
-            <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{formatPrice(getTotalPrice())}</span>
+            <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{formatearPrecio(obtenerTotalPrecio())}</span>
           </div>
 
           <button

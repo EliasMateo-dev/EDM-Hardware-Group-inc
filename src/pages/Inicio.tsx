@@ -1,21 +1,21 @@
 ﻿import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Loader2 } from 'lucide-react';
-import { useProductsStore } from '../stores/productsStore';
-import ProductCard from '../components/ProductCard';
+import { useTiendaProductos } from '../stores/tiendaProductos';
+import TarjetaProducto from '../components/TarjetaProducto';
 
-export default function Home() {
-  const fetchProducts = useProductsStore((state) => state.fetchProducts);
-  const setSelectedCategory = useProductsStore((state) => state.setSelectedCategory);
-  const categories = useProductsStore((state) => state.categories);
-  const loading = useProductsStore((state) => state.loading);
-  const getFilteredProducts = useProductsStore((state) => state.getFilteredProducts);
-  const products = getFilteredProducts();
+export default function Inicio() {
+  const cargarProductos = useTiendaProductos((estado) => estado.cargarProductos);
+  const establecerCategoriaSeleccionada = useTiendaProductos((estado) => estado.establecerCategoriaSeleccionada);
+  const categorias = useTiendaProductos((estado) => estado.categorias);
+  const cargando = useTiendaProductos((estado) => estado.cargando);
+  const obtenerProductosFiltrados = useTiendaProductos((estado) => estado.obtenerProductosFiltrados);
+  const productos = obtenerProductosFiltrados();
 
   useEffect(() => {
-    setSelectedCategory(null);
-    fetchProducts(null);
-  }, [fetchProducts, setSelectedCategory]);
+    establecerCategoriaSeleccionada(null);
+    cargarProductos(null);
+  }, [cargarProductos, establecerCategoriaSeleccionada]);
 
   return (
     <div className="space-y-12 pb-16">
@@ -28,26 +28,26 @@ export default function Home() {
                 Construye la PC de tus suenos en EDM
               </h1>
               <p className="text-sm text-slate-300">
-                Componentes seleccionados: CPU, motherboards, memoria RAM, graficas, fuentes, gabinetes y SSD.
+                Componentes seleccionados: CPU, Motherboards, memoria RAM, graficas, fuentes, gabinetes y SSD.
               </p>
             </div>
             <Link
-              to="/pc-builder"
+              to="/constructor-pc"
               className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-medium text-slate-900 transition hover:bg-slate-200"
             >
-              Ver PC Builder
+              Ver Constructor PC
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
           <div className="mt-10 flex flex-wrap gap-2">
-            {categories.map((category) => (
+            {categorias.map((categoria) => (
               <Link
-                key={category.id}
-                to={`/category/${category.slug}`}
+                key={categoria.id}
+                to={`/categoria/${categoria.alias}`}
                 className="rounded-full border border-white/20 px-4 py-2 text-xs font-medium text-slate-200 transition hover:bg-white hover:text-slate-900"
               >
-                {category.name}
+                {categoria.nombre}
               </Link>
             ))}
           </div>
@@ -60,10 +60,10 @@ export default function Home() {
             <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Componentes destacados:</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400"></p>
           </div>
-          <p className="text-sm text-slate-400 dark:text-slate-500">{products.length} productos disponibles</p>
+          <p className="text-sm text-slate-400 dark:text-slate-500">{productos.length} productos disponibles</p>
         </header>
 
-        {loading ? (
+        {cargando ? (
           <div className="flex min-h-[280px] items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white transition-colors dark:border-slate-800 dark:bg-slate-900">
             <div className="flex items-center gap-3 text-sm font-medium text-slate-500 dark:text-slate-400">
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -72,8 +72,8 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {productos.map((producto) => (
+              <TarjetaProducto key={producto.id} producto={producto} />
             ))}
           </div>
         )}
