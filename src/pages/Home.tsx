@@ -20,15 +20,15 @@ export default function Home() {
   return (
     <div className="space-y-12 pb-16">
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-3xl bg-slate-900 p-10 text-white shadow-lg sm:p-16">
+        <div className="rounded-3xl bg-slate-900 p-10 text-white shadow-lg transition-colors sm:p-16 dark:bg-slate-800">
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl space-y-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">PRÓXIMA ENTREGA!</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">PROXIMA ENTREGA!</p>
               <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
-                Contruí la PC de tus sueños en EDM
+                Construye la PC de tus suenos en EDM
               </h1>
               <p className="text-sm text-slate-300">
-                Componentes seleccionados: CPU, motherboards, memoria RAM, graficas, fuentes, gabinetes y SSD. 
+                Componentes seleccionados: CPU, motherboards, memoria RAM, graficas, fuentes, gabinetes y SSD.
               </p>
             </div>
             <Link
@@ -57,15 +57,15 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">Componentes destacados:</h2>
-            <p className="text-sm text-slate-500"></p>
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Componentes destacados:</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400"></p>
           </div>
-          <p className="text-sm text-slate-400">{products.length} productos disponibles</p>
+          <p className="text-sm text-slate-400 dark:text-slate-500">{products.length} productos disponibles</p>
         </header>
 
         {loading ? (
-          <div className="flex min-h-[280px] items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white">
-            <div className="flex items-center gap-3 text-sm font-medium text-slate-500">
+          <div className="flex min-h-[280px] items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white transition-colors dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center gap-3 text-sm font-medium text-slate-500 dark:text-slate-400">
               <Loader2 className="h-5 w-5 animate-spin" />
               Cargando catalogo...
             </div>

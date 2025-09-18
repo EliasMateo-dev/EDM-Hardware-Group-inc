@@ -1,6 +1,6 @@
 ﻿import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
+import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 import { useCartStore } from '../stores/cartStore';
 
 const formatPrice = (price: number) =>
@@ -23,17 +23,17 @@ export default function Cart() {
 
   if (items.length === 0) {
     return (
-      <section className="mx-auto flex max-w-3xl flex-col items-center gap-6 px-4 py-24 text-center">
-        <ShoppingBag className="h-16 w-16 text-slate-300" />
+      <section className="mx-auto flex max-w-3xl flex-col items-center gap-6 px-4 py-24 text-center text-slate-900 dark:text-slate-100">
+        <ShoppingBag className="h-16 w-16 text-slate-300 dark:text-slate-600" />
         <div>
-          <h1 className="text-3xl font-semibold text-slate-900">Tu carrito esta vacio</h1>
-          <p className="mt-2 text-sm text-slate-500">
-            Elegi al menos un componente para empezar esta configuracion basica.
+          <h1 className="text-3xl font-semibold">Tu carrito esta vacio</h1>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            Elige al menos un componente para empezar esta configuracion basica.
           </p>
         </div>
         <Link
           to="/"
-          className="inline-flex items-center rounded-full bg-slate-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+          className="inline-flex items-center rounded-full bg-slate-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
         >
           Ver catalogo
         </Link>
@@ -43,14 +43,15 @@ export default function Cart() {
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-12">
-      <header className="mb-10 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+      <header className="mb-10 flex flex-col gap-2 text-slate-900 dark:text-slate-100 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Carrito</p>
-          <h1 className="text-4xl font-semibold text-slate-900">Componentes seleccionados</h1>
+          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Carrito</p>
+          <h1 className="text-4xl font-semibold">Componentes seleccionados</h1>
         </div>
         <button
           onClick={clearCart}
-          className="self-start rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-900 hover:text-slate-900"
+          className="self-start rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-white"
+          type="button"
         >
           Vaciar carrito
         </button>
@@ -61,7 +62,7 @@ export default function Cart() {
           {items.map((item) => (
             <article
               key={item.product.id}
-              className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:flex-row md:items-center"
+              className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 md:flex-row md:items-center"
             >
               <img
                 src={item.product.image}
@@ -71,25 +72,29 @@ export default function Cart() {
               <div className="flex-1 space-y-2">
                 <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <h2 className="text-lg font-semibold text-slate-900">{item.product.name}</h2>
-                    <p className="text-sm text-slate-500">{item.product.brand} · {item.product.model}</p>
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{item.product.name}</h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      {item.product.brand} - {item.product.model}
+                    </p>
                   </div>
-                  <p className="text-lg font-semibold text-slate-900">{formatPrice(item.product.price)}</p>
+                  <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{formatPrice(item.product.price)}</p>
                 </div>
-                <p className="text-xs text-slate-400">Stock disponible: {item.product.stock}</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">Stock disponible: {item.product.stock}</p>
               </div>
 
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-white"
+                  type="button"
                 >
                   <Minus className="h-4 w-4" />
                 </button>
-                <span className="text-sm font-semibold text-slate-900">{item.quantity}</span>
+                <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{item.quantity}</span>
                 <button
                   onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-white"
+                  type="button"
                 >
                   <Plus className="h-4 w-4" />
                 </button>
@@ -97,8 +102,9 @@ export default function Cart() {
 
               <button
                 onClick={() => removeFromCart(item.product.id)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-red-500 hover:text-red-500"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-red-500 hover:text-red-500 dark:border-slate-800 dark:text-slate-400 dark:hover:border-red-400 dark:hover:text-red-400"
                 aria-label="Quitar del carrito"
+                type="button"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -106,33 +112,33 @@ export default function Cart() {
           ))}
         </div>
 
-        <aside className="h-fit rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-slate-900">Resumen</h2>
-          <p className="mt-2 text-sm text-slate-500">
+        <aside className="h-fit rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Resumen</h2>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
             Este carrito se guarda automaticamente en este navegador.
           </p>
 
           <div className="mt-6 space-y-3">
             {items.map((item) => (
-              <div key={item.product.id} className="flex justify-between text-sm text-slate-600">
+              <div key={item.product.id} className="flex justify-between text-sm text-slate-600 dark:text-slate-300">
                 <span>
                   {item.product.name}
-                  <span className="text-slate-400"> × {item.quantity}</span>
+                  <span className="text-slate-400 dark:text-slate-500"> x {item.quantity}</span>
                 </span>
-                <span className="font-medium text-slate-900">
+                <span className="font-medium text-slate-900 dark:text-slate-100">
                   {formatPrice(item.product.price * item.quantity)}
                 </span>
               </div>
             ))}
           </div>
 
-          <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-6">
-            <span className="text-sm font-medium text-slate-500">Total</span>
-            <span className="text-2xl font-semibold text-slate-900">{formatPrice(getTotalPrice())}</span>
+          <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-6 text-slate-600 dark:border-slate-800 dark:text-slate-300">
+            <span className="text-sm font-medium">Total</span>
+            <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{formatPrice(getTotalPrice())}</span>
           </div>
 
           <button
-            className="mt-6 w-full rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+            className="mt-6 w-full rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
           >
             Continuar pedido
           </button>
