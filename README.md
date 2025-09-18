@@ -1,8 +1,8 @@
-﻿# EDM Hardware Kit
+﻿﻿# EDM Hardware Kit
 
 Proyecto web creado por **Elías Mateo** para presentar un catálogo interactivo de componentes de hardware con modo oscuro predeterminado, integración con Supabase y estado global mediante Zustand. El objetivo es ofrecer una experiencia moderna para explorar, filtrar y preparar una PC personalizada.
 
-## ✨ Características principales
+## Características principales
 - **Catálogo completo** de CPU, GPU, memorias, gabinetes y más.
 - **Modo oscuro por defecto** con interruptor persistente (almacenado en `localStorage`).
 - **Búsqueda y filtros en tiempo real** por categoría y término.
@@ -10,7 +10,7 @@ Proyecto web creado por **Elías Mateo** para presentar un catálogo interactivo
 - **Constructor PC** con roadmap de funcionalidades planeadas.
 - **UI responsiva** diseñada con TailwindCSS y componentes propios.
 
-## 🧱 Arquitectura
+## Arquitectura
 - **Framework:** Vite + React 18 con TypeScript.
 - **Estado global:** Zustand (`src/stores/tienda*`).
 - **Estilos:** TailwindCSS con soporte `darkMode: 'class'` y utilidades personalizadas en `src/estilos.css`.
@@ -37,54 +37,45 @@ src/
    └─ tiendaTema.ts        # Modo oscuro/claro persistente
 ```
 
-## ⚙️ Requisitos
+## Requisitos
 - Node.js 20+
 - npm 10+
 
-## 🚀 Puesta en marcha
+## Comandos
 ```bash
 # Instalar dependencias
-yarn install # o npm install
+npm install # o npm install
 
 # Servidor de desarrollo
-yarn dev     # abre http://localhost:5173
+npm run dev     # abre http://localhost:5173
 
 # Compilar a producción
-yarn build
+npm run build
 
-# Servidor de previsualización
-yarn preview
-
-# Linter (requiere ajustar @typescript-eslint/no-unused-expressions)
-yarn lint
 ```
-> Puedes usar `npm` en lugar de `yarn` si lo prefieres.
+> También podés usar `yarn` en lugar de `npm` si querés.
 
-## 🔑 Variables de entorno
-Clona `.env.example` y crea un `.env` en la raíz. Ejemplo de claves esperadas:
+##  Variables de entorno
+Cloná `.env.example` y crea un `.env` en la raíz. Ej:
 ```
-VITE_SUPABASE_URL="tu-url"
-VITE_SUPABASE_ANON_KEY="tu-key"
+VITE_SUPABASE_URL=""
+VITE_SUPABASE_ANON_KEY=""
 ```
 
 ## 🗄️ Migraciones Supabase
-Dentro de `supabase/migrations` encontrarás SQL para crear tablas de `categories` y `products` con data inicial. Úsalas con la CLI de Supabase:
+Dentro de `supabase/migrations` vas a encontrar SQL para crear tablas de `categories` y `products` con data inicial. Usalas con la CLI de Supabase:
 ```bash
 supabase db reset
 ```
 
-## ✅ Checklist de calidad
-- [x] Build de producción (`npm run build`).
-- [ ] Linting: requiere ajustar la regla `@typescript-eslint/no-unused-expressions` antes de ejecutarlo sin errores.
-- [x] Dark mode sin parpadeos gracias al script inline en `index.html`.
 
-## 📌 Roadmap
+## Roadmap
 - [ ] Integrar Supabase en tiempo real.
 - [ ] Añadir autenticación básica y favoritos.
-- [ ] Completar el flujo del Constructor PC (compatibilidades automáticas).
-- [ ] Añadir tests unitarios con Vitest.
+- [ ] Completar el flujo del Constructor PC (compatibilidades automáticas) etc.
+- [ ] Añadir tests.
 
-## 🧑‍💻 Autor
+## Autor
 Hecho con dedicación por **Elías Mateo**.
 
 Si tenés sugerencias o querés colaborar, ¡abrí un issue o mandame un mensaje!
