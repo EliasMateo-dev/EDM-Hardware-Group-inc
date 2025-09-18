@@ -62,7 +62,7 @@ VITE_SUPABASE_URL=""
 VITE_SUPABASE_ANON_KEY=""
 ```
 
-## 🗄️ Migraciones Supabase
+## Migraciones Supabase
 Dentro de `supabase/migrations` vas a encontrar SQL para crear tablas de `categories` y `products` con data inicial. Usalas con la CLI de Supabase:
 ```bash
 supabase db reset
