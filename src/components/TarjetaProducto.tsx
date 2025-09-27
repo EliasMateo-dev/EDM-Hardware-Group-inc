@@ -8,10 +8,13 @@ interface PropiedadesTarjetaProducto {
 }
 
 const formatearPrecio = (precio: number) =>
-  new Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency: 'ARS',
+  new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(precio);
+
 
 export default function TarjetaProducto({ producto }: PropiedadesTarjetaProducto) {
   const agregarAlCarrito = useTiendaCarrito((estado) => estado.agregarAlCarrito);
