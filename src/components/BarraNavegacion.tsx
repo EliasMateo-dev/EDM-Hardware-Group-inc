@@ -43,7 +43,7 @@ export default function BarraNavegacion() {
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-900">
               <Cpu className="h-5 w-5" />
             </span>
-            <span className="text-lg font-semibold tracking-wide">Hardware</span>
+            <span className="text-lg font-semibold tracking-wide">EDM Hardware</span>
           </Link>
 
           <div className="hidden w-full max-w-md items-center rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900 md:flex">
