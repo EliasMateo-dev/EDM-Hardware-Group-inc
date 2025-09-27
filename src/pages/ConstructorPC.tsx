@@ -18,7 +18,7 @@ export default function PCBuilder() {
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Contruí tu PC</p>
         <h1 className="text-4xl font-semibold">PC Builder</h1>
         <p className="mx-auto max-w-2xl text-sm text-slate-500 dark:text-slate-400">
-          Estamos preparando nuestro PC Builder para CPU, memoria, gabinetes y mucho más!. Mientras tanto podés llenar tu carrito con el catálogo actual (: .
+          Estamos preparando nuestro PC Builder para CPU, memoria, gabinetes y mucho más!. Mientras tanto podés llenar tu carrito con el catálogo actual.
         </p>
       </header>
 
