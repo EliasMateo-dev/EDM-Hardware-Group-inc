@@ -1,4 +1,4 @@
-﻿# EDM Hardware 
+# EDM Hardware 
 
 **ACLARACIÓN**: El usuario "**CRUFTYY**" es **Elías Mateo** 😁
 
@@ -28,7 +28,9 @@ Proyecto web creado por **Elías Mateo**, **Dylan Foster** y **Matías Alvarez**
 
 npm install 
 
-npm run dev    
+npm run dev              # Solo frontend
+npm run dev:server       # Solo servidor de pagos  
+npm run dev:full         # Frontend + servidor de pagos
 
 npm run build
 
@@ -36,12 +38,14 @@ npm run build
 
 
 ## Roadmap
-- [ ] Integrar Supabase.
+- [x] Integrar Mercado Pago con Vexor para pagos.
+- [ ] Completar integración con Supabase.
 - [ ] Añadir autenticación básica y favoritos.
 - [ ] Completar el flujo del Constructor PC (compatibilidades) etc.
 - [ ] Añadir tests.
 - [ ] Guardado de datos mediante la nube (guardado en la cuenta del usuario)
-- [ ] 
+- [ ] Sistema de órdenes y seguimiento de pedidos.
+- [ ] Panel de administración para gestión de productos.
 
 ## Autor
 Hecho con dedicación por **Elías Mateo**, **Matías Alvarez** y **Dylan Foster**, gracias por leer.

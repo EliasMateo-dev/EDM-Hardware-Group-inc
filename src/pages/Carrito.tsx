@@ -1,7 +1,8 @@
-﻿import React, { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 import { useTiendaCarrito } from '../stores/tiendaCarrito';
+import PaymentModal from '../components/PaymentModal';
 
 const formatearPrecio = (precio: number) =>
   new Intl.NumberFormat('es-AR', {
@@ -10,6 +11,7 @@ const formatearPrecio = (precio: number) =>
   }).format(precio);
 
 export default function Carrito() {
+  const [showPaymentModal, setShowPaymentModal] = React.useState(false);
   const elementos = useTiendaCarrito((estado) => estado.elementos);
   const cargarCarrito = useTiendaCarrito((estado) => estado.cargarCarrito);
   const actualizarCantidad = useTiendaCarrito((estado) => estado.actualizarCantidad);
@@ -138,12 +140,19 @@ export default function Carrito() {
           </div>
 
           <button
+            onClick={() => setShowPaymentModal(true)}
             className="mt-6 w-full rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
           >
-            Continuar pedido
+            Finalizar Compra
           </button>
         </aside>
       </div>
+
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        totalAmount={obtenerTotalPrecio()}
+      />
     </section>
   );
 }
