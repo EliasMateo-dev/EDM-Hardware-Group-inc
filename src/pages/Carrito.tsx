@@ -95,7 +95,11 @@ export default function Carrito() {
                 <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{elemento.cantidad}</span>
                 <button
                   onClick={() => actualizarCantidad(elemento.producto.id, elemento.cantidad + 1)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-white"
+                  disabled={elemento.cantidad >= elemento.producto.existencias}
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200
+                    ${elemento.cantidad + 1 > elemento.producto.existencias
+                      ? 'text-slate-200 border-slate-200 cursor-not-allowed dark:border-slate-700 dark:text-slate-700'
+                      : 'text-slate-700 hover:border-slate-900 hover:text-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-white'}`}
                   type="button"
                 >
                   <Plus className="h-4 w-4" />
