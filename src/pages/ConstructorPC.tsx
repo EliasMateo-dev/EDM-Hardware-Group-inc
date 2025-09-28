@@ -34,7 +34,7 @@ const componentRestrictions = {
   'cat-gpu': { min: 1, max: 1, name: 'Tarjeta gráfica' },
   'cat-psu': { min: 1, max: 1, name: 'Fuente de poder' },
   'cat-case': { min: 1, max: 1, name: 'Gabinete' },
-  'cat-ssd': { min: 0, max: Infinity, name: 'Almacenamiento' },
+  'cat-ssd': { min: 1, max: Infinity, name: 'Almacenamiento' },
 };
 
 export default function PCBuilder() {
@@ -346,16 +346,115 @@ export default function PCBuilder() {
     delete newSuccessMessages.form;
     setSuccessMessages(newSuccessMessages);
     
-    // Validar todos los campos
+    // Eliminar TODAS las alertas existentes para evitar superposición
+    const existingAlerts = document.querySelectorAll('[id$="-alert"]');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    // Validar todos los campos y mostrar mensajes específicos
     let isValid = true;
+    const fieldErrors: {[key: string]: string} = {};
+    
     Object.entries(userData).forEach(([field, value]) => {
       if (!validateFormField(field, value)) {
         isValid = false;
+        
+        // Guardar el mensaje de error específico para este campo
+        switch (field) {
+          case 'nombre':
+            fieldErrors.nombre = !value.trim() ? 'El nombre es obligatorio' : 'El nombre debe tener al menos 3 caracteres';
+            break;
+          case 'email':
+            fieldErrors.email = !value.trim() ? 'El email es obligatorio' : 'Formato de email inválido';
+            break;
+          case 'telefono':
+            fieldErrors.telefono = 'Formato de teléfono inválido';
+            break;
+          case 'direccion':
+            fieldErrors.direccion = !value.trim() ? 'La dirección es obligatoria' : 'La dirección debe tener al menos 5 caracteres';
+            break;
+        }
       }
     });
     
+    // Mostrar mensajes de error específicos si hay campos con error
+    if (Object.keys(fieldErrors).length > 0) {
+      // Crear un mensaje de alerta para campos con error
+      const alertElement = document.createElement('div');
+      alertElement.id = 'form-fields-alert';
+      alertElement.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4 rounded shadow-lg z-50 max-w-md';
+      
+      let alertContent = `
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm font-medium text-orange-800">Campos con error:</p>
+            <ul class="mt-1 text-sm text-orange-700">
+      `;
+      
+      // Agregar cada error específico a la lista
+      Object.entries(fieldErrors).forEach(([field, message]) => {
+        alertContent += `<li>• ${message}</li>`;
+      });
+      
+      alertContent += `
+            </ul>
+          </div>
+        </div>
+      `;
+      
+      alertElement.innerHTML = alertContent;
+      
+      // Añadir al DOM
+      document.body.appendChild(alertElement);
+      
+      // Eliminar el mensaje después de 6 segundos
+      setTimeout(() => {
+        alertElement.remove();
+      }, 6000);
+    }
+    
     // Validar reglas de negocio
     if (!validateBusinessRules()) {
+      isValid = false;
+    }
+    
+    // Verificar si el formulario está vacío
+    const isFormEmpty = Object.values(userData).every(value => value === '');
+    if (isFormEmpty) {
+      // Eliminar TODAS las alertas existentes para evitar superposición
+      const existingAlerts = document.querySelectorAll('[id$="-alert"]');
+      existingAlerts.forEach(alert => alert.remove());
+      
+      // Crear un mensaje de alerta para formulario vacío
+      const alertElement = document.createElement('div');
+      alertElement.id = 'empty-form-alert';
+      alertElement.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-lg z-50 max-w-md';
+      alertElement.innerHTML = `
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm font-medium text-yellow-800">Datos de contacto incompletos</p>
+            <p class="mt-1 text-sm text-yellow-700">Por favor, completa los datos del formulario para continuar.</p>
+          </div>
+        </div>
+      `;
+      
+      // Añadir al DOM
+      document.body.appendChild(alertElement);
+      
+      // Eliminar el mensaje después de 6 segundos
+      setTimeout(() => {
+        alertElement.remove();
+      }, 6000);
+      
       isValid = false;
     }
     
@@ -384,15 +483,47 @@ export default function PCBuilder() {
     });
     
     // Si hay componentes faltantes, mostrar mensaje general
-    if (missingComponents.length > 0) {
-      const missingMessage = `Faltan por seleccionar: ${missingComponents.join(', ')}`;
-      setValidationErrors(prev => ({ ...prev, general: missingMessage }));
-      
-      // Eliminar el resaltado después de 6 segundos
-      setTimeout(() => {
-        setHighlightedErrors({});
-      }, 6000);
-    }
+      if (missingComponents.length > 0) {
+        const missingMessage = `Faltan por seleccionar: ${missingComponents.join(', ')}`;
+        setValidationErrors(prev => ({ ...prev, general: missingMessage }));
+        
+        // Eliminar TODAS las alertas existentes para evitar superposición
+        const existingAlerts = document.querySelectorAll('[id$="-alert"]');
+        existingAlerts.forEach(alert => alert.remove());
+        
+        // Crear un mensaje de alerta flotante centrado en la parte inferior
+        const alertElement = document.createElement('div');
+        alertElement.id = 'missing-components-alert';
+        alertElement.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-lg z-50 max-w-md';
+        alertElement.innerHTML = `
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-red-800">Componentes faltantes</p>
+              <p class="mt-1 text-sm text-red-700">${missingMessage}</p>
+            </div>
+          </div>
+        `;
+        
+        // Eliminar alerta existente si hay una
+        const existingAlert = document.getElementById('missing-components-alert');
+        if (existingAlert) {
+          existingAlert.remove();
+        }
+        
+        // Añadir al DOM
+        document.body.appendChild(alertElement);
+        
+        // Eliminar el mensaje y el resaltado después de 6 segundos
+        setTimeout(() => {
+          alertElement.remove();
+          setHighlightedErrors({});
+        }, 6000);
+      }
     
     if (isValid) {
       // Verificar stock antes de agregar al carrito
@@ -531,7 +662,9 @@ export default function PCBuilder() {
                 ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20' 
                 : currentStep === index 
                   ? 'border-blue-500 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20' 
-                  : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
+                  : (!selectedComponents[step.categoryId] || selectedComponents[step.categoryId].length === 0)
+                    ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
+                    : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
             }`}
             onClick={() => setCurrentStep(index)}
           >
