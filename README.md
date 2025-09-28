@@ -1,4 +1,4 @@
-# EDM Hardware 
+# EDM Hardware  
 
 **ACLARACIÓN**: El usuario "**CRUFTYY**" es **Elías Mateo** 😁
 
