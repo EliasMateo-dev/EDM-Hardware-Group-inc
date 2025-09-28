@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, CreditCard, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { useTiendaCarrito } from '../stores/tiendaCarrito';
-import vexor, { type PaymentData } from '../lib/vexor';
+import { supabase } from '../utils/supabase';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -76,48 +76,42 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
     setErrorMessage('');
 
     try {
-      // Prepare payment data for Vexor
-      const paymentData: PaymentData = {
-        amount: totalAmount,
-        currency: 'ARS',
-        description: `Compra EDM Hardware - ${elementos.length} productos`,
-        customer: {
-          name: customerData.name,
-          email: customerData.email,
-          phone: customerData.phone,
-          address: customerData.address
-        },
-        items: elementos.map(elemento => ({
-          id: elemento.producto.id,
-          name: elemento.producto.nombre,
-          quantity: elemento.cantidad,
-          unit_price: elemento.producto.precio
-        }))
-      };
+      // Get the current user session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        throw new Error('Debes iniciar sesión para realizar una compra');
+      }
 
-      // Create payment with Vexor
-      const response = await fetch('/api/create-payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Create Stripe checkout session using Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('stripe-checkout', {
+        body: {
+          price_id: 'price_1234567890', // Replace with your actual Stripe price ID
+          success_url: `${window.location.origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${window.location.origin}/carrito`,
+          mode: 'payment'
         },
-        body: JSON.stringify(paymentData)
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
-      const result = await response.json();
+      if (error) {
+        throw new Error(error.message || 'Error al crear la sesión de pago');
+      }
 
-      if (result.success && result.payment_url) {
+      if (data && data.url) {
         setPaymentStatus('success');
-        setPaymentUrl(result.payment_url);
+        setPaymentUrl(data.url);
         
-        // Redirect to payment URL
+        // Redirect to Stripe checkout
         setTimeout(() => {
-          window.open(result.payment_url, '_blank');
+          window.location.href = data.url;
           vaciarCarrito();
           onClose();
         }, 2000);
       } else {
-        throw new Error(result.error || 'Error al procesar el pago');
+        throw new Error('No se pudo crear la sesión de pago');
       }
     } catch (error) {
       console.error('Payment error:', error);
@@ -152,7 +146,7 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
               ¡Pago Iniciado!
             </h3>
             <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
-              Serás redirigido a la página de pago en unos segundos...
+              Serás redirigido a Stripe para completar el pago...
             </p>
             <div className="flex items-center justify-center">
               <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
@@ -268,7 +262,7 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
             </button>
 
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Serás redirigido a Mercado Pago para completar el pago de forma segura.
+              Serás redirigido a Stripe para completar el pago de forma segura.
             </p>
           </form>
         )}
