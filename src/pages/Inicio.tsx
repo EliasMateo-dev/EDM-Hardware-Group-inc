@@ -25,7 +25,7 @@ export default function Inicio() {
             <div className="max-w-2xl space-y-4">
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">PROXIMA ENTREGA!</p>
               <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
-                Contruí la PC de tus suenos en EDM!
+                Contruí la PC de tus sueños en EDM!
               </h1>
               <p className="text-sm text-slate-300">
                 Componentes seleccionados: CPU, Motherboards, memoria RAM, graficas, fuentes, gabinetes y SSD.
