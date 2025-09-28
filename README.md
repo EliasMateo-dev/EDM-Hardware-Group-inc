@@ -21,22 +21,6 @@ Proyecto web creado por **Elías Mateo**, **Dylan Foster** y **Matías Alvarez**
 - **Migraciones:** carpeta `supabase/migrations` con esquema inicial y seed.
 
 ```
-src/
-├─ Aplicacion.tsx          # Entrada principal de rutas y tiendas
-├─ components/
-│  ├─ BarraNavegacion.tsx  # Navbar con búsqueda, carrito y modo oscuro
-│  ├─ Disposicion.tsx      # Layout general con Outlet
-│  └─ TarjetaProducto.tsx  # Card reutilizable de producto
-├─ data/catalogo.ts        # Tipos y datos estáticos en español
-├─ pages/
-│  ├─ Inicio.tsx           # Hero, categorías y destacados
-│  ├─ Categoria.tsx        # Listado filtrado por alias
-│  ├─ Carrito.tsx          # Gestión completa del carrito
-│  └─ ConstructorPC.tsx    # Roadmap de funcionalidades futuras
-└─ stores/
-   ├─ tiendaProductos.ts   # Búsqueda, filtros y categorías
-   ├─ tiendaCarrito.ts     # Persistencia del carrito en localStorage
-   └─ tiendaTema.ts        # Modo oscuro/claro persistente
 ```
 
 ## Comandos
