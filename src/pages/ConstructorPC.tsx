@@ -564,7 +564,7 @@ export default function PCBuilder() {
         // Redirigir al carrito después de 3 segundos
         setTimeout(() => {
           window.location.href = '/carrito';
-        }, 3000);
+        }, 1000);
         
         // Limpiar formulario
         setSelectedComponents({});
