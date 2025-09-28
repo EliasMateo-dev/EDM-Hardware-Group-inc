@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import SupabaseTest from './components/SupabaseTest';
 import { useTiendaProductos } from './stores/tiendaProductos';
 import { useTiendaCarrito } from './stores/tiendaCarrito';
 import { useTiendaTema } from './stores/tiendaTema';
@@ -34,6 +35,7 @@ function Aplicacion() {
         <Route path="payment/success" element={<PaymentSuccess />} />
         <Route path="payment/failure" element={<PaymentFailure />} />
         <Route path="payment/pending" element={<PaymentPending />} />
+        <Route path="supabase-test" element={<SupabaseTest />} />
       </Route>
     </Routes>
   );
