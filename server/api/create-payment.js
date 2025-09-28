@@ -9,7 +9,10 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true
+}));
 app.use(express.json());
 
 // Initialize MercadoPago
@@ -122,8 +125,17 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Handle 404 for non-API routes
+app.use((req, res) => {
+  if (req.path.startsWith('/api/')) {
+    res.status(404).json({ error: 'API endpoint not found' });
+  } else {
+    res.status(404).send('This server only handles API requests. Please access the frontend at http://localhost:5173');
+  }
+});
 app.listen(PORT, () => {
   console.log(`Payment server running on port ${PORT}`);
+  console.log(`Frontend should be running on http://localhost:5173`);
 });
 
 export default app;
