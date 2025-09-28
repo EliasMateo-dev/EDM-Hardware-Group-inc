@@ -662,7 +662,7 @@ export default function PCBuilder() {
                 ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20' 
                 : currentStep === index 
                   ? 'border-blue-500 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20' 
-                  : (!selectedComponents[step.categoryId] || selectedComponents[step.categoryId].length === 0)
+                  : (!selectedComponents[step.categoryId] || selectedComponents[step.categoryId]?.quantity === 0)
                     ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
                     : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
             }`}
@@ -682,7 +682,7 @@ export default function PCBuilder() {
             {selectedComponents[step.categoryId] && (
               <span className="mt-1 inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
                 <Check className="mr-1 h-3 w-3" />
-                {selectedComponents[step.categoryId]?.quantity > 1 ? 
+                {selectedComponents[step.categoryId]?.quantity && (selectedComponents[step.categoryId]?.quantity ?? 0) > 1 ?
                   `${selectedComponents[step.categoryId]?.quantity} unidades` : 
                   'Seleccionado'}
               </span>
