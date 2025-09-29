@@ -1,13 +1,16 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Cpu, Menu, Moon, Search, ShoppingCart, Sun, X } from 'lucide-react';
+import { Cpu, Menu, Moon, Search, ShoppingCart, Sun, X, User, LogOut } from 'lucide-react';
 import { useTiendaCarrito } from '../stores/tiendaCarrito';
 import { useTiendaProductos } from '../stores/tiendaProductos';
 import { useTiendaTema } from '../stores/tiendaTema';
+import { useTiendaAuth } from '../stores/tiendaAuth';
+import AuthModal from './AuthModal';
 
 export default function BarraNavegacion() {
   const navegar = useNavigate();
   const [menuAbierto, establecerMenuAbierto] = useState(false);
+  const [authModalAbierto, establecerAuthModalAbierto] = useState(false);
   const totalArticulos = useTiendaCarrito((estado) => estado.obtenerTotalArticulos());
   const categorias = useTiendaProductos((estado) => estado.categorias);
   const terminoBusqueda = useTiendaProductos((estado) => estado.terminoBusqueda);
@@ -16,6 +19,8 @@ export default function BarraNavegacion() {
   const cargarProductos = useTiendaProductos((estado) => estado.cargarProductos);
   const tema = useTiendaTema((estado) => estado.tema);
   const alternarTema = useTiendaTema((estado) => estado.alternarTema);
+  const { usuario, cerrarSesion } = useTiendaAuth();
+  const [perfilMenuAbierto, establecerPerfilMenuAbierto] = useState(false);
 
   const manejarCambioCategoria = (alias: string | null) => {
     establecerCategoriaSeleccionada(alias);
@@ -32,6 +37,14 @@ export default function BarraNavegacion() {
     establecerTerminoBusqueda(evento.target.value);
   };
 
+  const manejarCerrarSesion = async () => {
+    try {
+      await cerrarSesion();
+      establecerPerfilMenuAbierto(false);
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
   const iconoTema = tema === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />;
   const etiquetaTema = tema === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro';
 
@@ -66,6 +79,54 @@ export default function BarraNavegacion() {
             >
               {iconoTema}
             </button>
+
+            {usuario ? (
+              <div className="relative">
+                <button
+                  onClick={() => establecerPerfilMenuAbierto(!perfilMenuAbierto)}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:text-white"
+                >
+                  {usuario.user_metadata?.avatar_url ? (
+                    <img
+                      src={usuario.user_metadata.avatar_url}
+                      alt="Avatar"
+                      className="h-8 w-8 rounded-full"
+                    />
+                  ) : (
+                    <User className="h-5 w-5" />
+                  )}
+                </button>
+
+                {perfilMenuAbierto && (
+                  <div className="absolute right-0 top-12 z-50 w-64 rounded-lg border border-slate-200 bg-white p-4 shadow-lg dark:border-slate-800 dark:bg-slate-900">
+                    <div className="mb-3 border-b border-slate-200 pb-3 dark:border-slate-800">
+                      <p className="font-medium text-slate-900 dark:text-slate-100">
+                        {usuario.user_metadata?.full_name || usuario.user_metadata?.name || 'Usuario'}
+                      </p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        {usuario.email}
+                      </p>
+                    </div>
+                    <button
+                      onClick={manejarCerrarSesion}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Cerrar sesión
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => establecerAuthModalAbierto(true)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:text-white"
+                aria-label="Iniciar sesión"
+                type="button"
+              >
+                <User className="h-5 w-5" />
+              </button>
+            )}
 
             <Link
               to="/carrito"
@@ -154,6 +215,31 @@ export default function BarraNavegacion() {
               >
                 Todos los productos
               </button>
+              {!usuario && (
+                <button
+                  onClick={() => {
+                    establecerAuthModalAbierto(true);
+                    establecerMenuAbierto(false);
+                  }}
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-800"
+                  type="button"
+                >
+                  <User className="mr-2 inline h-4 w-4" />
+                  Iniciar sesión
+                </button>
+              )}
+              {usuario && (
+                <button
+                  onClick={() => {
+                    manejarCerrarSesion();
+                    establecerMenuAbierto(false);
+                  }}
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-800"
+                  type="button"
+                >
+                  <LogOut className="mr-2 inline h-4 w-4" />
+                  Cerrar sesión
+              </button>
               {categorias.map((categoria) => (
                 <button
                   key={categoria.id}
@@ -174,6 +260,12 @@ export default function BarraNavegacion() {
             </div>
           </div>
         </div>
+      )}
+
+      <AuthModal
+        isOpen={authModalAbierto}
+        onClose={() => establecerAuthModalAbierto(false)}
+      />
       )}
     </nav>
   );

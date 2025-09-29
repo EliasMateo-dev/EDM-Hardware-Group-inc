@@ -4,6 +4,7 @@ import SupabaseTest from './components/SupabaseTest';
 import { useTiendaProductos } from './stores/tiendaProductos';
 import { useTiendaCarrito } from './stores/tiendaCarrito';
 import { useTiendaTema } from './stores/tiendaTema';
+import { useTiendaAuth } from './stores/tiendaAuth';
 import Disposicion from './components/Disposicion';
 import Inicio from './pages/Inicio';
 import Categoria from './pages/Categoria';
@@ -17,13 +18,15 @@ function Aplicacion() {
   const { cargarCategorias, cargarProductos } = useTiendaProductos();
   const { cargarCarrito } = useTiendaCarrito();
   const inicializarTema = useTiendaTema((estado) => estado.inicializarTema);
+  const inicializarAuth = useTiendaAuth((estado) => estado.inicializarAuth);
 
   useEffect(() => {
     inicializarTema();
+    inicializarAuth();
     cargarCategorias();
     cargarProductos(null);
     cargarCarrito();
-  }, [cargarCategorias, cargarProductos, cargarCarrito, inicializarTema]);
+  }, [cargarCategorias, cargarProductos, cargarCarrito, inicializarTema, inicializarAuth]);
 
   return (
     <Routes>

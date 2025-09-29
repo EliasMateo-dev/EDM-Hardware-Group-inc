@@ -66,6 +66,15 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Verificar autenticación
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !session) {
+      setErrorMessage('Debes iniciar sesión para realizar una compra');
+      setPaymentStatus('error');
+      return;
+    }
+    
     if (!validateForm()) {
       setPaymentStatus('error');
       return;
@@ -76,13 +85,6 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
     setErrorMessage('');
 
     try {
-      // Get the current user session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        throw new Error('Debes iniciar sesión para realizar una compra');
-      }
-
       // Create Stripe checkout session using Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('stripe-checkout', {
         body: {
