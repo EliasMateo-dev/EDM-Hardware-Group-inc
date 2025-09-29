@@ -48,15 +48,7 @@ export default function PCBuilder() {
   const [successMessages, setSuccessMessages] = useState<{[key: string]: string}>({});
   // Estado para componentes con error (resaltados)
   const [highlightedErrors, setHighlightedErrors] = useState<{[key: string]: boolean}>({});
-  // Estado para el formulario de datos del usuario
-  const [userData, setUserData] = useState({
-    nombre: '',
-    email: '',
-    telefono: '',
-    direccion: '',
-  });
-  // Estado para indicar si el formulario ha sido enviado
-  const [formSubmitted, setFormSubmitted] = useState(false);
+  // ...existing code...
 
   // Obtener productos y carrito de las tiendas
   const { productos, cargarProductos } = useTiendaProductos();
@@ -110,66 +102,7 @@ export default function PCBuilder() {
     return true;
   };
 
-  // Validar campos de formulario
-  const validateFormField = (field: string, value: string): boolean => {
-    let isValid = true;
-    const newErrors = {...validationErrors};
-    
-    switch (field) {
-      case 'nombre':
-        if (!value.trim()) {
-          newErrors[field] = 'El nombre es obligatorio';
-          isValid = false;
-        } else if (value.length < 3) {
-          newErrors[field] = 'El nombre debe tener al menos 3 caracteres';
-          isValid = false;
-        } else {
-          delete newErrors[field];
-        }
-        break;
-        
-      case 'email':
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!value.trim()) {
-          newErrors[field] = 'El email es obligatorio';
-          isValid = false;
-        } else if (!emailRegex.test(value)) {
-          newErrors[field] = 'Formato de email inválido';
-          isValid = false;
-        } else {
-          delete newErrors[field];
-        }
-        break;
-        
-      case 'telefono':
-        const phoneRegex = /^\d{10,15}$/;
-        if (value && !phoneRegex.test(value.replace(/\D/g, ''))) {
-          newErrors[field] = 'Formato de teléfono inválido';
-          isValid = false;
-        } else {
-          delete newErrors[field];
-        }
-        break;
-        
-      case 'direccion':
-        if (!value.trim()) {
-          newErrors[field] = 'La dirección es obligatoria';
-          isValid = false;
-        } else if (value.length < 5) {
-          newErrors[field] = 'La dirección debe tener al menos 5 caracteres';
-          isValid = false;
-        } else {
-          delete newErrors[field];
-        }
-        break;
-        
-      default:
-        break;
-    }
-    
-    setValidationErrors(newErrors);
-    return isValid;
-  };
+  // ...existing code...
 
   // Validar reglas de negocio
   const validateBusinessRules = (): boolean => {
@@ -323,148 +256,22 @@ export default function PCBuilder() {
     validateBusinessRules();
   };
 
-  // Manejar cambios en el formulario
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setUserData({
-      ...userData,
-      [name]: value
-    });
-    
-    // Validar campo
-    validateFormField(name, value);
-  };
+  // ...existing code...
 
-  // Manejar envío del formulario
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormSubmitted(true);
+  // Agregar al carrito desde el botón (sin formulario de contacto)
+  const handleAddToCart = () => {
     setHighlightedErrors({});
-    
     // Limpiar mensajes de éxito anteriores
     const newSuccessMessages = {...successMessages};
     delete newSuccessMessages.form;
     setSuccessMessages(newSuccessMessages);
-    
-    // Eliminar TODAS las alertas existentes para evitar superposición
-    const existingAlerts = document.querySelectorAll('[id$="-alert"]');
-    existingAlerts.forEach(alert => alert.remove());
-    
-    // Validar todos los campos y mostrar mensajes específicos
-    let isValid = true;
-    const fieldErrors: {[key: string]: string} = {};
-    
-    Object.entries(userData).forEach(([field, value]) => {
-      if (!validateFormField(field, value)) {
-        isValid = false;
-        
-        // Guardar el mensaje de error específico para este campo
-        switch (field) {
-          case 'nombre':
-            fieldErrors.nombre = !value.trim() ? 'El nombre es obligatorio' : 'El nombre debe tener al menos 3 caracteres';
-            break;
-          case 'email':
-            fieldErrors.email = !value.trim() ? 'El email es obligatorio' : 'Formato de email inválido';
-            break;
-          case 'telefono':
-            fieldErrors.telefono = 'Formato de teléfono inválido';
-            break;
-          case 'direccion':
-            fieldErrors.direccion = !value.trim() ? 'La dirección es obligatoria' : 'La dirección debe tener al menos 5 caracteres';
-            break;
-        }
-      }
-    });
-    
-    // Mostrar mensajes de error específicos si hay campos con error
-    if (Object.keys(fieldErrors).length > 0) {
-      // Crear un mensaje de alerta para campos con error
-      const alertElement = document.createElement('div');
-      alertElement.id = 'form-fields-alert';
-      alertElement.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4 rounded shadow-lg z-50 max-w-md';
-      
-      let alertContent = `
-        <div class="flex">
-          <div class="flex-shrink-0">
-            <svg class="h-5 w-5 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-            </svg>
-          </div>
-          <div class="ml-3">
-            <p class="text-sm font-medium text-orange-800">Campos con error:</p>
-            <ul class="mt-1 text-sm text-orange-700">
-      `;
-      
-      // Agregar cada error específico a la lista
-      Object.entries(fieldErrors).forEach(([field, message]) => {
-        alertContent += `<li>• ${message}</li>`;
-      });
-      
-      alertContent += `
-            </ul>
-          </div>
-        </div>
-      `;
-      
-      alertElement.innerHTML = alertContent;
-      
-      // Añadir al DOM
-      document.body.appendChild(alertElement);
-      
-      // Eliminar el mensaje después de 6 segundos
-      setTimeout(() => {
-        alertElement.remove();
-      }, 6000);
-    }
-    
     // Validar reglas de negocio
-    if (!validateBusinessRules()) {
-      isValid = false;
-    }
-    
-    // Verificar si el formulario está vacío
-    const isFormEmpty = Object.values(userData).every(value => value === '');
-    if (isFormEmpty) {
-      // Eliminar TODAS las alertas existentes para evitar superposición
-      const existingAlerts = document.querySelectorAll('[id$="-alert"]');
-      existingAlerts.forEach(alert => alert.remove());
-      
-      // Crear un mensaje de alerta para formulario vacío
-      const alertElement = document.createElement('div');
-      alertElement.id = 'empty-form-alert';
-      alertElement.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-lg z-50 max-w-md';
-      alertElement.innerHTML = `
-        <div class="flex">
-          <div class="flex-shrink-0">
-            <svg class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-            </svg>
-          </div>
-          <div class="ml-3">
-            <p class="text-sm font-medium text-yellow-800">Datos de contacto incompletos</p>
-            <p class="mt-1 text-sm text-yellow-700">Por favor, completa los datos del formulario para continuar.</p>
-          </div>
-        </div>
-      `;
-      
-      // Añadir al DOM
-      document.body.appendChild(alertElement);
-      
-      // Eliminar el mensaje después de 6 segundos
-      setTimeout(() => {
-        alertElement.remove();
-      }, 6000);
-      
-      isValid = false;
-    }
-    
+    let isValid = true;
     // Verificar que se hayan seleccionado los componentes requeridos según las restricciones
     const missingComponents: string[] = [];
-    
     Object.entries(componentRestrictions).forEach(([categoryId, restriction]) => {
       const component = selectedComponents[categoryId];
       const count = component ? component.quantity : 0;
-      
       if (count < restriction.min && restriction.min > 0) {
         setValidationErrors(prev => ({
           ...prev,
@@ -481,55 +288,47 @@ export default function PCBuilder() {
         isValid = false;
       }
     });
-    
     // Si hay componentes faltantes, mostrar mensaje general
-      if (missingComponents.length > 0) {
-        const missingMessage = `Faltan por seleccionar: ${missingComponents.join(', ')}`;
-        setValidationErrors(prev => ({ ...prev, general: missingMessage }));
-        
-        // Eliminar TODAS las alertas existentes para evitar superposición
-        const existingAlerts = document.querySelectorAll('[id$="-alert"]');
-        existingAlerts.forEach(alert => alert.remove());
-        
-        // Crear un mensaje de alerta flotante centrado en la parte inferior
-        const alertElement = document.createElement('div');
-        alertElement.id = 'missing-components-alert';
-        alertElement.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-lg z-50 max-w-md';
-        alertElement.innerHTML = `
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-              </svg>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-red-800">Componentes faltantes</p>
-              <p class="mt-1 text-sm text-red-700">${missingMessage}</p>
-            </div>
+    if (missingComponents.length > 0) {
+      const missingMessage = `Faltan por seleccionar: ${missingComponents.join(', ')}`;
+      setValidationErrors(prev => ({ ...prev, general: missingMessage }));
+      // Eliminar TODAS las alertas existentes para evitar superposición
+      const existingAlerts = document.querySelectorAll('[id$="-alert"]');
+      existingAlerts.forEach(alert => alert.remove());
+      // Crear un mensaje de alerta flotante centrado en la parte inferior
+      const alertElement = document.createElement('div');
+      alertElement.id = 'missing-components-alert';
+      alertElement.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-lg z-50 max-w-md';
+      alertElement.innerHTML = `
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
           </div>
-        `;
-        
-        // Eliminar alerta existente si hay una
-        const existingAlert = document.getElementById('missing-components-alert');
-        if (existingAlert) {
-          existingAlert.remove();
-        }
-        
-        // Añadir al DOM
-        document.body.appendChild(alertElement);
-        
-        // Eliminar el mensaje y el resaltado después de 6 segundos
-        setTimeout(() => {
-          alertElement.remove();
-          setHighlightedErrors({});
-        }, 6000);
+          <div class="ml-3">
+            <p class="text-sm font-medium text-red-800">Componentes faltantes</p>
+            <p class="mt-1 text-sm text-red-700">${missingMessage}</p>
+          </div>
+        </div>
+      `;
+      // Eliminar alerta existente si hay una
+      const existingAlert = document.getElementById('missing-components-alert');
+      if (existingAlert) {
+        existingAlert.remove();
       }
-    
+      // Añadir al DOM
+      document.body.appendChild(alertElement);
+      // Eliminar el mensaje y el resaltado después de 6 segundos
+      setTimeout(() => {
+        alertElement.remove();
+        setHighlightedErrors({});
+      }, 6000);
+    }
     if (isValid) {
       // Verificar stock antes de agregar al carrito
       let allInStock = true;
       const newErrors = {...validationErrors};
-      
       Object.entries(selectedComponents).forEach(([categoryId, component]) => {
         if (component) {
           const product = productos.find(p => p.id === component.id);
@@ -539,12 +338,10 @@ export default function PCBuilder() {
           }
         }
       });
-      
       if (!allInStock) {
         setValidationErrors(newErrors);
         return;
       }
-      
       try {
         // Agregar componentes al carrito
         Object.values(selectedComponents).forEach(component => {
@@ -553,28 +350,18 @@ export default function PCBuilder() {
             agregarAlCarrito(component.id, component.quantity);
           }
         });
-        
         // Mostrar mensaje de éxito
         setSuccessMessages({
           ...successMessages,
           form: 'Todos los productos se han agregado correctamente al carrito',
           cart: 'Componentes agregados al carrito correctamente'
         });
-        
-        // Redirigir al carrito después de 3 segundos
+        // Redirigir al carrito después de 1 segundo
         setTimeout(() => {
           window.location.href = '/carrito';
         }, 1000);
-        
-        // Limpiar formulario
+        // Limpiar selección de componentes
         setSelectedComponents({});
-        setUserData({
-          nombre: '',
-          email: '',
-          telefono: '',
-          direccion: ''
-        });
-        setFormSubmitted(false);
         setValidationErrors({});
       } catch (error) {
         console.error('Error al agregar al carrito:', error);
@@ -799,116 +586,14 @@ export default function PCBuilder() {
         </div>
       )}
 
-      {/* Formulario de datos del usuario */}
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-slate-100">
-          Datos de contacto
-        </h2>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="nombre" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Nombre completo *
-            </label>
-            <input
-              type="text"
-              id="nombre"
-              name="nombre"
-              value={userData.nombre}
-              onChange={handleInputChange}
-              className={`w-full rounded-lg border p-2 ${
-                formSubmitted && validationErrors.nombre
-                  ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
-                  : 'border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-800'
-              }`}
-            />
-            {formSubmitted && validationErrors.nombre && (
-              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-                <AlertCircle className="mr-1 inline h-3 w-3" />
-                {validationErrors.nombre}
-              </p>
-            )}
-          </div>
-          
-          <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Email *
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={userData.email}
-              onChange={handleInputChange}
-              className={`w-full rounded-lg border p-2 ${
-                formSubmitted && validationErrors.email
-                  ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
-                  : 'border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-800'
-              }`}
-            />
-            {formSubmitted && validationErrors.email && (
-              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-                <AlertCircle className="mr-1 inline h-3 w-3" />
-                {validationErrors.email}
-              </p>
-            )}
-          </div>
-          
-          <div>
-            <label htmlFor="telefono" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Teléfono
-            </label>
-            <input
-              type="tel"
-              id="telefono"
-              name="telefono"
-              value={userData.telefono}
-              onChange={handleInputChange}
-              className={`w-full rounded-lg border p-2 ${
-                formSubmitted && validationErrors.telefono
-                  ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
-                  : 'border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-800'
-              }`}
-            />
-            {formSubmitted && validationErrors.telefono && (
-              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-                <AlertCircle className="mr-1 inline h-3 w-3" />
-                {validationErrors.telefono}
-              </p>
-            )}
-          </div>
-          
-          <div>
-            <label htmlFor="direccion" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Dirección *
-            </label>
-            <input
-              type="text"
-              id="direccion"
-              name="direccion"
-              value={userData.direccion}
-              onChange={handleInputChange}
-              className={`w-full rounded-lg border p-2 ${
-                formSubmitted && validationErrors.direccion
-                  ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
-                  : 'border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-800'
-              }`}
-            />
-            {formSubmitted && validationErrors.direccion && (
-              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-                <AlertCircle className="mr-1 inline h-3 w-3" />
-                {validationErrors.direccion}
-              </p>
-            )}
-          </div>
-          
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
-          >
-            Agregar al carrito
-          </button>
-        </form>
+      {/* Botón para agregar al carrito */}
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 flex flex-col items-center">
+        <button
+          onClick={handleAddToCart}
+          className="w-full rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+        >
+          Agregar al carrito
+        </button>
       </div>
     </section>
   );
