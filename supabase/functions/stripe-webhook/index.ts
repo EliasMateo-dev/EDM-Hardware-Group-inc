@@ -1,12 +1,12 @@
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
-import Stripe from 'npm:stripe@17.7.0';
-import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import '@supabase/functions-js/edge-runtime.d.ts';
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
 const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')!;
 const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
 const stripe = new Stripe(stripeSecret, {
   appInfo: {
-    name: 'Bolt Integration',
+    name: 'EDM Hardware Group',
     version: '1.0.0',
   },
 });
