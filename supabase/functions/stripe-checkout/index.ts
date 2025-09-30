@@ -6,7 +6,7 @@ const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('
 const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')!;
 const stripe = new Stripe(stripeSecret, {
   appInfo: {
-    name: 'Bolt Integration',
+    name: 'EDM Hardware Group',
     version: '1.0.0',
   },
 });
