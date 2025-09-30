@@ -1,5 +1,5 @@
 import '@supabase/functions-js/edge-runtime.d.ts';
-import Stripe from 'stripe';
+import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.58.0';
 
 const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')!;
@@ -11,32 +11,40 @@ const stripe = new Stripe(stripeSecret, {
   },
 });
 
-const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!, 
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
 
 Deno.serve(async (req) => {
   try {
     // Handle OPTIONS request for CORS preflight
     if (req.method === 'OPTIONS') {
-      return new Response(null, { status: 204 });
+      return new Response(null, { 
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': '*',
+        }
+      });
     }
 
     if (req.method !== 'POST') {
       return new Response('Method not allowed', { status: 405 });
     }
 
-    // get the signature from the header
+    // Obtener la firma del header
     const signature = req.headers.get('stripe-signature');
-
     if (!signature) {
       return new Response('No signature found', { status: 400 });
     }
 
-    // get the raw body
+    // Obtener el body raw
     const body = await req.text();
 
-    // verify the webhook signature
+    // Verificar la firma del webhook
     let event: Stripe.Event;
-
     try {
       event = await stripe.webhooks.constructEventAsync(body, signature, stripeWebhookSecret);
     } catch (error: any) {
@@ -44,6 +52,9 @@ Deno.serve(async (req) => {
       return new Response(`Webhook signature verification failed: ${error.message}`, { status: 400 });
     }
 
+    console.log(`Webhook recibido: ${event.type}`);
+
+    // Procesar el evento en background
     EdgeRuntime.waitUntil(handleEvent(event));
 
     return Response.json({ received: true });
@@ -54,80 +65,109 @@ Deno.serve(async (req) => {
 });
 
 async function handleEvent(event: Stripe.Event) {
-  const stripeData = event?.data?.object ?? {};
-
-  if (!stripeData) {
-    return;
-  }
-
-  if (!('customer' in stripeData)) {
-    return;
-  }
-
-  // for one time payments, we only listen for the checkout.session.completed event
-  if (event.type === 'payment_intent.succeeded' && event.data.object.invoice === null) {
-    return;
-  }
-
-  const { customer: customerId } = stripeData;
-
-  if (!customerId || typeof customerId !== 'string') {
-    console.error(`No customer received on event: ${JSON.stringify(event)}`);
-  } else {
-    let isSubscription = true;
-
-    if (event.type === 'checkout.session.completed') {
-      const { mode } = stripeData as Stripe.Checkout.Session;
-
-      isSubscription = mode === 'subscription';
-
-      console.info(`Processing ${isSubscription ? 'subscription' : 'one-time payment'} checkout session`);
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed':
+        await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session);
+        break;
+      
+      case 'payment_intent.succeeded':
+        await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent);
+        break;
+      
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated':
+      case 'customer.subscription.deleted':
+        await handleSubscriptionChange(event.data.object as Stripe.Subscription);
+        break;
+      
+      default:
+        console.log(`Evento no manejado: ${event.type}`);
     }
+  } catch (error) {
+    console.error(`Error handling event ${event.type}:`, error);
+  }
+}
 
-    const { mode, payment_status } = stripeData as Stripe.Checkout.Session;
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+  console.log(`Procesando checkout session completada: ${session.id}`);
+  
+  const { customer, payment_intent, mode, payment_status } = session;
+  
+  if (!customer || typeof customer !== 'string') {
+    console.error('No customer ID found in session');
+    return;
+  }
 
-    if (isSubscription) {
-      console.info(`Starting subscription sync for customer: ${customerId}`);
-      await syncCustomerFromStripe(customerId);
-    } else if (mode === 'payment' && payment_status === 'paid') {
-      try {
-        // Extract the necessary information from the session
-        const {
-          id: checkout_session_id,
-          payment_intent,
-          amount_subtotal,
-          amount_total,
-          currency,
-        } = stripeData as Stripe.Checkout.Session;
-
-        // Insert the order into the stripe_orders table
-        const { error: orderError } = await supabase.from('stripe_orders').insert({
-          checkout_session_id,
-          payment_intent_id: payment_intent,
-          customer_id: customerId,
-          amount_subtotal,
-          amount_total,
-          currency,
-          payment_status,
-          status: 'completed', // assuming we want to mark it as completed since payment is successful
+  if (mode === 'payment' && payment_status === 'paid') {
+    // Manejar pago único
+    try {
+      const { error: orderError } = await supabase
+        .from('stripe_orders')
+        .insert({
+          checkout_session_id: session.id,
+          payment_intent_id: payment_intent as string,
+          customer_id: customer,
+          amount_subtotal: session.amount_subtotal || 0,
+          amount_total: session.amount_total || 0,
+          currency: session.currency || 'ars',
+          payment_status: payment_status,
+          status: 'completed',
         });
 
-        if (orderError) {
-          console.error('Error inserting order:', orderError);
-          return;
-        }
-        console.info(`Successfully processed one-time payment for session: ${checkout_session_id}`);
-      } catch (error) {
-        console.error('Error processing one-time payment:', error);
+      if (orderError) {
+        console.error('Error insertando orden:', orderError);
+        return;
       }
+
+      console.log(`Orden creada exitosamente para session: ${session.id}`);
+      
+      // Aquí podrías agregar lógica adicional como:
+      // - Enviar email de confirmación
+      // - Actualizar inventario
+      // - Crear registro de envío
+      
+    } catch (error) {
+      console.error('Error procesando pago único:', error);
+    }
+  } else if (mode === 'subscription') {
+    // Manejar suscripción
+    await syncCustomerFromStripe(customer);
+  }
+}
+
+async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
+  console.log(`Payment intent succeeded: ${paymentIntent.id}`);
+  
+  // Solo procesar si no es parte de una factura (pago único)
+  if (paymentIntent.invoice === null) {
+    // Actualizar estado del pago si es necesario
+    const { error } = await supabase
+      .from('stripe_orders')
+      .update({ 
+        payment_status: 'paid',
+        status: 'completed' 
+      })
+      .eq('payment_intent_id', paymentIntent.id);
+
+    if (error) {
+      console.error('Error actualizando estado de pago:', error);
     }
   }
 }
 
-// based on the excellent https://github.com/t3dotgg/stripe-recommendations
+async function handleSubscriptionChange(subscription: Stripe.Subscription) {
+  console.log(`Procesando cambio de suscripción: ${subscription.id}`);
+  
+  const customerId = subscription.customer as string;
+  await syncCustomerFromStripe(customerId);
+}
+
 async function syncCustomerFromStripe(customerId: string) {
   try {
-    // fetch latest subscription data from Stripe
+    console.log(`Sincronizando cliente desde Stripe: ${customerId}`);
+    
+    // Obtener suscripciones del cliente
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       limit: 1,
@@ -135,57 +175,60 @@ async function syncCustomerFromStripe(customerId: string) {
       expand: ['data.default_payment_method'],
     });
 
-    // TODO verify if needed
     if (subscriptions.data.length === 0) {
-      console.info(`No active subscriptions found for customer: ${customerId}`);
-      const { error: noSubError } = await supabase.from('stripe_subscriptions').upsert(
-        {
+      console.log(`No hay suscripciones para el cliente: ${customerId}`);
+      
+      const { error } = await supabase
+        .from('stripe_subscriptions')
+        .upsert({
           customer_id: customerId,
-          subscription_status: 'not_started',
-        },
-        {
+          status: 'not_started',
+        }, {
           onConflict: 'customer_id',
-        },
-      );
+        });
 
-      if (noSubError) {
-        console.error('Error updating subscription status:', noSubError);
-        throw new Error('Failed to update subscription status in database');
+      if (error) {
+        console.error('Error actualizando estado de suscripción:', error);
       }
+      return;
     }
 
-    // assumes that a customer can only have a single subscription
+    // Asumir que un cliente solo puede tener una suscripción
     const subscription = subscriptions.data[0];
 
-    // store subscription state
-    const { error: subError } = await supabase.from('stripe_subscriptions').upsert(
-      {
-        customer_id: customerId,
-        subscription_id: subscription.id,
-        price_id: subscription.items.data[0].price.id,
-        current_period_start: subscription.current_period_start,
-        current_period_end: subscription.current_period_end,
-        cancel_at_period_end: subscription.cancel_at_period_end,
-        ...(subscription.default_payment_method && typeof subscription.default_payment_method !== 'string'
-          ? {
-              payment_method_brand: subscription.default_payment_method.card?.brand ?? null,
-              payment_method_last4: subscription.default_payment_method.card?.last4 ?? null,
-            }
-          : {}),
-        status: subscription.status,
-      },
-      {
-        onConflict: 'customer_id',
-      },
-    );
+    // Actualizar estado de suscripción
+    const updateData: any = {
+      customer_id: customerId,
+      subscription_id: subscription.id,
+      price_id: subscription.items.data[0]?.price?.id,
+      current_period_start: subscription.current_period_start,
+      current_period_end: subscription.current_period_end,
+      cancel_at_period_end: subscription.cancel_at_period_end,
+      status: subscription.status,
+    };
 
-    if (subError) {
-      console.error('Error syncing subscription:', subError);
-      throw new Error('Failed to sync subscription in database');
+    // Agregar información del método de pago si está disponible
+    if (subscription.default_payment_method && 
+        typeof subscription.default_payment_method !== 'string') {
+      const paymentMethod = subscription.default_payment_method as Stripe.PaymentMethod;
+      updateData.payment_method_brand = paymentMethod.card?.brand || null;
+      updateData.payment_method_last4 = paymentMethod.card?.last4 || null;
     }
-    console.info(`Successfully synced subscription for customer: ${customerId}`);
+
+    const { error } = await supabase
+      .from('stripe_subscriptions')
+      .upsert(updateData, {
+        onConflict: 'customer_id',
+      });
+
+    if (error) {
+      console.error('Error sincronizando suscripción:', error);
+      throw error;
+    }
+
+    console.log(`Suscripción sincronizada exitosamente para cliente: ${customerId}`);
   } catch (error) {
-    console.error(`Failed to sync subscription for customer ${customerId}:`, error);
+    console.error(`Error sincronizando cliente ${customerId}:`, error);
     throw error;
   }
 }

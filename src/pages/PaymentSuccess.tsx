@@ -13,7 +13,7 @@ export default function PaymentSuccess() {
 
   useEffect(() => {
     // Clear cart on successful payment
-    if (status === 'approved') {
+    if (status === 'paid' || !status) { // Stripe usa 'paid' o no envía status
       vaciarCarrito();
     }
   }, [status, vaciarCarrito]);
@@ -39,7 +39,7 @@ export default function PaymentSuccess() {
             </h3>
             <div className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
               <p><strong>ID de pago:</strong> {paymentId}</p>
-              <p><strong>Estado:</strong> {status === 'approved' ? 'Aprobado' : status}</p>
+              <p><strong>Estado:</strong> {status === 'paid' ? 'Pagado' : status || 'Completado'}</p>
               {externalReference && (
                 <p><strong>Referencia:</strong> {externalReference}</p>
               )}

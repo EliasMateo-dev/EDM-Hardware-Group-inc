@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { X, CreditCard, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { useTiendaCarrito } from '../stores/tiendaCarrito';
+import { useTiendaAuth } from '../stores/tiendaAuth';
 import { supabase } from '../utils/supabase';
+import { createDynamicProduct } from '../stripe-config';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -26,10 +28,10 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
-  const [paymentUrl, setPaymentUrl] = useState('');
 
   const elementos = useTiendaCarrito((state) => state.elementos);
   const vaciarCarrito = useTiendaCarrito((state) => state.vaciarCarrito);
+  const { usuario, sesion } = useTiendaAuth();
 
   const formatearPrecio = (precio: number) =>
     new Intl.NumberFormat('es-AR', {
@@ -67,9 +69,7 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
     e.preventDefault();
     
     // Verificar autenticación
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    
-    if (sessionError || !session) {
+    if (!usuario || !sesion) {
       setErrorMessage('Debes iniciar sesión para realizar una compra');
       setPaymentStatus('error');
       return;
@@ -80,21 +80,63 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
       return;
     }
 
+    if (elementos.length === 0) {
+      setErrorMessage('No hay productos en el carrito');
+      setPaymentStatus('error');
+      return;
+    }
+
     setIsProcessing(true);
     setPaymentStatus('processing');
     setErrorMessage('');
 
     try {
-      // Create Stripe checkout session using Supabase Edge Function
+      // Crear producto dinámico basado en el carrito
+      const dynamicProduct = createDynamicProduct(elementos, totalAmount);
+      
+      // Crear line items para Stripe
+      const lineItems = elementos.map(elemento => ({
+        price_data: {
+          currency: 'ars',
+          product_data: {
+            name: elemento.producto.nombre,
+            description: `${elemento.producto.marca} ${elemento.producto.modelo}`,
+            images: elemento.producto.imagen ? [elemento.producto.imagen] : [],
+          },
+          unit_amount: Math.round(elemento.producto.precio * 100), // Convertir a centavos
+        },
+        quantity: elemento.cantidad,
+      }));
+
+      // Crear sesión de checkout usando Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('stripe-checkout', {
         body: {
-          price_id: 'price_1234567890', // Replace with your actual Stripe price ID
+          line_items: lineItems,
+          customer_data: {
+            name: customerData.name,
+            email: customerData.email,
+            phone: customerData.phone,
+            address: customerData.address,
+          },
           success_url: `${window.location.origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${window.location.origin}/carrito`,
-          mode: 'payment'
+          mode: 'payment',
+          metadata: {
+            user_id: usuario.id,
+            order_data: JSON.stringify({
+              items: elementos.map(el => ({
+                product_id: el.producto.id,
+                name: el.producto.nombre,
+                quantity: el.cantidad,
+                price: el.producto.precio
+              })),
+              customer_data: customerData,
+              total_amount: totalAmount
+            })
+          }
         },
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${sesion.access_token}`,
         },
       });
 
@@ -104,14 +146,11 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
 
       if (data && data.url) {
         setPaymentStatus('success');
-        setPaymentUrl(data.url);
         
-        // Redirect to Stripe checkout
+        // Redirigir a Stripe Checkout
         setTimeout(() => {
           window.location.href = data.url;
-          vaciarCarrito();
-          onClose();
-        }, 2000);
+        }, 1500);
       } else {
         throw new Error('No se pudo crear la sesión de pago');
       }
@@ -123,6 +162,17 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
       setIsProcessing(false);
     }
   };
+
+  // Auto-llenar datos del usuario si está autenticado
+  React.useEffect(() => {
+    if (usuario && !customerData.email) {
+      setCustomerData(prev => ({
+        ...prev,
+        email: usuario.email || '',
+        name: usuario.user_metadata?.full_name || usuario.user_metadata?.name || ''
+      }));
+    }
+  }, [usuario, customerData.email]);
 
   if (!isOpen) return null;
 
@@ -141,14 +191,30 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
           </button>
         </div>
 
-        {paymentStatus === 'success' ? (
+        {!usuario ? (
+          <div className="text-center">
+            <AlertCircle className="mx-auto mb-4 h-16 w-16 text-yellow-500" />
+            <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+              Inicia sesión requerido
+            </h3>
+            <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
+              Debes iniciar sesión para realizar una compra
+            </p>
+            <button
+              onClick={onClose}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            >
+              Cerrar
+            </button>
+          </div>
+        ) : paymentStatus === 'success' ? (
           <div className="text-center">
             <CheckCircle className="mx-auto mb-4 h-16 w-16 text-green-500" />
             <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
-              ¡Pago Iniciado!
+              ¡Redirigiendo a Stripe!
             </h3>
             <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
-              Serás redirigido a Stripe para completar el pago...
+              Serás redirigido a Stripe para completar el pago de forma segura...
             </p>
             <div className="flex items-center justify-center">
               <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
@@ -258,13 +324,14 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
               ) : (
                 <>
                   <CreditCard className="h-4 w-4" />
-                  Pagar {formatearPrecio(totalAmount)}
+                  Pagar con Stripe {formatearPrecio(totalAmount)}
                 </>
               )}
             </button>
 
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Serás redirigido a Stripe para completar el pago de forma segura.
+              Serás redirigido a Stripe para completar el pago de forma segura. 
+              Aceptamos tarjetas de crédito y débito.
             </p>
           </form>
         )}
