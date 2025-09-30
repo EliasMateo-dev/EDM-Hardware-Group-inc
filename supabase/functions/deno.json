@@ -8,7 +8,7 @@
   },
   "imports": {
     "stripe": "npm:stripe@17.7.0",
-    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.49.1",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.58.0",
     "@supabase/functions-js/edge-runtime.d.ts": "jsr:@supabase/functions-js/edge-runtime.d.ts"
   },
   "lint": {
