@@ -109,7 +109,7 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
       }));
 
       // Crear sesión de checkout usando Supabase Edge Function
-      const { data, error } = await supabase.functions.invoke('stripe-checkout', {
+      const { data, error: functionError } = await supabase.functions.invoke('stripe-checkout', {
         body: {
           line_items: lineItems,
           customer_data: {
@@ -140,8 +140,9 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
         },
       });
 
-      if (error) {
-        throw new Error(error.message || 'Error al crear la sesión de pago');
+      if (functionError) {
+        console.error('Supabase function error:', functionError);
+        throw new Error(functionError.message || 'Error al crear la sesión de pago');
       }
 
       if (data && data.url) {
@@ -152,12 +153,17 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
           window.location.href = data.url;
         }, 1500);
       } else {
-        throw new Error('No se pudo crear la sesión de pago');
+        console.error('No URL returned from Stripe:', data);
+        throw new Error(data?.error || 'No se pudo crear la sesión de pago');
       }
     } catch (error) {
       console.error('Payment error:', error);
       setPaymentStatus('error');
-      setErrorMessage(error instanceof Error ? error.message : 'Error al procesar el pago');
+      setErrorMessage(
+        error instanceof Error 
+          ? error.message 
+          : 'Error al procesar el pago. Por favor, intenta de nuevo.'
+      );
     } finally {
       setIsProcessing(false);
     }
