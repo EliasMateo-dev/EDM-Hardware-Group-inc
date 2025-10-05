@@ -1,6 +1,6 @@
 # EDM Hardware  
 
-**ACLARACIÓN**: El usuario "**CRUFTYY**" es **Elías Mateo** 😁
+**ACLARACIÓN**: El usuario "**CRUFTYY**" y "EliasMateo-dev" ambas cuentas son **Elías Mateo** 😁
 
 Proyecto web creado por **Elías Mateo**, **Dylan Foster** y **Matías Alvarez** para presentar un catálogo interactivo de componentes de hardware con un modo oscuro, integración con Supabase (en proceso!) y estado global mediante Zustand. El objetivo es ofrecer una experiencia moderna para explorar, filtrar y preparar una PC personalizada.
 
@@ -28,9 +28,7 @@ Proyecto web creado por **Elías Mateo**, **Dylan Foster** y **Matías Alvarez**
 
 npm install 
 
-npm run dev              # Solo frontend
-npm run dev:server       # Solo servidor de pagos  
-npm run dev:full         # Frontend + servidor de pagos
+npm run dev              
 
 npm run build
 
@@ -38,7 +36,7 @@ npm run build
 
 
 ## Roadmap
-- [x] Integrar Mercado Pago con Vexor para pagos.
+- [x] Integrar pagos (prueba) con Stripe.
 - [ ] Completar integración con Supabase.
 - [ ] Añadir autenticación básica y favoritos.
 - [ ] Completar el flujo del Constructor PC (compatibilidades) etc.
