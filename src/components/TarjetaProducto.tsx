@@ -66,18 +66,18 @@ export default function TarjetaProducto({ producto }: PropiedadesTarjetaProducto
 
         <div className="mt-auto flex items-end justify-between">
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Existencias: {producto.existencias}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Existencias: {stockDisponible}</p>
             <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{formatearPrecio(producto.precio)}</p>
           </div>
           <button
-          onClick={manejarAgregarAlCarrito}
-          disabled={stockDisponible === 0}
-          className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 dark:disabled:bg-slate-700/40 dark:disabled:text-slate-500"
-          type="button"
+            onClick={manejarAgregarAlCarrito}
+            disabled={stockDisponible === 0}
+            className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 dark:disabled:bg-slate-700/40 dark:disabled:text-slate-500"
+            type="button"
           >
             <ShoppingCart className="h-4 w-4" />
             {stockDisponible === 0 ? 'Sin stock' : 'Agregar'}
-            </button>
+          </button>
         </div>
       </div>
     </article>

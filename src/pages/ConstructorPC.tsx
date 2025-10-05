@@ -45,9 +45,9 @@ export default function PCBuilder() {
   // Estado para los errores de validación
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   // Estado para mensajes de éxito
-  const [successMessages, setSuccessMessages] = useState<{[key: string]: string}>({});
+  const [successMessages, setSuccessMessages] = useState<{ [key: string]: string }>({});
   // Estado para componentes con error (resaltados)
-  const [highlightedErrors, setHighlightedErrors] = useState<{[key: string]: boolean}>({});
+  const [highlightedErrors, setHighlightedErrors] = useState<{ [key: string]: boolean }>({});
   // ...existing code...
 
   // Obtener productos y carrito de las tiendas
@@ -62,7 +62,7 @@ export default function PCBuilder() {
   // Validar inventario al seleccionar un componente
   const validateInventory = (productId: string, quantity: number): boolean => {
     const product = productos.find(p => p.id === productId);
-    
+
     if (!product) {
       setValidationErrors({
         ...validationErrors,
@@ -80,25 +80,25 @@ export default function PCBuilder() {
     }
 
     // Limpiar error si existe
-    const newErrors = {...validationErrors};
+    const newErrors = { ...validationErrors };
     delete newErrors[productId];
     setValidationErrors(newErrors);
-    
+
     // Mostrar mensaje de éxito
     setSuccessMessages({
       ...successMessages,
       [productId]: 'Producto agregado correctamente'
     });
-    
+
     // Limpiar mensaje de éxito después de 3 segundos
     setTimeout(() => {
       setSuccessMessages(prev => {
-        const newMessages = {...prev};
+        const newMessages = { ...prev };
         delete newMessages[productId];
         return newMessages;
       });
     }, 3000);
-    
+
     return true;
   };
 
@@ -107,16 +107,16 @@ export default function PCBuilder() {
   // Validar reglas de negocio
   const validateBusinessRules = (): boolean => {
     let isValid = true;
-    const newErrors = {...validationErrors};
-    
+    const newErrors = { ...validationErrors };
+
     // Validar compatibilidad de componentes
     const cpu = selectedComponents['cat-cpu'];
     const motherboard = selectedComponents['cat-motherboard'];
-    
+
     if (cpu && motherboard) {
       const cpuProduct = productos.find(p => p.id === cpu.id);
       const mbProduct = productos.find(p => p.id === motherboard.id);
-      
+
       if (cpuProduct && mbProduct) {
         // Ejemplo: Validar socket compatible
         if (cpuProduct.especificaciones.socket !== mbProduct.especificaciones.socket) {
@@ -127,7 +127,7 @@ export default function PCBuilder() {
         }
       }
     }
-    
+
     // Validar restricciones de cantidad para cada categoría
     Object.entries(componentRestrictions).forEach(([categoryId, restriction]) => {
       const components = selectedComponents[categoryId];
@@ -141,7 +141,7 @@ export default function PCBuilder() {
         }
       }
     });
-    
+
     setValidationErrors(newErrors);
     return isValid;
   };
@@ -152,7 +152,7 @@ export default function PCBuilder() {
     if (!validateInventory(productId, quantity)) {
       return;
     }
-    
+
     // Verificar restricciones de cantidad
     const restrictions = componentRestrictions[categoryId as keyof typeof componentRestrictions];
     if (restrictions && quantity > restrictions.max) {
@@ -162,28 +162,28 @@ export default function PCBuilder() {
       });
       return;
     }
-    
-    // Actualizar componentes seleccionados
+
+    // Actualizar componentes seleccionados 
     setSelectedComponents({
       ...selectedComponents,
       [categoryId]: { id: productId, quantity }
     });
-    
+
     // Validar reglas de negocio
     validateBusinessRules();
   };
-  
+
   // Función para aumentar la cantidad de un componente
   const handleIncreaseQuantity = (productId: string, categoryId: string) => {
     const component = selectedComponents[categoryId];
     if (!component || component.id !== productId) return;
-    
+
     const product = productos.find(p => p.id === productId);
     if (!product) return;
-    
+
     const restriction = componentRestrictions[categoryId as keyof typeof componentRestrictions];
     const newQuantity = component.quantity + 1;
-    
+
     // Verificar si excede el máximo permitido
     if (restriction && newQuantity > restriction.max && restriction.max !== Infinity) {
       setValidationErrors(prev => ({
@@ -192,7 +192,7 @@ export default function PCBuilder() {
       }));
       return;
     }
-    
+
     // Verificar si hay suficiente stock
     if (product.existencias < newQuantity) {
       setValidationErrors(prev => ({
@@ -201,13 +201,13 @@ export default function PCBuilder() {
       }));
       return;
     }
-    
+
     // Actualizar la cantidad
     setSelectedComponents(prev => ({
       ...prev,
       [categoryId]: { ...component, quantity: newQuantity }
     }));
-    
+
     // Limpiar error si existe
     if (validationErrors[productId]) {
       setValidationErrors(prev => {
@@ -216,33 +216,44 @@ export default function PCBuilder() {
         return newErrors;
       });
     }
-    
+
     // Validar reglas de negocio
     validateBusinessRules();
   };
 
   // Función para disminuir la cantidad de un componente
-  const handleDecreaseQuantity = (productId: string, categoryId: string) => {
+  const handleDecreaseQuantity = (productId: string, categoryId: string, removeAll = false) => {
     const component = selectedComponents[categoryId];
     if (!component || component.id !== productId) return;
-    
-    const newQuantity = component.quantity - 1;
-    
-    if (newQuantity <= 0) {
-      // Si la cantidad llega a 0, eliminamos el componente
+
+    const restrictions = componentRestrictions[categoryId as keyof typeof componentRestrictions];
+
+    if (removeAll || restrictions?.max === 1) {
+      // Si se indica removeAll o es un componente de máximo 1, eliminamos el componente completo
       setSelectedComponents(prev => {
         const newComponents = { ...prev };
         delete newComponents[categoryId];
         return newComponents;
       });
     } else {
-      // Actualizar la cantidad
-      setSelectedComponents(prev => ({
-        ...prev,
-        [categoryId]: { ...component, quantity: newQuantity }
-      }));
+      const newQuantity = component.quantity - 1;
+
+      if (newQuantity <= 0) {
+        // Si la cantidad llega a 0, eliminamos el componente
+        setSelectedComponents(prev => {
+          const newComponents = { ...prev };
+          delete newComponents[categoryId];
+          return newComponents;
+        });
+      } else {
+        // Actualizar la cantidad
+        setSelectedComponents(prev => ({
+          ...prev,
+          [categoryId]: { ...component, quantity: newQuantity }
+        }));
+      }
     }
-    
+
     // Limpiar error si existe
     if (validationErrors[productId]) {
       setValidationErrors(prev => {
@@ -251,10 +262,11 @@ export default function PCBuilder() {
         return newErrors;
       });
     }
-    
+
     // Validar reglas de negocio
     validateBusinessRules();
   };
+
 
   // ...existing code...
 
@@ -262,7 +274,7 @@ export default function PCBuilder() {
   const handleAddToCart = () => {
     setHighlightedErrors({});
     // Limpiar mensajes de éxito anteriores
-    const newSuccessMessages = {...successMessages};
+    const newSuccessMessages = { ...successMessages };
     delete newSuccessMessages.form;
     setSuccessMessages(newSuccessMessages);
     // Validar reglas de negocio
@@ -328,7 +340,7 @@ export default function PCBuilder() {
     if (isValid) {
       // Verificar stock antes de agregar al carrito
       let allInStock = true;
-      const newErrors = {...validationErrors};
+      const newErrors = { ...validationErrors };
       Object.entries(selectedComponents).forEach(([categoryId, component]) => {
         if (component) {
           const product = productos.find(p => p.id === component.id);
@@ -442,35 +454,33 @@ export default function PCBuilder() {
       {/* Pasos del constructor */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-7">
         {steps.map((step, index) => (
-          <article 
-            key={index} 
-            className={`flex cursor-pointer flex-col items-center rounded-xl border p-4 text-center transition-colors ${
-              highlightedErrors[step.categoryId] 
-                ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20' 
-                : currentStep === index 
-                  ? 'border-blue-500 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20' 
-                  : (!selectedComponents[step.categoryId] || selectedComponents[step.categoryId]?.quantity === 0)
-                    ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
-                    : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
-            }`}
+          <article
+            key={index}
+            className={`flex cursor-pointer flex-col items-center rounded-xl border p-4 text-center transition-colors ${highlightedErrors[step.categoryId]
+              ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
+              : currentStep === index
+                ? 'border-blue-500 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20'
+                : (!selectedComponents[step.categoryId] || selectedComponents[step.categoryId]?.quantity === 0)
+                  ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
+                  : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
+              }`}
             onClick={() => setCurrentStep(index)}
           >
-            <span className={`mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full ${
-              currentStep === index 
-                ? 'bg-blue-500 text-white dark:bg-blue-600' 
-                : 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-            }`}>
+            <span className={`mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full ${currentStep === index
+              ? 'bg-blue-500 text-white dark:bg-blue-600'
+              : 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+              }`}>
               <step.icon className="h-5 w-5" />
             </span>
             <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{step.label}</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">{step.description}</p>
-            
+
             {/* Indicador de componente seleccionado */}
             {selectedComponents[step.categoryId] && (
               <span className="mt-1 inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
                 <Check className="mr-1 h-3 w-3" />
                 {selectedComponents[step.categoryId]?.quantity && (selectedComponents[step.categoryId]?.quantity ?? 0) > 1 ?
-                  `${selectedComponents[step.categoryId]?.quantity} unidades` : 
+                  `${selectedComponents[step.categoryId]?.quantity} unidades` :
                   'Seleccionado'}
               </span>
             )}
@@ -484,86 +494,105 @@ export default function PCBuilder() {
           <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-slate-100">
             Selecciona tu {steps[currentStep]?.description}
           </h2>
-          
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {currentCategoryProducts.map(product => {
               const isSelected = selectedComponents[currentCategoryId]?.id === product.id;
               const currentQuantity = selectedComponents[currentCategoryId]?.quantity || 0;
               const restrictions = componentRestrictions[currentCategoryId as keyof typeof componentRestrictions];
-              
+              const selectedQuantity = selectedComponents[currentCategoryId]?.id === product.id
+                ? selectedComponents[currentCategoryId]?.quantity || 0
+                : 0;
+              const stockDisponible = product.existencias - selectedQuantity;
+
+
               return (
-                <div 
+                <div
                   key={product.id}
-                  className={`rounded-xl border p-4 transition-colors ${
-                    isSelected
-                      ? 'border-blue-500 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20'
-                      : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60'
-                  }`}
+                  className={`rounded-xl border p-4 transition-colors ${isSelected
+                    ? 'border-blue-500 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20'
+                    : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60'
+                    }`}
                 >
                   <h3 className="font-medium text-slate-900 dark:text-slate-100">{product.nombre}</h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400">{product.marca} {product.modelo}</p>
                   <p className="mt-2 font-semibold text-slate-900 dark:text-slate-100">
                     ${product.precio.toLocaleString('es-AR')}
                   </p>
-                  
+
                   {/* Inventario */}
-                  <p className={`mt-1 text-xs ${
-                    product.existencias > 5 
-                      ? 'text-green-600 dark:text-green-400' 
-                      : product.existencias > 0 
-                        ? 'text-yellow-600 dark:text-yellow-400' 
-                        : 'text-red-600 dark:text-red-400'
-                  }`}>
-                    {product.existencias > 5 
-                      ? `En stock (${product.existencias})` 
-                      : product.existencias > 0 
-                        ? `Pocas unidades (${product.existencias})` 
+                  <p className={`mt-1 text-xs ${stockDisponible > 5
+                    ? 'text-green-600 dark:text-green-400'
+                    : stockDisponible > 0
+                      ? 'text-yellow-600 dark:text-yellow-400'
+                      : 'text-red-600 dark:text-red-400'
+                    }`}>
+                    {stockDisponible > 5
+                      ? `En stock (${stockDisponible})`
+                      : stockDisponible > 0
+                        ? `Pocas unidades (${stockDisponible})`
                         : 'Sin stock'}
                   </p>
-                  
+
                   {/* Restricciones de cantidad */}
                   {restrictions && (
                     <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                      {restrictions.min === restrictions.max ? 
-                        `Exactamente ${restrictions.min} ${restrictions.name.toLowerCase()}` : 
-                        restrictions.max === Infinity ? 
+                      {restrictions.min === restrictions.max ?
+                        `Exactamente ${restrictions.min} ${restrictions.name.toLowerCase()}` :
+                        restrictions.max === Infinity ?
                           `Mínimo ${restrictions.min} unidad(es)` :
                           `Mínimo ${restrictions.min}, máximo ${restrictions.max} unidad(es)`
                       }
                     </p>
                   )}
-                  
+
                   {isSelected ? (
-                    <div className="mt-3 flex items-center justify-between">
-                      <button 
-                        className="rounded-md bg-slate-200 px-3 py-1 text-sm font-medium dark:bg-slate-700"
-                        onClick={() => handleDecreaseQuantity(product.id, currentCategoryId)}
-                      >
-                        <Minus size={16} />
-                      </button>
-                      <span className="text-sm font-medium">{currentQuantity}</span>
-                      <button 
-                        className="rounded-md bg-slate-200 px-3 py-1 text-sm font-medium dark:bg-slate-700"
-                        onClick={() => handleIncreaseQuantity(product.id, currentCategoryId)}
-                        disabled={currentQuantity >= Math.min(product.existencias, restrictions?.max || Infinity)}
-                      >
-                        <Plus size={16} />
-                      </button>
-                    </div>
+                    restrictions?.max === 1 ? (
+                      <div className="mt-3 flex items-center justify-center">
+                        <button
+                          className="mt-4 w-full rounded-lg px-4 py-2 text-sm font-medium text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700"
+                          onClick={() => handleDecreaseQuantity(product.id, currentCategoryId, true)}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="mt-3">
+                        <div className="flex items-center justify-between">
+                          <button
+                            className={`rounded-md bg-slate-200 px-3 py-1 text-sm font-medium dark:bg-slate-700 ${currentQuantity <= 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            onClick={() => handleDecreaseQuantity(product.id, currentCategoryId)}
+                            disabled={currentQuantity <= 1}
+                          >
+                            <Minus size={16} />
+                          </button>
+                          <span className="text-sm font-medium">{currentQuantity}</span>
+                          <button
+                            className={`rounded-md bg-slate-200 px-3 py-1 text-sm font-medium dark:bg-slate-700 ${currentQuantity >= Math.min(product.existencias, restrictions?.max || Infinity) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            onClick={() => handleIncreaseQuantity(product.id, currentCategoryId)}
+                            disabled={currentQuantity >= Math.min(product.existencias, restrictions?.max || Infinity)}
+                          >
+                            <Plus size={16} />
+                          </button>
+                        </div>
+                        <button
+                          className="mt-2 w-full rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700"
+                          onClick={() => handleDecreaseQuantity(product.id, currentCategoryId, true)}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    )
                   ) : (
                     <button
-                      className={`mt-4 w-full rounded-lg px-4 py-2 text-sm font-medium ${
-                        product.existencias === 0
-                          ? 'cursor-not-allowed bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
-                          : 'bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'
-                      }`}
-                      onClick={() => handleComponentSelect(currentCategoryId, product.id)}
+                      className={`mt-4 w-full rounded-lg px-4 py-2 text-sm font-medium ${product.existencias === 0 ? 'cursor-not-allowed bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-400' : 'bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'}`}
+                      onClick={() => handleComponentSelect(currentCategoryId, product.id, 1)}
                       disabled={product.existencias === 0}
                     >
                       Seleccionar
                     </button>
                   )}
-                  
+
                   {/* Mensaje de error */}
                   {validationErrors[product.id] && (
                     <p className="mt-2 text-xs text-red-600 dark:text-red-400">
@@ -571,7 +600,7 @@ export default function PCBuilder() {
                       {validationErrors[product.id]}
                     </p>
                   )}
-                  
+
                   {/* Mensaje de éxito */}
                   {successMessages[product.id] && (
                     <p className="mt-2 text-xs text-green-600 dark:text-green-400">

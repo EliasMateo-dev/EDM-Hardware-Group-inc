@@ -67,10 +67,7 @@ export const useTiendaProductos = create<EstadoProductos>((establecer, obtener) 
 
     const termino = terminoBusqueda.toLowerCase();
     return productos.filter((producto) =>
-      producto.nombre.toLowerCase().includes(termino) ||
-      producto.marca.toLowerCase().includes(termino) ||
-      producto.modelo.toLowerCase().includes(termino) ||
-      producto.descripcion.toLowerCase().includes(termino)
+      producto.nombre.toLowerCase().includes(termino)
     );
   },
 }));
