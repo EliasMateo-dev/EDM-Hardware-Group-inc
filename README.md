@@ -28,9 +28,7 @@ Proyecto web creado por **Elías Mateo**, **Dylan Foster** y **Matías Alvarez**
 
 npm install 
 
-npm run dev              # Solo frontend
-npm run dev:server       # Solo servidor de pagos  
-npm run dev:full         # Frontend + servidor de pagos
+npm run dev              
 
 npm run build
 
@@ -38,7 +36,7 @@ npm run build
 
 
 ## Roadmap
-- [x] Integrar Mercado Pago con Vexor para pagos.
+- [x] Integrar pagos (prueba) con Stripe.
 - [ ] Completar integración con Supabase.
 - [ ] Añadir autenticación básica y favoritos.
 - [ ] Completar el flujo del Constructor PC (compatibilidades) etc.
