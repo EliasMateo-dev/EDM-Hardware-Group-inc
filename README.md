@@ -1,6 +1,6 @@
 # EDM Hardware  
 
-**ACLARACIÓN**: El usuario "**CRUFTYY**" es **Elías Mateo** 😁
+**ACLARACIÓN**: El usuario "**CRUFTYY**" y "EliasMateo-dev" ambas cuentas son **Elías Mateo** 😁
 
 Proyecto web creado por **Elías Mateo**, **Dylan Foster** y **Matías Alvarez** para presentar un catálogo interactivo de componentes de hardware con un modo oscuro, integración con Supabase (en proceso!) y estado global mediante Zustand. El objetivo es ofrecer una experiencia moderna para explorar, filtrar y preparar una PC personalizada.
 
