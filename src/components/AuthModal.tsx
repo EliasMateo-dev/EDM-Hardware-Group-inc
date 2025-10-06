@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, LogIn, Loader2, AlertCircle } from 'lucide-react';
 import { useTiendaAuth } from '../stores/tiendaAuth';
 
@@ -9,18 +9,13 @@ interface AuthModalProps {
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [error, setError] = useState<string | null>(null);
-  const { iniciarSesionConGoogle, cargando, usuario } = useTiendaAuth();
-
-  useEffect(() => {
-    if (usuario && isOpen) {
-      onClose();
-    }
-  }, [usuario, isOpen, onClose]);
+  const { iniciarSesionConGoogle, cargando } = useTiendaAuth();
 
   const handleGoogleSignIn = async () => {
     try {
       setError(null);
       await iniciarSesionConGoogle();
+      // El modal se cerrará automáticamente cuando cambie el estado de auth
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
       setError('Error al iniciar sesión con Google. Por favor, intenta de nuevo.');

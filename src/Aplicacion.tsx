@@ -21,19 +21,11 @@ function Aplicacion() {
   const inicializarAuth = useTiendaAuth((estado) => estado.inicializarAuth);
 
   useEffect(() => {
-    const initApp = async () => {
-      inicializarTema();
-      await inicializarAuth();
-      await cargarCategorias();
-      await cargarProductos(null);
-      await cargarCarrito();
-
-      const authStore = useTiendaAuth.getState();
-      const carritoStore = useTiendaCarrito.getState();
-      authStore.establecerCarritoStore(carritoStore);
-    };
-
-    initApp();
+    inicializarTema();
+    inicializarAuth();
+    cargarCategorias();
+    cargarProductos(null);
+    cargarCarrito();
   }, [cargarCategorias, cargarProductos, cargarCarrito, inicializarTema, inicializarAuth]);
 
   return (
