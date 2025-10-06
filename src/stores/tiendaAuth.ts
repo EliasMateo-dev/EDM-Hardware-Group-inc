@@ -68,33 +68,16 @@ export const useTiendaAuth = create<EstadoAuth>((establecer, obtener) => ({
   iniciarSesionConGoogle: async () => {
     try {
       establecer({ cargando: true });
-<<<<<<< HEAD
-<<<<<<< HEAD
-      
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`
-=======
+const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
+const redirectUrl = `${siteUrl}${window.location.pathname}${window.location.search}`;
 
-      const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
-      const redirectUrl = `${siteUrl}${window.location.pathname}${window.location.search}`;
-
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-          skipBrowserRedirect: false
->>>>>>> abf935268b07e2ff835810db8fcf09f98946988f
-=======
-      
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`
->>>>>>> parent of bbe69c7 (Updated Aplicacion.tsx)
-        }
-      });
+const { error } = await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: {
+    redirectTo: redirectUrl,
+    skipBrowserRedirect: false
+  }
+});
 
       if (error) {
         console.error('Error al iniciar sesión con Google:', error);
