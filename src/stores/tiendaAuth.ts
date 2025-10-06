@@ -69,6 +69,7 @@ export const useTiendaAuth = create<EstadoAuth>((establecer, obtener) => ({
     try {
       establecer({ cargando: true });
 <<<<<<< HEAD
+<<<<<<< HEAD
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -85,6 +86,13 @@ export const useTiendaAuth = create<EstadoAuth>((establecer, obtener) => ({
           redirectTo: redirectUrl,
           skipBrowserRedirect: false
 >>>>>>> abf935268b07e2ff835810db8fcf09f98946988f
+=======
+      
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`
+>>>>>>> parent of bbe69c7 (Updated Aplicacion.tsx)
         }
       });
 
