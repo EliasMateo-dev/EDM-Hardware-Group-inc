@@ -89,12 +89,13 @@ export const useTiendaAuth = create<EstadoAuth>((establecer, obtener) => ({
     try {
       establecer({ cargando: true });
 
-      const currentUrl = window.location.href;
+      const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
+      const redirectUrl = `${siteUrl}${window.location.pathname}${window.location.search}`;
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: currentUrl,
+          redirectTo: redirectUrl,
           skipBrowserRedirect: false
         }
       });
