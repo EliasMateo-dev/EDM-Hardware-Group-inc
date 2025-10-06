@@ -9,7 +9,11 @@ interface EstadoAuth {
   inicializarAuth: () => Promise<void>;
   iniciarSesionConGoogle: () => Promise<void>;
   cerrarSesion: () => Promise<void>;
+  obtenerCarritoStore: () => any;
+  establecerCarritoStore: (store: any) => void;
 }
+
+let carritoStoreRef: any = null;
 
 export const useTiendaAuth = create<EstadoAuth>((establecer, obtener) => ({
   usuario: null,
@@ -18,11 +22,11 @@ export const useTiendaAuth = create<EstadoAuth>((establecer, obtener) => ({
 
   inicializarAuth: async () => {
     try {
-      // Obtener sesión actual
       const { data: { session }, error } = await supabase.auth.getSession();
-      
+
       if (error) {
         console.error('Error al obtener sesión:', error);
+        establecer({ cargando: false });
         return;
       }
 
@@ -32,32 +36,48 @@ export const useTiendaAuth = create<EstadoAuth>((establecer, obtener) => ({
         cargando: false
       });
 
-      // Escuchar cambios de autenticación
-      supabase.auth.onAuthStateChange(async (evento, sesion) => {
-        console.log('Cambio de auth:', evento, sesion?.user?.email);
-        
-        establecer({
-          usuario: sesion?.user ?? null,
-          sesion: sesion,
-          cargando: false
-        });
+      if (session?.user) {
+        await supabase
+          .from('profiles')
+          .upsert({
+            id: session.user.id,
+            email: session.user.email!,
+            full_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name,
+            avatar_url: session.user.user_metadata?.avatar_url,
+            updated_at: new Date().toISOString()
+          });
+      }
 
-        // Crear o actualizar perfil cuando el usuario se registra
-        if (evento === 'SIGNED_IN' && sesion?.user) {
-          const { error: perfilError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: sesion.user.id,
-              email: sesion.user.email!,
-              full_name: sesion.user.user_metadata?.full_name || sesion.user.user_metadata?.name,
-              avatar_url: sesion.user.user_metadata?.avatar_url,
-              updated_at: new Date().toISOString()
-            });
+      supabase.auth.onAuthStateChange((evento, sesion) => {
+        (async () => {
+          console.log('Cambio de auth:', evento, sesion?.user?.email);
 
-          if (perfilError) {
-            console.error('Error al crear/actualizar perfil:', perfilError);
+          establecer({
+            usuario: sesion?.user ?? null,
+            sesion: sesion,
+            cargando: false
+          });
+
+          if (evento === 'SIGNED_IN' && sesion?.user) {
+            const { error: perfilError } = await supabase
+              .from('profiles')
+              .upsert({
+                id: sesion.user.id,
+                email: sesion.user.email!,
+                full_name: sesion.user.user_metadata?.full_name || sesion.user.user_metadata?.name,
+                avatar_url: sesion.user.user_metadata?.avatar_url,
+                updated_at: new Date().toISOString()
+              });
+
+            if (perfilError) {
+              console.error('Error al crear/actualizar perfil:', perfilError);
+            }
+
+            if (carritoStoreRef?.sincronizarCarrito) {
+              await carritoStoreRef.sincronizarCarrito(sesion.user.id);
+            }
           }
-        }
+        })();
       });
     } catch (error) {
       console.error('Error al inicializar auth:', error);
@@ -68,16 +88,20 @@ export const useTiendaAuth = create<EstadoAuth>((establecer, obtener) => ({
   iniciarSesionConGoogle: async () => {
     try {
       establecer({ cargando: true });
-      
+
+      const currentUrl = window.location.href;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: currentUrl,
+          skipBrowserRedirect: false
         }
       });
 
       if (error) {
         console.error('Error al iniciar sesión con Google:', error);
+        establecer({ cargando: false });
         throw error;
       }
     } catch (error) {
@@ -90,9 +114,9 @@ export const useTiendaAuth = create<EstadoAuth>((establecer, obtener) => ({
   cerrarSesion: async () => {
     try {
       establecer({ cargando: true });
-      
+
       const { error } = await supabase.auth.signOut();
-      
+
       if (error) {
         console.error('Error al cerrar sesión:', error);
         throw error;
@@ -103,10 +127,20 @@ export const useTiendaAuth = create<EstadoAuth>((establecer, obtener) => ({
         sesion: null,
         cargando: false
       });
+
+      if (carritoStoreRef?.cargarCarrito) {
+        await carritoStoreRef.cargarCarrito();
+      }
     } catch (error) {
       console.error('Error en cerrarSesion:', error);
       establecer({ cargando: false });
       throw error;
     }
+  },
+
+  obtenerCarritoStore: () => carritoStoreRef,
+
+  establecerCarritoStore: (store: any) => {
+    carritoStoreRef = store;
   }
 }));
