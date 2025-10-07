@@ -1,17 +1,19 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, CircuitBoard, Cpu, HardDrive, MemoryStick, Monitor, Zap, AlertCircle, Check, Plus, Minus } from 'lucide-react';
 import { useTiendaProductos } from '../stores/tiendaProductos';
 import { useTiendaCarrito } from '../stores/tiendaCarrito';
+import { supabase } from '../utils/supabase';
 
-const steps = [
-  { icon: Cpu, label: 'CPU', description: 'Procesador', categoryId: 'cat-cpu' },
-  { icon: CircuitBoard, label: 'Motherboard', description: 'Placa base', categoryId: 'cat-motherboard' },
-  { icon: MemoryStick, label: 'RAM', description: 'Memoria', categoryId: 'cat-ram' },
-  { icon: Monitor, label: 'GPU', description: 'Tarjeta grafica', categoryId: 'cat-gpu' },
-  { icon: Zap, label: 'PSU', description: 'Fuente de poder', categoryId: 'cat-psu' },
-  { icon: Box, label: 'Gabinete', description: 'Case', categoryId: 'cat-case' },
-  { icon: HardDrive, label: 'SSD', description: 'Almacenamiento', categoryId: 'cat-ssd' },
-];
+// Mapeo de categorías a iconos y descripciones
+const categoryIcons: Record<string, { icon: any; description: string }> = {
+  'cpu': { icon: Cpu, description: 'Procesador' },
+  'motherboard': { icon: CircuitBoard, description: 'Placa base' },
+  'ram': { icon: MemoryStick, description: 'Memoria' },
+  'gpu': { icon: Monitor, description: 'Tarjeta grafica' },
+  'psu': { icon: Zap, description: 'Fuente de poder' },
+  'case': { icon: Box, description: 'Gabinete' },
+  'ssd': { icon: HardDrive, description: 'Almacenamiento' },
+};
 
 // Interfaz para los errores de validación
 interface ValidationErrors {
@@ -27,19 +29,31 @@ interface SelectedComponents {
 }
 
 // Restricciones de selección para cada categoría
-const componentRestrictions = {
-  'cat-cpu': { min: 1, max: 1, name: 'Procesador' },
-  'cat-motherboard': { min: 1, max: 1, name: 'Placa madre' },
-  'cat-ram': { min: 1, max: 2, name: 'Memoria RAM' },
-  'cat-gpu': { min: 1, max: 1, name: 'Tarjeta gráfica' },
-  'cat-psu': { min: 1, max: 1, name: 'Fuente de poder' },
-  'cat-case': { min: 1, max: 1, name: 'Gabinete' },
-  'cat-ssd': { min: 1, max: Infinity, name: 'Almacenamiento' },
+const getComponentRestrictions = (categorySlug: string) => {
+  const restrictions: Record<string, { min: number; max: number; name: string }> = {
+    'cpu': { min: 1, max: 1, name: 'Procesador' },
+    'motherboard': { min: 1, max: 1, name: 'Placa madre' },
+    'ram': { min: 1, max: 2, name: 'Memoria RAM' },
+    'gpu': { min: 1, max: 1, name: 'Tarjeta gráfica' },
+    'psu': { min: 1, max: 1, name: 'Fuente de poder' },
+    'case': { min: 1, max: 1, name: 'Gabinete' },
+    'ssd': { min: 1, max: Infinity, name: 'Almacenamiento' },
+  };
+  
+  return restrictions[categorySlug] || { min: 0, max: 1, name: 'Componente' };
 };
 
 export default function PCBuilder() {
   // Estado para el paso actual
   const [currentStep, setCurrentStep] = useState<number>(0);
+  // Estado para los pasos dinámicos basados en categorías
+  const [steps, setSteps] = useState<Array<{
+    icon: any;
+    label: string;
+    description: string;
+    categoryId: string;
+    categorySlug: string;
+  }>>([]);
   // Estado para los componentes seleccionados
   const [selectedComponents, setSelectedComponents] = useState<SelectedComponents>({});
   // Estado para los errores de validación
@@ -48,16 +62,35 @@ export default function PCBuilder() {
   const [successMessages, setSuccessMessages] = useState<{ [key: string]: string }>({});
   // Estado para componentes con error (resaltados)
   const [highlightedErrors, setHighlightedErrors] = useState<{ [key: string]: boolean }>({});
-  // ...existing code...
 
   // Obtener productos y carrito de las tiendas
-  const { productos, cargarProductos } = useTiendaProductos();
+  const { productos, categorias, cargarProductos, cargarCategorias, cargando } = useTiendaProductos();
   const { agregarAlCarrito } = useTiendaCarrito();
 
-  // Cargar productos al montar el componente
+  // Cargar datos al montar el componente
   useEffect(() => {
-    cargarProductos();
-  }, [cargarProductos]);
+    const cargarDatos = async () => {
+      await cargarCategorias();
+      await cargarProductos();
+    };
+    cargarDatos();
+  }, [cargarProductos, cargarCategorias]);
+
+  // Crear steps dinámicamente basado en las categorías
+  useEffect(() => {
+    if (categorias.length > 0) {
+      const stepsGenerados = categorias
+        .filter(categoria => categoryIcons[categoria.alias])
+        .map(categoria => ({
+          icon: categoryIcons[categoria.alias].icon,
+          label: categoria.nombre,
+          description: categoryIcons[categoria.alias].description,
+          categoryId: categoria.id,
+          categorySlug: categoria.alias,
+        }));
+      setSteps(stepsGenerados);
+    }
+  }, [categorias]);
 
   // Validar inventario al seleccionar un componente
   const validateInventory = (productId: string, quantity: number): boolean => {
@@ -110,8 +143,11 @@ export default function PCBuilder() {
     const newErrors = { ...validationErrors };
 
     // Validar compatibilidad de componentes
-    const cpu = selectedComponents['cat-cpu'];
-    const motherboard = selectedComponents['cat-motherboard'];
+    const cpuCategory = categorias.find(c => c.alias === 'cpu');
+    const motherboardCategory = categorias.find(c => c.alias === 'motherboard');
+    
+    const cpu = cpuCategory ? selectedComponents[cpuCategory.id] : null;
+    const motherboard = motherboardCategory ? selectedComponents[motherboardCategory.id] : null;
 
     if (cpu && motherboard) {
       const cpuProduct = productos.find(p => p.id === cpu.id);
@@ -129,15 +165,18 @@ export default function PCBuilder() {
     }
 
     // Validar restricciones de cantidad para cada categoría
-    Object.entries(componentRestrictions).forEach(([categoryId, restriction]) => {
-      const components = selectedComponents[categoryId];
+    categorias.forEach(categoria => {
+      const restriction = getComponentRestrictions(categoria.alias);
+      const components = selectedComponents[categoria.id];
+      
       if (components) {
         const quantity = components.quantity;
         if (quantity > restriction.max) {
-          newErrors[`${categoryId}_limit`] = `Máximo ${restriction.max} ${restriction.name.toLowerCase()} permitido`;
+          newErrors[`${categoria.id}_limit`] = `Máximo ${restriction.max} ${restriction.name.toLowerCase()} permitido`;
           isValid = false;
         } else {
-          delete newErrors[`${categoryId}_limit`];
+          delete newErrors[`${categoria.id}_limit`];
+        }
         }
       }
     });
@@ -154,7 +193,9 @@ export default function PCBuilder() {
     }
 
     // Verificar restricciones de cantidad
-    const restrictions = componentRestrictions[categoryId as keyof typeof componentRestrictions];
+    const categoria = categorias.find(c => c.id === categoryId);
+    const restrictions = categoria ? getComponentRestrictions(categoria.alias) : null;
+    
     if (restrictions && quantity > restrictions.max) {
       setValidationErrors({
         ...validationErrors,
@@ -181,7 +222,8 @@ export default function PCBuilder() {
     const product = productos.find(p => p.id === productId);
     if (!product) return;
 
-    const restriction = componentRestrictions[categoryId as keyof typeof componentRestrictions];
+    const categoria = categorias.find(c => c.id === categoryId);
+    const restriction = categoria ? getComponentRestrictions(categoria.alias) : null;
     const newQuantity = component.quantity + 1;
 
     // Verificar si excede el máximo permitido
@@ -226,7 +268,8 @@ export default function PCBuilder() {
     const component = selectedComponents[categoryId];
     if (!component || component.id !== productId) return;
 
-    const restrictions = componentRestrictions[categoryId as keyof typeof componentRestrictions];
+    const categoria = categorias.find(c => c.id === categoryId);
+    const restrictions = categoria ? getComponentRestrictions(categoria.alias) : null;
 
     if (removeAll || restrictions?.max === 1) {
       // Si se indica removeAll o es un componente de máximo 1, eliminamos el componente completo
@@ -281,21 +324,24 @@ export default function PCBuilder() {
     let isValid = true;
     // Verificar que se hayan seleccionado los componentes requeridos según las restricciones
     const missingComponents: string[] = [];
-    Object.entries(componentRestrictions).forEach(([categoryId, restriction]) => {
-      const component = selectedComponents[categoryId];
+    
+    categorias.forEach(categoria => {
+      const restriction = getComponentRestrictions(categoria.alias);
+      const component = selectedComponents[categoria.id];
       const count = component ? component.quantity : 0;
+      
       if (count < restriction.min && restriction.min > 0) {
         setValidationErrors(prev => ({
           ...prev,
-          [`${categoryId}_required`]: `Debes seleccionar al menos ${restriction.min} ${restriction.name.toLowerCase()}`
+          [`${categoria.id}_required`]: `Debes seleccionar al menos ${restriction.min} ${restriction.name.toLowerCase()}`
         }));
         missingComponents.push(restriction.name);
-        setHighlightedErrors(prev => ({ ...prev, [categoryId]: true }));
+        setHighlightedErrors(prev => ({ ...prev, [categoria.id]: true }));
         isValid = false;
       } else if (count > restriction.max && restriction.max !== Infinity) {
         setValidationErrors(prev => ({
           ...prev,
-          [`${categoryId}_limit`]: `Máximo ${restriction.max} ${restriction.name.toLowerCase()} permitido`
+          [`${categoria.id}_limit`]: `Máximo ${restriction.max} ${restriction.name.toLowerCase()} permitido`
         }));
         isValid = false;
       }
@@ -388,6 +434,19 @@ export default function PCBuilder() {
   // Filtrar productos por categoría actual
   const currentCategoryId = steps[currentStep]?.categoryId;
   const currentCategoryProducts = productos.filter(p => p.categoriaId === currentCategoryId);
+
+  if (cargando || steps.length === 0) {
+    return (
+      <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="flex min-h-[400px] items-center justify-center">
+          <div className="text-center">
+            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-slate-300 border-t-slate-900 dark:border-slate-600 dark:border-t-slate-100"></div>
+            <p className="text-slate-600 dark:text-slate-400">Cargando constructor PC...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
@@ -499,7 +558,8 @@ export default function PCBuilder() {
             {currentCategoryProducts.map(product => {
               const isSelected = selectedComponents[currentCategoryId]?.id === product.id;
               const currentQuantity = selectedComponents[currentCategoryId]?.quantity || 0;
-              const restrictions = componentRestrictions[currentCategoryId as keyof typeof componentRestrictions];
+             const categoria = categorias.find(c => c.id === currentCategoryId);
+             const restrictions = categoria ? getComponentRestrictions(categoria.alias) : null;
               const selectedQuantity = selectedComponents[currentCategoryId]?.id === product.id
                 ? selectedComponents[currentCategoryId]?.quantity || 0
                 : 0;

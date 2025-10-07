@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useTiendaProductos } from '../stores/tiendaProductos';
@@ -9,14 +9,34 @@ export default function Categoria() {
   const cargarProductos = useTiendaProductos((estado) => estado.cargarProductos);
   const categorias = useTiendaProductos((estado) => estado.categorias);
   const cargando = useTiendaProductos((estado) => estado.cargando);
+  const error = useTiendaProductos((estado) => estado.error);
   const obtenerProductosFiltrados = useTiendaProductos((estado) => estado.obtenerProductosFiltrados);
   const productos = obtenerProductosFiltrados();
 
   useEffect(() => {
-    cargarProductos(alias ?? null);
+    const cargar = async () => {
+      await cargarProductos(alias ?? null);
+    };
+    cargar();
   }, [cargarProductos, alias]);
 
   const categoriaActual = categorias.find((categoria) => categoria.alias === alias);
+
+  if (error) {
+    return (
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-800 dark:bg-red-900/20">
+          <p className="text-red-800 dark:text-red-300">Error cargando productos: {error}</p>
+          <button
+            onClick={() => cargarProductos(alias ?? null)}
+            className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+          >
+            Reintentar
+          </button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">

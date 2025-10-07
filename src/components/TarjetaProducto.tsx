@@ -1,6 +1,6 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ShoppingCart, Check } from 'lucide-react';
-import type { Producto } from '../data/catalogo';
+import type { Producto } from '../stores/tiendaProductos';
 import { useTiendaCarrito } from '../stores/tiendaCarrito';
 
 interface PropiedadesTarjetaProducto {
