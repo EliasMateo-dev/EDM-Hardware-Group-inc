@@ -183,10 +183,10 @@ async function syncCustomerFromStripe(customerId: string, supabase: any, stripe:
       return;
     }
 
-    // Asumir que un cliente solo puede tener una suscripción
+    // asumo que un cliente solo puede tener una suscripción
     const subscription = subscriptions.data[0];
 
-    // Actualizar estado de suscripción
+    // Actualiza estado de suscripción
     const updateData: any = {
       customer_id: customerId,
       subscription_id: subscription.id,
