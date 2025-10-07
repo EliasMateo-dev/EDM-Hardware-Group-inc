@@ -1,4 +1,5 @@
 /// <reference lib="deno.ns" />
+// @deno-types="npm:@types/stripe"
 import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.58.0';
 
@@ -9,12 +10,27 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
+  // Log request method y headers
+  console.log('Request method:', req.method);
+  console.log('Request headers:', Object.fromEntries(req.headers.entries()));
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
+    // Log raw body para debug
+    const rawBody = await req.text();
+    console.log('Raw request body:', rawBody);
+    // Volver a crear el request para parsear JSON si es POST
+    let reqForJson = req;
+    if (req.method === 'POST') {
+      reqForJson = new Request(req.url, {
+        method: req.method,
+        headers: req.headers,
+        body: rawBody
+      });
+    }
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -46,7 +62,7 @@ Deno.serve(async (req) => {
     }
 
     const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2024-06-20',
+      apiVersion: '2022-11-15',
     });
 
     // Verify authentication
@@ -76,8 +92,20 @@ Deno.serve(async (req) => {
     }
 
     // Parse request body
-    const requestBody = await req.json();
-    console.log('Request body:', requestBody);
+    let requestBody;
+    try {
+      requestBody = await reqForJson.json();
+      console.log('Parsed request body:', requestBody);
+    } catch (error) {
+      console.error('Invalid JSON in request body:', error);
+      return new Response(
+        JSON.stringify({ error: 'Invalid request format', details: rawBody }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
 
     const { 
       line_items, 
@@ -151,16 +179,13 @@ Deno.serve(async (req) => {
       }
     } catch (error) {
       console.error('Error managing customer:', error);
-      // Create customer without saving to database as fallback
-      const stripeCustomer = await stripe.customers.create({
-        email: customer_data?.email || user.email || '',
-        name: customer_data?.name || user.user_metadata?.full_name || '',
-        phone: customer_data?.phone || '',
-        metadata: {
-          user_id: user.id,
-        },
-      });
-      customerId = stripeCustomer.id;
+      return new Response(
+        JSON.stringify({ error: 'Error processing customer information' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     // Create Stripe checkout session
@@ -176,12 +201,11 @@ Deno.serve(async (req) => {
           user_id: user.id,
           ...metadata,
         },
-        billing_address_collection: 'auto',
+        billing_address_collection: 'required',
         shipping_address_collection: {
-          allowed_countries: ['AR', 'US', 'CA', 'MX'],
+          allowed_countries: ['AR'],
         },
         locale: 'es',
-        currency: 'ars',
       });
 
       console.log('Checkout session created:', session.id);
