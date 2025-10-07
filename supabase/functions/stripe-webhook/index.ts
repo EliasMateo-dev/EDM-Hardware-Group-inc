@@ -1,7 +1,12 @@
-
-// @ts-ignore
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import stripe from 'stripe';
+
+export const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': '*',
+};
 
 export default async function handler(req: Request, context: any) {
   const stripeSecret = context.env.STRIPE_SECRET_KEY;
@@ -9,7 +14,7 @@ export default async function handler(req: Request, context: any) {
   const supabaseUrl = context.env.SUPABASE_URL;
   const supabaseServiceRoleKey = context.env.SUPABASE_SERVICE_ROLE_KEY;
   const stripe = new Stripe(stripeSecret, {
-    apiVersion: '2023-10-16',
+    apiVersion: '2025-09-30.clover',
     appInfo: {
       name: 'EDM Hardware Group',
       version: '1.0.0',
@@ -21,19 +26,15 @@ export default async function handler(req: Request, context: any) {
     if (req.method === 'OPTIONS') {
       return new Response(null, {
         status: 204,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': '*',
-        },
+        headers: corsHeaders,
       });
     }
     if (req.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 });
+      return new Response('Method not allowed', { status: 405, headers: corsHeaders });
     }
     const signature = req.headers.get('stripe-signature');
     if (!signature) {
-      return new Response('No signature found', { status: 400 });
+      return new Response('No signature found', { status: 400, headers: corsHeaders });
     }
     const body = await req.text();
     let event: Stripe.Event;
@@ -41,20 +42,19 @@ export default async function handler(req: Request, context: any) {
       event = await stripe.webhooks.constructEvent(body, signature, stripeWebhookSecret);
     } catch (error: any) {
       console.error(`Webhook signature verification failed: ${error.message}`);
-      return new Response(`Webhook signature verification failed: ${error.message}`, { status: 400 });
+      return new Response(`Webhook signature verification failed: ${error.message}`, { status: 400, headers: corsHeaders });
     }
     console.log(`Webhook recibido: ${event.type}`);
-    // Procesar el evento (no en background, ya que no hay waitUntil)
     await handleEvent(event, supabase, stripe);
     return new Response(JSON.stringify({ received: true }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: any) {
     console.error('Error processing webhook:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 }
@@ -63,17 +63,17 @@ async function handleEvent(event: Stripe.Event, supabase: any, stripe: Stripe) {
   try {
     switch (event.type) {
       case 'checkout.session.completed':
-  await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session, supabase);
+        await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session, supabase, stripe);
         break;
       
       case 'payment_intent.succeeded':
-  await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent, supabase);
+        await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent, supabase);
         break;
       
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted':
-  await handleSubscriptionChange(event.data.object as Stripe.Subscription, supabase, stripe);
+        await handleSubscriptionChange(event.data.object as Stripe.Subscription, supabase, stripe);
         break;
       
       default:
@@ -84,7 +84,7 @@ async function handleEvent(event: Stripe.Event, supabase: any, stripe: Stripe) {
   }
 }
 
-async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, supabase: any) {
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, supabase: any, stripe: Stripe) {
   console.log(`Procesando checkout session completada: ${session.id}`);
   
   const { customer, payment_intent, mode, payment_status } = session;
@@ -122,7 +122,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
     }
   } else if (mode === 'subscription') {
     // Manejar suscripción
-    await syncCustomerFromStripe(customer, supabase, require('stripe'));
+    await syncCustomerFromStripe(customer, supabase, stripe);
   }
 }
 
@@ -130,7 +130,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent,
   console.log(`Payment intent succeeded: ${paymentIntent.id}`);
   
   // Solo procesar si no es parte de una factura (pago único)
-  if (paymentIntent.invoice === null) {
+  if (!('invoice' in paymentIntent) || paymentIntent.invoice === null) {
     // Actualizar estado del pago si es necesario
     const { error } = await supabase
       .from('stripe_orders')
@@ -191,8 +191,8 @@ async function syncCustomerFromStripe(customerId: string, supabase: any, stripe:
       customer_id: customerId,
       subscription_id: subscription.id,
       price_id: subscription.items.data[0]?.price?.id,
-      current_period_start: subscription.current_period_start,
-      current_period_end: subscription.current_period_end,
+      current_period_start: (subscription as any).current_period_start,
+      current_period_end: (subscription as any).current_period_end,
       cancel_at_period_end: subscription.cancel_at_period_end,
       status: subscription.status,
     };
