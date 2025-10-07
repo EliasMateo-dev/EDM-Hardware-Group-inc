@@ -1,5 +1,5 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.58.0';
-import Stripe from 'npm:stripe@17.7.0';
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,12 +8,27 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
+  // Log request method y headers
+  console.log('Request method:', req.method);
+  console.log('Request headers:', Object.fromEntries(req.headers.entries()));
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
+    // Log raw body para debug
+    const rawBody = await req.text();
+    console.log('Raw request body:', rawBody);
+    // Volver a crear el request para parsear JSON si es POST
+    let reqForJson = req;
+    if (req.method === 'POST') {
+      reqForJson = new Request(req.url, {
+        method: req.method,
+        headers: req.headers,
+        body: rawBody
+      });
+    }
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -77,11 +92,12 @@ Deno.serve(async (req) => {
     // Parse request body
     let requestBody;
     try {
-      requestBody = await req.json();
+      requestBody = await reqForJson.json();
+      console.log('Parsed request body:', requestBody);
     } catch (error) {
       console.error('Invalid JSON in request body:', error);
       return new Response(
-        JSON.stringify({ error: 'Invalid request format' }),
+        JSON.stringify({ error: 'Invalid request format', details: rawBody }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
