@@ -1,5 +1,7 @@
-import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
+/// <reference lib="deno.ns" />
+// @deno-types="npm:@types/stripe"
+import Stripe from 'npm:stripe@17.7.0';
+import { createClient } from 'npm:@supabase/supabase-js@2.58.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -60,7 +62,7 @@ Deno.serve(async (req) => {
     }
 
     const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2023-10-16',
+      apiVersion: '2022-11-15',
     });
 
     // Verify authentication
@@ -204,13 +206,6 @@ Deno.serve(async (req) => {
           allowed_countries: ['AR'],
         },
         locale: 'es',
-        currency: 'ars',
-        payment_intent_data: {
-          metadata: {
-            user_id: user.id,
-            ...metadata,
-          },
-        },
       });
 
       console.log('Checkout session created:', session.id);
