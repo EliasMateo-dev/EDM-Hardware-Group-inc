@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Box, CircuitBoard, Cpu, HardDrive, MemoryStick, Monitor, Zap, AlertCircle, Check, Plus, Minus } from 'lucide-react';
 import { useTiendaProductos } from '../stores/tiendaProductos';
 import { useTiendaCarrito } from '../stores/tiendaCarrito';
