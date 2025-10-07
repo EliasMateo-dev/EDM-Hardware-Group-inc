@@ -23,14 +23,9 @@ function Aplicacion() {
   useEffect(() => {
     inicializarTema();
     inicializarAuth();
-    
-    const inicializar = async () => {
-      await cargarCategorias();
-      await cargarProductos(null);
-      await cargarCarrito();
-    };
-    
-    inicializar();
+    cargarCategorias();
+    cargarProductos(null);
+    cargarCarrito();
   }, [cargarCategorias, cargarProductos, cargarCarrito, inicializarTema, inicializarAuth]);
 
   return (

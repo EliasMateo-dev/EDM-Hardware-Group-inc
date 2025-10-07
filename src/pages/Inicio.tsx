@@ -9,34 +9,14 @@ export default function Inicio() {
   const establecerCategoriaSeleccionada = useTiendaProductos((estado) => estado.establecerCategoriaSeleccionada);
   const categorias = useTiendaProductos((estado) => estado.categorias);
   const cargando = useTiendaProductos((estado) => estado.cargando);
-  const error = useTiendaProductos((estado) => estado.error);
   const obtenerProductosFiltrados = useTiendaProductos((estado) => estado.obtenerProductosFiltrados);
   const productos = obtenerProductosFiltrados();
   const terminoBusqueda = useTiendaProductos((estado) => estado.terminoBusqueda);
 
   useEffect(() => {
     establecerCategoriaSeleccionada(null);
-    const cargar = async () => {
-      await cargarProductos(null);
-    };
-    cargar();
+    cargarProductos(null);
   }, [cargarProductos, establecerCategoriaSeleccionada]);
-
-  if (error) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-800 dark:bg-red-900/20">
-          <p className="text-red-800 dark:text-red-300">Error cargando productos: {error}</p>
-          <button
-            onClick={() => cargarProductos(null)}
-            className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-          >
-            Reintentar
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-12 pb-16">
