@@ -1,5 +1,9 @@
+
+// <reference lib="deno.ns" />
 import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.58.0';
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -45,7 +49,9 @@ Deno.serve(async (req) => {
     }
 
     const stripe = new Stripe(stripeSecretKey, {
+
       apiVersion: '2024-06-20',
+      apiVersion: '2023-10-16',
     });
 
     // Verify authentication
@@ -180,6 +186,8 @@ Deno.serve(async (req) => {
           allowed_countries: ['AR', 'US', 'CA', 'MX'],
         },
         locale: 'es',
+        currency: 'ars',
+
         payment_intent_data: {
           metadata: {
             user_id: user.id,

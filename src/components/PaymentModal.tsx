@@ -115,7 +115,7 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
           'Authorization': `Bearer ${sesion.access_token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
+        body: {
           line_items: lineItems,
           customer_data: {
             name: customerData.name,
@@ -139,7 +139,7 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
               total_amount: totalAmount
             })
           }
-        })
+        }
       });
 
       if (!response.ok) {
