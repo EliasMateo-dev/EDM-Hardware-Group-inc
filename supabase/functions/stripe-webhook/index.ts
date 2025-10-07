@@ -1,84 +1,79 @@
-import '@supabase/functions-js/edge-runtime.d.ts';
-import Stripe from 'npm:stripe@17.7.0';
-import { createClient } from 'npm:@supabase/supabase-js@2.58.0';
 
-const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')!;
-const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
-const stripe = new Stripe(stripeSecret, {
-  appInfo: {
-    name: 'EDM Hardware Group',
-    version: '1.0.0',
-  },
-});
+// @ts-ignore
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL')!, 
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-);
+export default async function handler(req: Request, context: any) {
+  const stripeSecret = context.env.STRIPE_SECRET_KEY;
+  const stripeWebhookSecret = context.env.STRIPE_WEBHOOK_SECRET;
+  const supabaseUrl = context.env.SUPABASE_URL;
+  const supabaseServiceRoleKey = context.env.SUPABASE_SERVICE_ROLE_KEY;
+  const stripe = new Stripe(stripeSecret, {
+    apiVersion: '2023-10-16',
+    appInfo: {
+      name: 'EDM Hardware Group',
+      version: '1.0.0',
+    },
+  });
+  const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-Deno.serve(async (req) => {
   try {
-    // Handle OPTIONS request for CORS preflight
     if (req.method === 'OPTIONS') {
-      return new Response(null, { 
+      return new Response(null, {
         status: 204,
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'POST, OPTIONS',
           'Access-Control-Allow-Headers': '*',
-        }
+        },
       });
     }
-
     if (req.method !== 'POST') {
       return new Response('Method not allowed', { status: 405 });
     }
-
-    // Obtener la firma del header
     const signature = req.headers.get('stripe-signature');
     if (!signature) {
       return new Response('No signature found', { status: 400 });
     }
-
-    // Obtener el body raw
     const body = await req.text();
-
-    // Verificar la firma del webhook
     let event: Stripe.Event;
     try {
-      event = await stripe.webhooks.constructEventAsync(body, signature, stripeWebhookSecret);
+      event = await stripe.webhooks.constructEvent(body, signature, stripeWebhookSecret);
     } catch (error: any) {
       console.error(`Webhook signature verification failed: ${error.message}`);
       return new Response(`Webhook signature verification failed: ${error.message}`, { status: 400 });
     }
-
     console.log(`Webhook recibido: ${event.type}`);
-
-    // Procesar el evento en background
-    EdgeRuntime.waitUntil(handleEvent(event));
-
-    return Response.json({ received: true });
+    // Procesar el evento (no en background, ya que no hay waitUntil)
+    await handleEvent(event, supabase, stripe);
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error: any) {
     console.error('Error processing webhook:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
-});
+}
 
-async function handleEvent(event: Stripe.Event) {
+async function handleEvent(event: Stripe.Event, supabase: any, stripe: Stripe) {
   try {
     switch (event.type) {
       case 'checkout.session.completed':
-        await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session);
+  await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session, supabase);
         break;
       
       case 'payment_intent.succeeded':
-        await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent);
+  await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent, supabase);
         break;
       
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted':
-        await handleSubscriptionChange(event.data.object as Stripe.Subscription);
+  await handleSubscriptionChange(event.data.object as Stripe.Subscription, supabase, stripe);
         break;
       
       default:
@@ -89,7 +84,7 @@ async function handleEvent(event: Stripe.Event) {
   }
 }
 
-async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, supabase: any) {
   console.log(`Procesando checkout session completada: ${session.id}`);
   
   const { customer, payment_intent, mode, payment_status } = session;
@@ -122,21 +117,16 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
       console.log(`Orden creada exitosamente para session: ${session.id}`);
       
-      // Aquí podrías agregar lógica adicional como:
-      // - Enviar email de confirmación
-      // - Actualizar inventario
-      // - Crear registro de envío
-      
     } catch (error) {
       console.error('Error procesando pago único:', error);
     }
   } else if (mode === 'subscription') {
     // Manejar suscripción
-    await syncCustomerFromStripe(customer);
+    await syncCustomerFromStripe(customer, supabase, require('stripe'));
   }
 }
 
-async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
+async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent, supabase: any) {
   console.log(`Payment intent succeeded: ${paymentIntent.id}`);
   
   // Solo procesar si no es parte de una factura (pago único)
@@ -156,14 +146,14 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
   }
 }
 
-async function handleSubscriptionChange(subscription: Stripe.Subscription) {
+async function handleSubscriptionChange(subscription: Stripe.Subscription, supabase: any, stripe: Stripe) {
   console.log(`Procesando cambio de suscripción: ${subscription.id}`);
   
   const customerId = subscription.customer as string;
-  await syncCustomerFromStripe(customerId);
+  await syncCustomerFromStripe(customerId, supabase, stripe);
 }
 
-async function syncCustomerFromStripe(customerId: string) {
+async function syncCustomerFromStripe(customerId: string, supabase: any, stripe: Stripe) {
   try {
     console.log(`Sincronizando cliente desde Stripe: ${customerId}`);
     

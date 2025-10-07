@@ -9,7 +9,6 @@ if (!supabaseUrl || !supabaseKey) {
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 
-// Types for database tables
 export interface Profile {
   id: string;
   email: string;
