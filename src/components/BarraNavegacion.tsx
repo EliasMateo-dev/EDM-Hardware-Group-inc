@@ -14,6 +14,7 @@ export default function BarraNavegacion() {
   const totalArticulos = useTiendaCarrito((estado) => estado.obtenerTotalArticulos());
   const categorias = useTiendaProductos((estado) => estado.categorias);
   const terminoBusqueda = useTiendaProductos((estado) => estado.terminoBusqueda);
+  const categoriaSeleccionada = useTiendaProductos((estado) => estado.categoriaSeleccionada);
   const establecerTerminoBusqueda = useTiendaProductos((estado) => estado.establecerTerminoBusqueda);
   const establecerCategoriaSeleccionada = useTiendaProductos((estado) => estado.establecerCategoriaSeleccionada);
   const cargarProductos = useTiendaProductos((estado) => estado.cargarProductos);
@@ -155,7 +156,9 @@ export default function BarraNavegacion() {
           <div className="flex items-center gap-2 overflow-x-auto">
             <button
               onClick={() => manejarCambioCategoria(null)}
-              className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+              className={`${categoriaSeleccionada === null
+                ? 'rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200'
+                : 'rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-900 hover:text-white dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-white dark:hover:text-slate-900'}`}
               type="button"
             >
               Todos
@@ -164,7 +167,9 @@ export default function BarraNavegacion() {
               <button
                 key={categoria.id}
                 onClick={() => manejarCambioCategoria(categoria.alias)}
-                className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-900 hover:text-white dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-white dark:hover:text-slate-900"
+                className={`${categoriaSeleccionada === categoria.alias
+                  ? 'rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200'
+                  : 'rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-900 hover:text-white dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-white dark:hover:text-slate-900'}`}
                 type="button"
               >
                 {categoria.nombre}
@@ -210,7 +215,9 @@ export default function BarraNavegacion() {
             <div className="space-y-2">
               <button
                 onClick={() => manejarCambioCategoria(null)}
-                className="w-full rounded-xl bg-slate-900 px-4 py-3 text-left text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                className={`w-full rounded-xl px-4 py-3 text-left text-sm font-medium transition ${categoriaSeleccionada === null
+                  ? 'bg-slate-900 text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200'
+                  : 'border border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-800'}`}
                 type="button"
               >
                 Todos los productos
@@ -245,7 +252,9 @@ export default function BarraNavegacion() {
                 <button
                   key={categoria.id}
                   onClick={() => manejarCambioCategoria(categoria.alias)}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-800"
+                  className={`w-full rounded-xl px-4 py-3 text-left text-sm font-medium transition ${categoriaSeleccionada === categoria.alias
+                    ? 'bg-slate-900 text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200'
+                    : 'border border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-800'}`}
                   type="button"
                 >
                   {categoria.nombre}

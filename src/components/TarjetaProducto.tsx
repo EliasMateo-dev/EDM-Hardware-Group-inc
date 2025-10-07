@@ -1,10 +1,11 @@
-﻿import React from 'react';
-import { ShoppingCart } from 'lucide-react';
+﻿import React, { useEffect, useRef, useState } from 'react';
+import { ShoppingCart, Check } from 'lucide-react';
 import type { Producto } from '../data/catalogo';
 import { useTiendaCarrito } from '../stores/tiendaCarrito';
 
 interface PropiedadesTarjetaProducto {
   producto: Producto;
+  confirmOnAdd?: boolean;
 }
 
 const formatearPrecio = (precio: number) =>
@@ -16,8 +17,12 @@ const formatearPrecio = (precio: number) =>
   }).format(precio);
 
 
-export default function TarjetaProducto({ producto }: PropiedadesTarjetaProducto) {
+export default function TarjetaProducto({ producto, confirmOnAdd = false }: PropiedadesTarjetaProducto) {
   const agregarAlCarrito = useTiendaCarrito((estado) => estado.agregarAlCarrito);
+  const [agregado, setAgregado] = useState(false);
+  const [faseAnimacion, setFaseAnimacion] = useState<'idle' | 'car' | 'fill' | 'done'>('idle');
+  const temporizadorRef = useRef<number | null>(null);
+  const temporizadorSecuenciaRef = useRef<number | null>(null);
 
   const puntosDestacados = Object.entries(producto.especificaciones).slice(0, 3);
 
@@ -28,11 +33,53 @@ export default function TarjetaProducto({ producto }: PropiedadesTarjetaProducto
   const manejarAgregarAlCarrito = () => {
     if (stockDisponible > 0) {
       agregarAlCarrito(producto.id, 1);
+      if (confirmOnAdd) {
+        // Inicia la secuencia: carrito cruza -> relleno verde -> texto "Agregado"
+        setFaseAnimacion('car');
+        setAgregado(false);
+        if (temporizadorSecuenciaRef.current) {
+          window.clearTimeout(temporizadorSecuenciaRef.current);
+        }
+        // Carrito "atropella" por ~900ms (más lento)
+        temporizadorSecuenciaRef.current = window.setTimeout(() => {
+          setFaseAnimacion('fill');
+          // Relleno de abajo hacia arriba por ~700ms
+          temporizadorSecuenciaRef.current = window.setTimeout(() => {
+            setFaseAnimacion('done');
+            setAgregado(true);
+            // Mantener "Agregado" visible ~1200ms y luego volver a idle
+            temporizadorSecuenciaRef.current = window.setTimeout(() => {
+              setAgregado(false);
+              setFaseAnimacion('idle');
+              temporizadorSecuenciaRef.current = null;
+            }, 1200);
+          }, 700);
+        }, 900);
+      }
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (temporizadorRef.current) {
+        window.clearTimeout(temporizadorRef.current);
+      }
+      if (temporizadorSecuenciaRef.current) {
+        window.clearTimeout(temporizadorSecuenciaRef.current);
+      }
+    };
+  }, []);
+
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900">
+      {/* Keyframes locales para el balanceo del icono de check */}
+      <style>
+        {`@keyframes sway { 
+          0%, 100% { transform: rotate(0deg) scale(1); }
+          25% { transform: rotate(10deg) scale(1.06); }
+          75% { transform: rotate(-10deg) scale(1.06); }
+        }`}
+      </style>
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-slate-800">
         <img
           src={producto.imagen}
@@ -69,15 +116,84 @@ export default function TarjetaProducto({ producto }: PropiedadesTarjetaProducto
             <p className="text-sm text-slate-500 dark:text-slate-400">Existencias: {stockDisponible}</p>
             <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{formatearPrecio(producto.precio)}</p>
           </div>
-          <button
-            onClick={manejarAgregarAlCarrito}
-            disabled={stockDisponible === 0}
-            className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 dark:disabled:bg-slate-700/40 dark:disabled:text-slate-500"
-            type="button"
-          >
-            <ShoppingCart className="h-4 w-4" />
-            {stockDisponible === 0 ? 'Sin stock' : 'Agregar'}
-          </button>
+          {(() => {
+            const estaEnAnimacion = confirmOnAdd && (faseAnimacion === 'car' || faseAnimacion === 'fill');
+            const estaDeshabilitado = stockDisponible === 0 || estaEnAnimacion || (confirmOnAdd && agregado);
+            const clasesBase = 'relative overflow-hidden inline-flex items-center justify-center gap-2 rounded-full px-5 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-700/40 dark:disabled:text-slate-500';
+            const esFaseVerde = confirmOnAdd && (faseAnimacion === 'fill' || faseAnimacion === 'done' || agregado);
+            const clasesTema = esFaseVerde
+              ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' // el color visible lo da el overlay verde
+              : 'bg-slate-900 text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200';
+
+            return (
+              <button
+                onClick={manejarAgregarAlCarrito}
+                disabled={estaDeshabilitado}
+                className={`${clasesBase} ${clasesTema}`}
+                type="button"
+              >
+                {/* Overlay de relleno verde de abajo hacia arriba */}
+                {confirmOnAdd && (
+                  <span
+                    className={`pointer-events-none absolute left-0 bottom-0 z-[1] w-full bg-emerald-600 transition-[height] duration-700 ease-out`}
+                    style={{ height: esFaseVerde ? '100%' : '0%' }}
+                  />
+                )}
+
+                {/* Contenido principal (texto e iconos) */}
+                <span
+                  className={`relative z-[2] inline-flex items-center gap-2 transition-transform transition-opacity duration-500 ${
+                    confirmOnAdd && faseAnimacion === 'car' ? 'translate-y-[2px] scale-y-90 opacity-0 translate-x-2' : ''
+                  } ${esFaseVerde ? 'text-white dark:text-white' : ''}`}
+                >
+                  {confirmOnAdd ? (
+                    agregado || faseAnimacion === 'done' ? (
+                      <>
+                        <Check className="h-5 w-5 motion-reduce:animate-none" style={{ animation: 'sway 1.2s ease-in-out infinite' }} strokeWidth={2.75} />
+                        Agregado
+                      </>
+                    ) : (
+                      <>
+                        {/* Icono estático sólo cuando no hay animación de coche */}
+                        {faseAnimacion === 'idle' && <ShoppingCart className="h-4 w-4" />}
+                        {faseAnimacion === 'fill' ? 'Agregando...' : (stockDisponible === 0 ? 'Sin stock' : 'Agregar')}
+                      </>
+                    )
+                  ) : (
+                    <>
+                      <ShoppingCart className="h-4 w-4" />
+                      {stockDisponible === 0 ? 'Sin stock' : 'Agregar'}
+                    </>
+                  )}
+                </span>
+
+                {/* Carrito que cruza el botón de izquierda a derecha, con desvanecido al borde derecho */}
+                {confirmOnAdd && (
+                  <span
+                    className="pointer-events-none absolute inset-y-0 inset-x-0 z-[3]"
+                    style={{
+                      // Máscara para desvanecer hacia el borde derecho
+                      WebkitMaskImage: 'linear-gradient(to right, black 0%, black calc(100% - 16px), transparent 100%)',
+                      maskImage: 'linear-gradient(to right, black 0%, black calc(100% - 16px), transparent 100%)'
+                    } as React.CSSProperties}
+                  >
+                    <span
+                      className="absolute inset-y-0 left-3 flex items-center"
+                      style={{
+                        transform:
+                          faseAnimacion === 'car' ? 'translateX(260%) rotate(0deg)' : 'translateX(-30%) rotate(0deg)',
+                        transition: 'transform 900ms cubic-bezier(0.22, 1, 0.36, 1)'
+                      }}
+                    >
+                      {faseAnimacion === 'car' && (
+                        <ShoppingCart className="h-4 w-4 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.4)]" />
+                      )}
+                    </span>
+                  </span>
+                )}
+              </button>
+            );
+          })()}
         </div>
       </div>
     </article>
