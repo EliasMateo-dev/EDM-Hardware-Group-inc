@@ -217,7 +217,7 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
           <div className="text-center">
             <CheckCircle className="mx-auto mb-4 h-16 w-16 text-green-500" />
             <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
-              ¡Redirigiendo a Stripe!
+              Redirigiendo a Stripe!
             </h3>
             <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
               Serás redirigido a Stripe para completar el pago de forma segura...

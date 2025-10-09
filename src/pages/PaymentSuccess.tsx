@@ -24,7 +24,7 @@ export default function PaymentSuccess() {
         <CheckCircle className="mx-auto mb-6 h-20 w-20 text-green-600 dark:text-green-400" />
         
         <h1 className="mb-4 text-3xl font-semibold text-slate-900 dark:text-slate-100">
-          ¡Pago Exitoso!
+          Pago Exitoso!
         </h1>
         
         <p className="mb-6 text-slate-600 dark:text-slate-400">
