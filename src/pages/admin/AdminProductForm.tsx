@@ -94,19 +94,12 @@ const AdminProductForm: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     let imageUrl = form.image_url;
-    // Parsear especificaciones si es JSON válido
+    // Construir especificaciones desde specs
     let specifications: Record<string, string> = {};
     specs.forEach(({ key, value }) => {
       if (key.trim()) specifications[key.trim()] = value.trim();
     });
-    try {
-      specifications = form.specifications ? JSON.parse(form.specifications) : {};
-    } catch {
-      showNotification("Especificaciones debe ser JSON válido", "error");
-      setLoading(false);
-      return;
-    }
-  const payload = { ...form, image_url: imageUrl, specifications };
+    const payload = { ...form, image_url: imageUrl, specifications };
     if (id) {
       // Update
       const { error } = await supabase.from("products").update(payload).eq("id", id);
