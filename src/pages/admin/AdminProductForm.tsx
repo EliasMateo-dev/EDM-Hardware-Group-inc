@@ -61,10 +61,10 @@ const AdminProductForm: React.FC = () => {
   }, [id, showNotification]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
@@ -82,13 +82,14 @@ const AdminProductForm: React.FC = () => {
     if (imageFile) {
       const fileExt = imageFile.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage.from("product-images").upload(fileName, imageFile);
+      const { error: uploadError } = await supabase.storage.from("product-images").upload(fileName, imageFile);
       if (uploadError) {
         showNotification("Error al subir imagen", "error");
         setLoading(false);
         return;
       }
-      imageUrl = `${supabase.storageUrl}/object/public/product-images/${fileName}`;
+      const { data: publicUrlData } = supabase.storage.from("product-images").getPublicUrl(fileName);
+      imageUrl = publicUrlData.publicUrl;
     }
     // Parsear especificaciones si es JSON válido
     let specifications: any = form.specifications;
