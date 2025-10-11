@@ -116,8 +116,8 @@ const AdminProducts: React.FC = () => {
                       <td className="px-4 py-2 text-center align-middle">{p.is_active ? "Sí" : "No"}</td>
                       <td className="px-4 py-2 text-center align-middle">
                         <div className="flex justify-center gap-2">
-                          <a href={`/admin/products/edit/${p.id}`} className="text-blue-600 hover:underline">Editar</a>
-                          <button onClick={() => handleDelete(p.id)} className="text-red-600 hover:underline">Eliminar</button>
+                          <a href={`/admin/products/edit/${p.id}`} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Editar</a>
+                          <button onClick={() => handleDelete(p.id)} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">Eliminar</button>
                         </div>
                       </td>
                     </tr>
