@@ -23,12 +23,12 @@ export default function BarraNavegacion() {
   const { usuario, cerrarSesion } = useTiendaAuth();
   const [perfilMenuAbierto, establecerPerfilMenuAbierto] = useState(false);
 
-  const manejarCambioCategoria = (alias: string | null) => {
-    establecerCategoriaSeleccionada(alias);
-    cargarProductos(alias);
+  const manejarCambioCategoria = (slug: string | null) => {
+    establecerCategoriaSeleccionada(slug);
+    cargarProductos(slug);
     establecerMenuAbierto(false);
-    if (alias) {
-      navegar(`/categoria/${alias}`);
+    if (slug) {
+      navegar(`/categoria/${slug}`);
     } else {
       navegar('/');
     }
@@ -166,13 +166,13 @@ export default function BarraNavegacion() {
             {categorias.map((categoria) => (
               <button
                 key={categoria.id}
-                onClick={() => manejarCambioCategoria(categoria.alias)}
-                className={`${categoriaSeleccionada === categoria.alias
+                onClick={() => manejarCambioCategoria(categoria.slug)}
+                className={`${categoriaSeleccionada === categoria.slug
                   ? 'rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200'
                   : 'rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-900 hover:text-white dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-white dark:hover:text-slate-900'}`}
                 type="button"
               >
-                {categoria.nombre}
+                {categoria.name}
               </button>
             ))}
           </div>
@@ -251,13 +251,13 @@ export default function BarraNavegacion() {
               {categorias.map((categoria) => (
                 <button
                   key={categoria.id}
-                  onClick={() => manejarCambioCategoria(categoria.alias)}
-                  className={`w-full rounded-xl px-4 py-3 text-left text-sm font-medium transition ${categoriaSeleccionada === categoria.alias
+                  onClick={() => manejarCambioCategoria(categoria.slug)}
+                  className={`w-full rounded-xl px-4 py-3 text-left text-sm font-medium transition ${categoriaSeleccionada === categoria.slug
                     ? 'bg-slate-900 text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200'
                     : 'border border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-800'}`}
                   type="button"
                 >
-                  {categoria.nombre}
+                  {categoria.name}
                 </button>
               ))}
               <Link

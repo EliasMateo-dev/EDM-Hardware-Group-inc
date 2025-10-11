@@ -1,13 +1,13 @@
 ﻿import { create } from 'zustand';
-import type { Producto } from '../data/catalogo';
-import { obtenerProductoPorId } from '../data/catalogo';
+import type { Product } from '../utils/supabase';
+import { useTiendaProductos } from './tiendaProductos';
 
 const CLAVE_ALMACEN_CARRITO = 'constructorpc-carrito';
 
-interface ElementoCarrito {
-  producto: Producto;
+type ElementoCarrito = {
+  producto: import('../utils/supabase').Product;
   cantidad: number;
-}
+};
 
 interface ElementoCarritoAlmacenado {
   productoId: string;
@@ -18,25 +18,19 @@ const leerCarrito = (): ElementoCarrito[] => {
   if (typeof window === 'undefined') {
     return [];
   }
-
   try {
     const crudo = window.localStorage.getItem(CLAVE_ALMACEN_CARRITO);
     if (!crudo) {
       return [];
     }
-
     const parseado = JSON.parse(crudo) as ElementoCarritoAlmacenado[];
+    // Obtener productos actuales del store
+    const productos = useTiendaProductos.getState().productos;
     return parseado
       .map(({ productoId, cantidad }) => {
-        const producto = obtenerProductoPorId(productoId);
-        if (!producto) {
-          return null;
-        }
-
-        return {
-          producto,
-          cantidad,
-        };
+        const producto = productos.find((p) => p.id === productoId);
+        if (!producto) return null;
+        return { producto, cantidad };
       })
       .filter((elemento): elemento is ElementoCarrito => elemento !== null);
   } catch (error) {
@@ -80,7 +74,7 @@ export const useTiendaCarrito = create<EstadoCarrito>((establecer, obtener) => (
   },
 
   agregarAlCarrito: (productoId, cantidad = 1) => {
-    const producto = obtenerProductoPorId(productoId);
+  const producto = useTiendaProductos.getState().productos.find((p) => p.id === productoId);
     if (!producto) {
       console.warn('Producto no encontrado para el carrito:', productoId);
       return;
@@ -131,7 +125,7 @@ export const useTiendaCarrito = create<EstadoCarrito>((establecer, obtener) => (
 
   obtenerTotalPrecio: () => {
     return obtener().elementos.reduce(
-      (total, elemento) => total + elemento.producto.precio * elemento.cantidad,
+  (total, elemento) => total + elemento.producto.price * elemento.cantidad,
       0
     );
   },

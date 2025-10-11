@@ -4,11 +4,14 @@ import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 import { useTiendaCarrito } from '../stores/tiendaCarrito';
 import PaymentModal from '../components/PaymentModal';
 
-const formatearPrecio = (precio: number) =>
-  new Intl.NumberFormat('es-AR', {
+
+const formatearPrecio = (precio: number | undefined) => {
+  if (typeof precio !== 'number' || isNaN(precio)) return '$ 0';
+  return new Intl.NumberFormat('es-AR', {
     style: 'currency',
     currency: 'ARS',
   }).format(precio);
+};
 
 export default function Carrito() {
   const [showPaymentModal, setShowPaymentModal] = React.useState(false);
@@ -67,21 +70,25 @@ export default function Carrito() {
               className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 md:flex-row md:items-center"
             >
               <img
-                src={elemento.producto.imagen}
-                alt={elemento.producto.nombre}
+                src={elemento.producto.image_url || '/placeholder.png'}
+                alt={elemento.producto.name}
                 className="h-28 w-28 rounded-2xl object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder.png';
+                }}
               />
               <div className="flex-1 space-y-2">
                 <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{elemento.producto.nombre}</h2>
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{elemento.producto.name}</h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {elemento.producto.marca} - {elemento.producto.modelo}
+                      {elemento.producto.brand} - {elemento.producto.model}
                     </p>
                   </div>
-                  <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{formatearPrecio(elemento.producto.precio)}</p>
+                  <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{formatearPrecio(elemento.producto.price)}</p>
                 </div>
-                <p className="text-xs text-slate-400 dark:text-slate-500">Existencias: {elemento.producto.existencias}</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">Existencias: {typeof elemento.producto.stock === 'number' ? elemento.producto.stock : 0}</p>
               </div>
 
               <div className="flex items-center gap-3">
@@ -95,9 +102,9 @@ export default function Carrito() {
                 <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{elemento.cantidad}</span>
                 <button
                   onClick={() => actualizarCantidad(elemento.producto.id, elemento.cantidad + 1)}
-                  disabled={elemento.cantidad >= elemento.producto.existencias}
+                  disabled={elemento.cantidad >= (typeof elemento.producto.stock === 'number' ? elemento.producto.stock : 0)}
                   className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200
-                    ${elemento.cantidad + 1 > elemento.producto.existencias
+                    ${elemento.cantidad + 1 > (typeof elemento.producto.stock === 'number' ? elemento.producto.stock : 0)
                       ? 'text-slate-200 border-slate-200 cursor-not-allowed dark:border-slate-700 dark:text-slate-700'
                       : 'text-slate-700 hover:border-slate-900 hover:text-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-white'}`}
                   type="button"
@@ -128,11 +135,11 @@ export default function Carrito() {
             {elementos.map((elemento) => (
               <div key={elemento.producto.id} className="flex justify-between text-sm text-slate-600 dark:text-slate-300">
                 <span>
-                  {elemento.producto.nombre}
+                  {elemento.producto.name}
                   <span className="text-slate-400 dark:text-slate-500"> x {elemento.cantidad}</span>
                 </span>
                 <span className="font-medium text-slate-900 dark:text-slate-100">
-                  {formatearPrecio(elemento.producto.precio * elemento.cantidad)}
+                  {formatearPrecio((typeof elemento.producto.price === 'number' ? elemento.producto.price : 0) * elemento.cantidad)}
                 </span>
               </div>
             ))}

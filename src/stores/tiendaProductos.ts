@@ -1,12 +1,12 @@
 ﻿import { create } from 'zustand';
-import type { Categoria, Producto } from '../data/catalogo';
-import { categorias as catalogoCategorias, productos as catalogoProductos } from '../data/catalogo';
+import type { Product, Category } from '../utils/supabase';
+import { supabase } from '../utils/supabase';
 
 const esperar = (ms: number) => new Promise((resolver) => setTimeout(resolver, ms));
 
 interface EstadoProductos {
-  productos: Producto[];
-  categorias: Categoria[];
+  productos: Product[];
+  categorias: Category[];
   cargando: boolean;
   categoriaSeleccionada: string | null;
   terminoBusqueda: string;
@@ -14,40 +14,38 @@ interface EstadoProductos {
   cargarCategorias: () => Promise<void>;
   establecerCategoriaSeleccionada: (aliasCategoria: string | null) => void;
   establecerTerminoBusqueda: (termino: string) => void;
-  obtenerProductosFiltrados: () => Producto[];
+  obtenerProductosFiltrados: () => Product[];
+
 }
 
 export const useTiendaProductos = create<EstadoProductos>((establecer, obtener) => ({
-  productos: catalogoProductos,
-  categorias: catalogoCategorias,
+  productos: [],
+  categorias: [],
   cargando: false,
   categoriaSeleccionada: null,
   terminoBusqueda: '',
 
   cargarProductos: async (aliasCategoria) => {
     establecer({ cargando: true });
-    await esperar(120);
-
-    establecer((estado) => {
-      const proximaCategoria = aliasCategoria ?? estado.categoriaSeleccionada;
-      const categoriaId = proximaCategoria
-        ? catalogoCategorias.find((categoria) => categoria.alias === proximaCategoria)?.id ?? null
-        : null;
-
-      const productosVisibles = categoriaId
-        ? catalogoProductos.filter((producto) => producto.categoriaId === categoriaId)
-        : catalogoProductos;
-
-      return {
-        productos: productosVisibles,
-        categoriaSeleccionada: proximaCategoria,
-        cargando: false,
-      };
+    let categoriaId: string | null = null;
+    if (aliasCategoria) {
+      // Buscar el id de la categoría por alias
+      const { data: cats } = await supabase.from('categories').select('id, slug');
+      categoriaId = cats?.find((c) => c.slug === aliasCategoria)?.id ?? null;
+    }
+    let query = supabase.from('products').select('*').eq('is_active', true);
+    if (categoriaId) query = query.eq('category_id', categoriaId);
+    const { data, error } = await query;
+    establecer({
+      productos: data || [],
+      categoriaSeleccionada: aliasCategoria ?? null,
+      cargando: false,
     });
   },
 
   cargarCategorias: async () => {
-    establecer({ categorias: catalogoCategorias });
+    const { data, error } = await supabase.from('categories').select('*');
+    establecer({ categorias: data || [] });
   },
 
   establecerCategoriaSeleccionada: (aliasCategoria) => {
@@ -60,14 +58,29 @@ export const useTiendaProductos = create<EstadoProductos>((establecer, obtener) 
 
   obtenerProductosFiltrados: () => {
     const { productos, terminoBusqueda } = obtener();
-
     if (!terminoBusqueda.trim()) {
       return productos;
     }
-
     const termino = terminoBusqueda.toLowerCase();
-    return productos.filter((producto) =>
-      producto.nombre.toLowerCase().includes(termino)
-    );
+    return productos.filter((producto) => {
+      // Buscar en campos principales
+      const campos = [
+        producto.name,
+        producto.brand,
+        producto.model,
+        producto.description,
+      ];
+      // Buscar en especificaciones si existen
+      if (producto.specifications && typeof producto.specifications === 'object') {
+        for (const valor of Object.values(producto.specifications)) {
+          if (typeof valor === 'string' && valor.toLowerCase().includes(termino)) {
+            return true;
+          }
+        }
+      }
+      return campos.some(
+        (campo) => typeof campo === 'string' && campo.toLowerCase().includes(termino)
+      );
+    });
   },
 }));

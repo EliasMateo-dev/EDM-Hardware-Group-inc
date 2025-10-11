@@ -1,20 +1,24 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
 import { ShoppingCart, Check } from 'lucide-react';
-import type { Producto } from '../data/catalogo';
+import type { Product } from '../utils/supabase';
+
 import { useTiendaCarrito } from '../stores/tiendaCarrito';
 
-interface PropiedadesTarjetaProducto {
-  producto: Producto;
+type PropiedadesTarjetaProducto = {
+  producto: Product;
   confirmOnAdd?: boolean;
-}
+};
 
-const formatearPrecio = (precio: number) =>
-  new Intl.NumberFormat("es-AR", {
+
+const formatearPrecio = (precio: number | undefined) => {
+  if (typeof precio !== 'number' || isNaN(precio)) return '$ 0';
+  return new Intl.NumberFormat("es-AR", {
     style: "currency",
     currency: "ARS",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(precio);
+};
 
 
 export default function TarjetaProducto({ producto, confirmOnAdd = false }: PropiedadesTarjetaProducto) {
@@ -24,11 +28,14 @@ export default function TarjetaProducto({ producto, confirmOnAdd = false }: Prop
   const temporizadorRef = useRef<number | null>(null);
   const temporizadorSecuenciaRef = useRef<number | null>(null);
 
-  const puntosDestacados = Object.entries(producto.especificaciones).slice(0, 3);
+  const puntosDestacados = producto.specifications ? Object.entries(producto.specifications).slice(0, 3) : [];
 
   const elementos = useTiendaCarrito((estado) => estado.elementos);
+
+  // Validar stock y cantidad
   const cantidadEnCarrito = elementos.find((elemento) => elemento.producto.id === producto.id)?.cantidad || 0;
-  const stockDisponible = producto.existencias - cantidadEnCarrito;
+  const stock = typeof producto.stock === 'number' && producto.stock >= 0 ? producto.stock : 0;
+  const stockDisponible = Math.max(stock - cantidadEnCarrito, 0);
 
   const manejarAgregarAlCarrito = () => {
     if (stockDisponible > 0) {
@@ -82,22 +89,26 @@ export default function TarjetaProducto({ producto, confirmOnAdd = false }: Prop
       </style>
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-slate-800">
         <img
-          src={producto.imagen}
-          alt={producto.nombre}
+          src={producto.image_url || '/placeholder.png'}
+          alt={producto.name}
           className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
           loading="lazy"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/placeholder.png';
+          }}
         />
         <span className="absolute left-4 top-4 inline-flex items-center rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-slate-600 backdrop-blur dark:bg-slate-900/80 dark:text-slate-200">
-          {producto.marca}
+          {producto.brand}
         </span>
       </div>
 
       <div className="flex flex-1 flex-col gap-4 p-5">
         <header>
           <h3 className="text-lg font-semibold leading-tight text-slate-900 dark:text-slate-100">
-            {producto.nombre}
+            {producto.name}
           </h3>
-          <p className="mt-1 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">{producto.descripcion}</p>
+          <p className="mt-1 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">{producto.description}</p>
         </header>
 
         {puntosDestacados.length > 0 && (
@@ -114,7 +125,7 @@ export default function TarjetaProducto({ producto, confirmOnAdd = false }: Prop
         <div className="mt-auto flex items-end justify-between">
           <div>
             <p className="text-sm text-slate-500 dark:text-slate-400">Existencias: {stockDisponible}</p>
-            <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{formatearPrecio(producto.precio)}</p>
+            <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{formatearPrecio(producto.price)}</p>
           </div>
           {(() => {
             const estaEnAnimacion = confirmOnAdd && (faseAnimacion === 'car' || faseAnimacion === 'fill');

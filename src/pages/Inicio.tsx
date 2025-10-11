@@ -26,7 +26,7 @@ export default function Inicio() {
             <div className="rounded-3xl bg-slate-900 p-10 text-white shadow-lg transition-colors sm:p-16 dark:bg-slate-800">
               <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
                 <div className="max-w-2xl space-y-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">PROXIMA ENTREGA!</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400"></p>
                   <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
                     Contruí la PC de tus sueños en EDM!
                   </h1>
@@ -47,10 +47,10 @@ export default function Inicio() {
                 {categorias.map((categoria) => (
                   <Link
                     key={categoria.id}
-                    to={`/categoria/${categoria.alias}`}
+                    to={`/categoria/${categoria.slug}`}
                     className="rounded-full border border-white/20 px-4 py-2 text-xs font-medium text-slate-200 transition hover:bg-white hover:text-slate-900"
                   >
-                    {categoria.nombre}
+                    {categoria.name}
                   </Link>
                 ))}
               </div>
