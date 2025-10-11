@@ -29,7 +29,6 @@ export default function Categoria() {
           <p className="max-w-2xl text-sm text-slate-500 dark:text-slate-400 text-center">{categoriaActual.description}</p>
         )}
       </header>
-
       {cargando ? (
         <div className="flex min-h-[240px] items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white transition-colors dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center gap-3 text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -43,7 +42,7 @@ export default function Categoria() {
         </div>
       ) : (
         <>
-          <h2 className="mb-6 text-xl font-semibold text-slate-900 dark:text-slate-100 text-center">
+          <h2 className="mb-6 text-xl font-semibold text-slate-900 dark:text-slate-100">
             {categoriaActual?.name ?? 'Componentes'} destacados:
           </h2>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 justify-items-center">
