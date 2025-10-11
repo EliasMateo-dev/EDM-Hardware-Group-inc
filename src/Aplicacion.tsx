@@ -15,14 +15,14 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailure from './pages/PaymentFailure';
 import PaymentPending from './pages/PaymentPending';
 import AdminLayout from './components/AdminLayout';
-// Placeholders para páginas admin
+import AdminProducts from './pages/admin/AdminProducts';
+import AdminProductForm from './pages/admin/AdminProductForm';
+import AdminCategories from './pages/admin/AdminCategories';
+import AdminCategoryForm from './pages/admin/AdminCategoryForm';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminUserForm from './pages/admin/AdminUserForm';
+import AdminActivityLogs from './pages/admin/AdminActivityLogs';
 const AdminDashboard = () => <div>Dashboard Admin</div>;
-const AdminProducts = () => <div>Admin Productos</div>;
-const AdminProductForm = () => <div>Admin Formulario Producto</div>;
-const AdminCategories = () => <div>Admin Categorías</div>;
-const AdminCategoryForm = () => <div>Admin Formulario Categoría</div>;
-const AdminUsers = () => <div>Admin Usuarios</div>;
-const AdminActivityLogs = () => <div>Admin Registros de Actividad</div>;
 
 function Aplicacion() {
   const { cargarCategorias, cargarProductos } = useTiendaProductos();
@@ -60,6 +60,8 @@ function Aplicacion() {
         <Route path="categories/new" element={<AdminCategoryForm />} />
         <Route path="categories/edit/:id" element={<AdminCategoryForm />} />
         <Route path="users" element={<AdminUsers />} />
+        <Route path="users/new" element={<AdminUserForm />} />
+        <Route path="users/edit/:id" element={<AdminUserForm />} />
         <Route path="logs" element={<AdminActivityLogs />} />
       </Route>
     </Routes>
