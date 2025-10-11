@@ -88,6 +88,14 @@ const AdminProducts: React.FC = () => {
             <h2 className="text-xl font-semibold mb-2">{categories[catId] || catId}</h2>
             <div className="overflow-x-auto">
               <table className="min-w-full bg-white dark:bg-gray-800 border rounded">
+                <colgroup>
+                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '20%' }} />
+                  <col style={{ width: '15%' }} />
+                  <col style={{ width: '15%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '15%' }} />
+                </colgroup>
                 <thead>
                   <tr>
                     <th className="px-4 py-2">Nombre</th>
@@ -101,12 +109,12 @@ const AdminProducts: React.FC = () => {
                 <tbody>
                   {prods.map((p) => (
                     <tr key={p.id} className="border-t">
-                      <td className="px-4 py-2">{p.name}</td>
-                      <td className="px-4 py-2">{p.brand}</td>
-                      <td className="px-4 py-2">${p.price}</td>
-                      <td className="px-4 py-2">{p.stock}</td>
-                      <td className="px-4 py-2">{p.is_active ? "Sí" : "No"}</td>
-                      <td className="px-4 py-2 flex gap-2">
+                      <td className="px-4 py-2 align-middle">{p.name}</td>
+                      <td className="px-4 py-2 align-middle">{p.brand}</td>
+                      <td className="px-4 py-2 align-middle">${p.price}</td>
+                      <td className="px-4 py-2 align-middle">{p.stock}</td>
+                      <td className="px-4 py-2 align-middle">{p.is_active ? "Sí" : "No"}</td>
+                      <td className="px-4 py-2 flex gap-2 align-middle">
                         <a href={`/admin/products/edit/${p.id}`} className="text-blue-600 hover:underline">Editar</a>
                         <button onClick={() => handleDelete(p.id)} className="text-red-600 hover:underline">Eliminar</button>
                       </td>
