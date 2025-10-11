@@ -45,10 +45,10 @@ const AdminUsers: React.FC = () => {
         <table className="min-w-full bg-white dark:bg-gray-800 border rounded">
           <thead>
             <tr>
-              <th className="px-4 py-2">Email</th>
-              <th className="px-4 py-2">Nombre</th>
-              <th className="px-4 py-2">Administrador</th>
-              <th className="px-4 py-2">Acciones</th>
+              <th className="px-4 py-2 text-center">Email</th>
+              <th className="px-4 py-2 text-center">Nombre</th>
+              <th className="px-4 py-2 text-center">Administrador</th>
+              <th className="px-4 py-2 text-center">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -62,14 +62,14 @@ const AdminUsers: React.FC = () => {
               </tr>
             ) : (
               users.map((u) => (
-                <tr key={u.id} className="border-t">
+                <tr key={u.id} className="border-t text-center">
                   <td className="px-4 py-2">{u.email}</td>
                   <td className="px-4 py-2">{u.full_name || "-"}</td>
                   <td className="px-4 py-2">{u.is_admin ? "Sí" : "No"}</td>
                   <td className="px-4 py-2">
                     <button
                       onClick={() => handleToggleAdmin(u.id, u.is_admin)}
-                      className={`px-3 py-1 rounded ${u.is_admin ? "bg-gray-300 text-gray-800" : "bg-green-600 text-white"}`}
+                      className={`px-3 py-1 rounded ${u.is_admin ? "bg-gray-300 text-gray-800 hover:bg-gray-400" : "bg-green-600 text-white hover:bg-green-700"}`}
                     >
                       {u.is_admin ? "Quitar admin" : "Hacer admin"}
                     </button>

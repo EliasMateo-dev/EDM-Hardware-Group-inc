@@ -21,12 +21,12 @@ export default function Categoria() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <header className="mb-10 space-y-3">
-        <p className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Categoria</p>
-        <h1 className="text-4xl font-semibold text-slate-900 dark:text-slate-100">
+        <p className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 text-center">Categoria</p>
+        <h1 className="text-4xl font-semibold text-slate-900 dark:text-slate-100 text-center">
           {categoriaActual?.name ?? 'Componentes'}
         </h1>
         {categoriaActual?.description && (
-          <p className="max-w-2xl text-sm text-slate-500 dark:text-slate-400">{categoriaActual.description}</p>
+          <p className="max-w-2xl text-sm text-slate-500 dark:text-slate-400 text-center">{categoriaActual.description}</p>
         )}
       </header>
 
@@ -39,14 +39,14 @@ export default function Categoria() {
         </div>
       ) : productos.length === 0 ? (
         <div className="flex min-h-[240px] items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white transition-colors dark:border-slate-800 dark:bg-slate-900">
-          <p className="text-sm text-slate-500 dark:text-slate-400">No hay productos disponibles en esta categoria.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 text-center">No hay productos disponibles en esta categoria.</p>
         </div>
       ) : (
         <>
-          <h2 className="mb-6 text-xl font-semibold text-slate-900 dark:text-slate-100">
+          <h2 className="mb-6 text-xl font-semibold text-slate-900 dark:text-slate-100 text-center">
             {categoriaActual?.name ?? 'Componentes'} destacados:
           </h2>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 justify-items-center">
             {productos.map((producto) => (
               <TarjetaProducto key={producto.id} producto={producto} confirmOnAdd />
             ))}
