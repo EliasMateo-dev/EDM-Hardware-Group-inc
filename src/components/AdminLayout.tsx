@@ -67,6 +67,9 @@ const AdminLayout: React.FC = () => {
             </NavLink>
           ))}
         </nav>
+        <div className="mt-auto px-4 py-4">
+          <NavLink to="/" className="block text-center px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 transition-colors">Regresar</NavLink>
+        </div>
       </aside>
       {/* Main content */}
       <main className="flex-1 p-6 overflow-y-auto">
