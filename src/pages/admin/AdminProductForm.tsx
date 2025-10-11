@@ -55,6 +55,9 @@ const AdminProductForm: React.FC = () => {
     supabase.from("categories").select("id, name").then(({ data }) => {
       setCategories(data || []);
     });
+  }, []);
+
+  useEffect(() => {
     if (id) {
       setLoading(true);
       supabase.from("products").select("name, brand, model, description, price, stock, category_id, specifications, image_url, is_active").eq("id", id).single()
