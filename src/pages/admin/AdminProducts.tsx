@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNotificationStore } from "../../stores/useNotificationStore";
 import { supabase } from "../../utils/supabase";
+import { useTiendaAuth } from "../../stores/tiendaAuth";
+import { useNavigate } from "react-router-dom";
 
 interface Product {
   id: string;
@@ -12,12 +14,22 @@ interface Product {
   is_active: boolean;
 }
 
+
 const AdminProducts: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { showNotification } = useNotificationStore();
+  const { perfil, cargando } = useTiendaAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    if (!cargando && (!perfil || !perfil.is_admin)) {
+      navigate("/", { replace: true });
+    }
+  }, [perfil, cargando, navigate]);
+
+  useEffect(() => {
+    if (!perfil || !perfil.is_admin) return;
     const fetchProducts = async () => {
       setLoading(true);
       const { data, error } = await supabase.from("products").select("id, name, brand, price, stock, category_id, is_active");
@@ -29,7 +41,7 @@ const AdminProducts: React.FC = () => {
       setLoading(false);
     };
     fetchProducts();
-  }, [showNotification]);
+  }, [showNotification, perfil]);
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("¿Seguro que deseas eliminar este producto?")) return;
