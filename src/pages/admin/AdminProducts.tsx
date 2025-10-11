@@ -98,25 +98,27 @@ const AdminProducts: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-4 py-2">Nombre</th>
-                    <th className="px-4 py-2">Marca</th>
-                    <th className="px-4 py-2">Precio</th>
-                    <th className="px-4 py-2">Stock</th>
-                    <th className="px-4 py-2">Activo</th>
-                    <th className="px-4 py-2">Acciones</th>
+                    <th className="px-4 py-2 text-center">Nombre</th>
+                    <th className="px-4 py-2 text-center">Marca</th>
+                    <th className="px-4 py-2 text-center">Precio</th>
+                    <th className="px-4 py-2 text-center">Stock</th>
+                    <th className="px-4 py-2 text-center">Activo</th>
+                    <th className="px-4 py-2 text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {prods.map((p) => (
                     <tr key={p.id} className="border-t">
-                      <td className="px-4 py-2 align-middle">{p.name}</td>
-                      <td className="px-4 py-2 align-middle">{p.brand}</td>
-                      <td className="px-4 py-2 align-middle">${p.price}</td>
-                      <td className="px-4 py-2 align-middle">{p.stock}</td>
-                      <td className="px-4 py-2 align-middle">{p.is_active ? "Sí" : "No"}</td>
-                      <td className="px-4 py-2 flex gap-2 align-middle">
-                        <a href={`/admin/products/edit/${p.id}`} className="text-blue-600 hover:underline">Editar</a>
-                        <button onClick={() => handleDelete(p.id)} className="text-red-600 hover:underline">Eliminar</button>
+                      <td className="px-4 py-2 text-center align-middle">{p.name}</td>
+                      <td className="px-4 py-2 text-center align-middle">{p.brand}</td>
+                      <td className="px-4 py-2 text-center align-middle">${p.price}</td>
+                      <td className="px-4 py-2 text-center align-middle">{p.stock}</td>
+                      <td className="px-4 py-2 text-center align-middle">{p.is_active ? "Sí" : "No"}</td>
+                      <td className="px-4 py-2 text-center align-middle">
+                        <div className="flex justify-center gap-2">
+                          <a href={`/admin/products/edit/${p.id}`} className="text-blue-600 hover:underline">Editar</a>
+                          <button onClick={() => handleDelete(p.id)} className="text-red-600 hover:underline">Eliminar</button>
+                        </div>
                       </td>
                     </tr>
                   ))}
