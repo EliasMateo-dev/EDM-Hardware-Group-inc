@@ -1,3 +1,15 @@
+  // Manejo de especificaciones dinámicas
+  const handleSpecChange = (idx: number, field: 'key' | 'value', value: string) => {
+    setSpecs((prev) => prev.map((spec, i) => i === idx ? { ...spec, [field]: value } : spec));
+  };
+
+  const handleAddSpec = () => {
+    setSpecs((prev) => [...prev, { key: '', value: '' }]);
+  };
+
+  const handleRemoveSpec = (idx: number) => {
+    setSpecs((prev) => prev.filter((_, i) => i !== idx));
+  };
 import React, { useState, useEffect } from "react";
 import { useNotificationStore } from "../../stores/useNotificationStore";
 import { supabase } from "../../utils/supabase";
@@ -11,7 +23,7 @@ interface ProductForm {
   price: number;
   stock: number;
   category_id: string;
-  specifications: string;
+  specifications?: { [key: string]: string }; // Cambiado a un objeto
   image_url: string;
   is_active: boolean;
 }
@@ -24,16 +36,16 @@ const initialState: ProductForm = {
   price: 0,
   stock: 0,
   category_id: "",
-  specifications: "",
+  specifications: {}, // Cambiado a un objeto vacío
   image_url: "",
   is_active: true,
 };
 
 const AdminProductForm: React.FC = () => {
   const [form, setForm] = useState<ProductForm>(initialState);
+    const [specs, setSpecs] = useState<{ key: string; value: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const { showNotification } = useNotificationStore();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -43,21 +55,35 @@ const AdminProductForm: React.FC = () => {
     supabase.from("categories").select("id, name").then(({ data }) => {
       setCategories(data || []);
     });
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
     if (id) {
       setLoading(true);
       supabase.from("products").select("name, brand, model, description, price, stock, category_id, specifications, image_url, is_active").eq("id", id).single()
         .then(({ data, error }) => {
+          if (!mounted) return;
           if (error) {
             showNotification("Error al cargar producto", "error");
           } else if (data) {
             setForm({
               ...data,
-              specifications: typeof data.specifications === "object" ? JSON.stringify(data.specifications, null, 2) : (data.specifications || ""),
+              // No tocar specifications acá, solo specs maneja eso
             });
+            // Inicializar specs desde las especificaciones existentes SOLO una vez
+            if (data.specifications && typeof data.specifications === "object") {
+              setSpecs(Object.entries(data.specifications).map(([key, value]) => ({ key, value: String(value) })));
+            } else {
+              setSpecs([]);
+            }
           }
           setLoading(false);
         });
+    } else {
+      setSpecs([]);
     }
+    return () => { mounted = false; };
   }, [id, showNotification]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -68,38 +94,16 @@ const AdminProductForm: React.FC = () => {
     }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     let imageUrl = form.image_url;
-    // Subir imagen si hay archivo nuevo
-    if (imageFile) {
-      const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from("product-images").upload(fileName, imageFile);
-      if (uploadError) {
-        showNotification("Error al subir imagen", "error");
-        setLoading(false);
-        return;
-      }
-      const { data: publicUrlData } = supabase.storage.from("product-images").getPublicUrl(fileName);
-      imageUrl = publicUrlData.publicUrl;
-    }
-    // Parsear especificaciones si es JSON válido
-    let specifications: any = form.specifications;
-    try {
-      specifications = form.specifications ? JSON.parse(form.specifications) : {};
-    } catch {
-      showNotification("Especificaciones debe ser JSON válido", "error");
-      setLoading(false);
-      return;
-    }
+    // Construir especificaciones desde specs
+    let specifications: Record<string, string> = {};
+    specs.forEach(({ key, value }) => {
+      if (key.trim()) specifications[key.trim()] = value.trim();
+    });
     const payload = { ...form, image_url: imageUrl, specifications };
     if (id) {
       // Update
@@ -160,12 +164,31 @@ const AdminProductForm: React.FC = () => {
         </select>
       </div>
       <div className="mb-4">
-        <label className="block mb-1">Especificaciones (JSON)</label>
-        <textarea name="specifications" value={form.specifications} onChange={handleChange} className="w-full px-3 py-2 border rounded" placeholder='{"color":"negro","peso":"1kg"}' />
+        <label className="block mb-1">Especificaciones</label>
+        {specs.map((spec, idx) => (
+          <div key={idx} className="flex gap-2 mb-2">
+            <input
+              type="text"
+              placeholder="Clave"
+              value={spec.key}
+              onChange={e => handleSpecChange(idx, 'key', e.target.value)}
+              className="px-2 py-1 border rounded w-1/2"
+            />
+            <input
+              type="text"
+              placeholder="Valor (ej: azul)"
+              value={spec.value}
+              onChange={e => handleSpecChange(idx, 'value', e.target.value)}
+              className="px-2 py-1 border rounded w-1/2"
+            />
+            <button type="button" onClick={() => handleRemoveSpec(idx)} className="text-red-600">✕</button>
+          </div>
+        ))}
+        <button type="button" onClick={handleAddSpec} className="bg-gray-200 px-2 py-1 rounded mt-1">Agregar especificación</button>
       </div>
       <div className="mb-4">
-        <label className="block mb-1">Imagen</label>
-        <input type="file" accept="image/*" onChange={handleImageChange} className="w-full" />
+        <label className="block mb-1">Imagen (URL)</label>
+        <input name="image_url" value={form.image_url} onChange={handleChange} className="w-full px-3 py-2 border rounded" placeholder="https://..." />
         {form.image_url && (
           <img src={form.image_url} alt="Imagen actual" className="mt-2 max-h-32" />
         )}
