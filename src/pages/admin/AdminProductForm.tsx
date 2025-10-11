@@ -1,9 +1,19 @@
+  // Manejo de especificaciones dinámicas
+  const handleSpecChange = (idx: number, field: 'key' | 'value', value: string) => {
+    setSpecs((prev) => prev.map((spec, i) => i === idx ? { ...spec, [field]: value } : spec));
+  };
+
+  const handleAddSpec = () => {
+    setSpecs((prev) => [...prev, { key: '', value: '' }]);
+  };
+
+  const handleRemoveSpec = (idx: number) => {
+    setSpecs((prev) => prev.filter((_, i) => i !== idx));
+  };
 import React, { useState, useEffect } from "react";
 import { useNotificationStore } from "../../stores/useNotificationStore";
 import { supabase } from "../../utils/supabase";
 import { useNavigate, useParams } from "react-router-dom";
-
-
 
 interface ProductForm {
   name: string;
