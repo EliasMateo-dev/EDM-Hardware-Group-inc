@@ -1,15 +1,3 @@
-  // Manejo de especificaciones dinámicas
-  const handleSpecChange = (idx: number, field: 'key' | 'value', value: string) => {
-    setSpecs((prev) => prev.map((spec, i) => i === idx ? { ...spec, [field]: value } : spec));
-  };
-
-  const handleAddSpec = () => {
-    setSpecs((prev) => [...prev, { key: '', value: '' }]);
-  };
-
-  const handleRemoveSpec = (idx: number) => {
-    setSpecs((prev) => prev.filter((_, i) => i !== idx));
-  };
 import React, { useState, useEffect } from "react";
 import { useNotificationStore } from "../../stores/useNotificationStore";
 import { supabase } from "../../utils/supabase";
@@ -43,7 +31,20 @@ const initialState: ProductForm = {
 
 const AdminProductForm: React.FC = () => {
   const [form, setForm] = useState<ProductForm>(initialState);
-    const [specs, setSpecs] = useState<{ key: string; value: string }[]>([]);
+  const [specs, setSpecs] = useState<{ key: string; value: string }[]>([]);
+
+  // Manejo de especificaciones dinámicas
+  const handleSpecChange = (idx: number, field: 'key' | 'value', value: string) => {
+    setSpecs((prev) => prev.map((spec, i) => i === idx ? { ...spec, [field]: value } : spec));
+  };
+
+  const handleAddSpec = () => {
+    setSpecs((prev) => [...prev, { key: '', value: '' }]);
+  };
+
+  const handleRemoveSpec = (idx: number) => {
+    setSpecs((prev) => prev.filter((_, i) => i !== idx));
+  };
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
   const { showNotification } = useNotificationStore();
