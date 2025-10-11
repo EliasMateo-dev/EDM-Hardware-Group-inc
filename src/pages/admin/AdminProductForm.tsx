@@ -67,13 +67,12 @@ const AdminProductForm: React.FC = () => {
           if (error) {
             showNotification("Error al cargar producto", "error");
           } else if (data) {
-            setForm({
-              ...data,
-              // No tocar specifications acá, solo specs maneja eso
-            });
+            // Excluir specifications de setForm para evitar sobrescribir specs
+            const { specifications, ...rest } = data;
+            setForm(rest);
             // Inicializar specs desde las especificaciones existentes SOLO una vez
-            if (data.specifications && typeof data.specifications === "object") {
-              setSpecs(Object.entries(data.specifications).map(([key, value]) => ({ key, value: String(value) })));
+            if (specifications && typeof specifications === "object") {
+              setSpecs(Object.entries(specifications).map(([key, value]) => ({ key, value: String(value) })));
             } else {
               setSpecs([]);
             }
