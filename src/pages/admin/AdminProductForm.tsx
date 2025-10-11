@@ -33,7 +33,6 @@ const AdminProductForm: React.FC = () => {
   const [form, setForm] = useState<ProductForm>(initialState);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const { showNotification } = useNotificationStore();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -68,29 +67,11 @@ const AdminProductForm: React.FC = () => {
     }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     let imageUrl = form.image_url;
-    // Subir imagen si hay archivo nuevo
-    if (imageFile) {
-      const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from("product-images").upload(fileName, imageFile);
-      if (uploadError) {
-        showNotification("Error al subir imagen", "error");
-        setLoading(false);
-        return;
-      }
-      const { data: publicUrlData } = supabase.storage.from("product-images").getPublicUrl(fileName);
-      imageUrl = publicUrlData.publicUrl;
-    }
     // Parsear especificaciones si es JSON válido
     let specifications: any = form.specifications;
     try {
@@ -100,7 +81,7 @@ const AdminProductForm: React.FC = () => {
       setLoading(false);
       return;
     }
-    const payload = { ...form, image_url: imageUrl, specifications };
+  const payload = { ...form, image_url: imageUrl, specifications };
     if (id) {
       // Update
       const { error } = await supabase.from("products").update(payload).eq("id", id);
@@ -164,8 +145,8 @@ const AdminProductForm: React.FC = () => {
         <textarea name="specifications" value={form.specifications} onChange={handleChange} className="w-full px-3 py-2 border rounded" placeholder='{"color":"negro","peso":"1kg"}' />
       </div>
       <div className="mb-4">
-        <label className="block mb-1">Imagen</label>
-        <input type="file" accept="image/*" onChange={handleImageChange} className="w-full" />
+        <label className="block mb-1">Imagen (URL)</label>
+        <input name="image_url" value={form.image_url} onChange={handleChange} className="w-full px-3 py-2 border rounded" placeholder="https://..." />
         {form.image_url && (
           <img src={form.image_url} alt="Imagen actual" className="mt-2 max-h-32" />
         )}
