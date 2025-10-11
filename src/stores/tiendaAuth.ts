@@ -5,6 +5,13 @@ import type { User, Session } from '@supabase/supabase-js';
 interface EstadoAuth {
   usuario: User | null;
   sesion: Session | null;
+  perfil: {
+    id: string;
+    email: string;
+    full_name?: string;
+    avatar_url?: string;
+    is_admin?: boolean;
+  } | null;
   cargando: boolean;
   inicializarAuth: () => Promise<void>;
   iniciarSesionConGoogle: () => Promise<void>;
@@ -14,31 +21,61 @@ interface EstadoAuth {
 export const useTiendaAuth = create<EstadoAuth>((establecer, obtener) => ({
   usuario: null,
   sesion: null,
+  perfil: null,
   cargando: true,
 
   inicializarAuth: async () => {
     try {
       // Obtener sesión actual
       const { data: { session }, error } = await supabase.auth.getSession();
-      
       if (error) {
         console.error('Error al obtener sesión:', error);
         return;
       }
 
+      let perfil = null;
+      if (session?.user) {
+        // Buscar perfil en la tabla profiles
+        const { data: perfiles, error: errorPerfil } = await supabase
+          .from('profiles')
+          .select('id, email, full_name, avatar_url, is_admin')
+          .eq('id', session.user.id)
+          .single();
+        if (errorPerfil) {
+          console.error('Error al obtener perfil:', errorPerfil);
+        } else {
+          perfil = perfiles;
+        }
+      }
+
       establecer({
         usuario: session?.user ?? null,
         sesion: session,
+        perfil,
         cargando: false
       });
 
       // Escuchar cambios de autenticación
       supabase.auth.onAuthStateChange(async (evento, sesion) => {
         console.log('Cambio de auth:', evento, sesion?.user?.email);
-        
+        let perfil = null;
+        if (sesion?.user) {
+          // Buscar perfil en la tabla profiles
+          const { data: perfiles, error: errorPerfil } = await supabase
+            .from('profiles')
+            .select('id, email, full_name, avatar_url, is_admin')
+            .eq('id', sesion.user.id)
+            .single();
+          if (errorPerfil) {
+            console.error('Error al obtener perfil:', errorPerfil);
+          } else {
+            perfil = perfiles;
+          }
+        }
         establecer({
           usuario: sesion?.user ?? null,
           sesion: sesion,
+          perfil,
           cargando: false
         });
 

@@ -20,9 +20,9 @@ export default function BarraNavegacion() {
   const cargarProductos = useTiendaProductos((estado) => estado.cargarProductos);
   const tema = useTiendaTema((estado) => estado.tema);
   const alternarTema = useTiendaTema((estado) => estado.alternarTema);
-  const { usuario, cerrarSesion } = useTiendaAuth();
-  // Determinar si el usuario es admin (requiere que el perfil tenga is_admin)
-  const esAdmin = usuario && usuario.user_metadata?.is_admin;
+  const { usuario, cerrarSesion, perfil } = useTiendaAuth();
+  // Determinar si el usuario es admin usando el perfil
+  const esAdmin = perfil?.is_admin;
   const [perfilMenuAbierto, establecerPerfilMenuAbierto] = useState(false);
 
   const manejarCambioCategoria = (slug: string | null) => {
