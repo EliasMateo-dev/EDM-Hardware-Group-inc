@@ -21,6 +21,8 @@ export default function BarraNavegacion() {
   const tema = useTiendaTema((estado) => estado.tema);
   const alternarTema = useTiendaTema((estado) => estado.alternarTema);
   const { usuario, cerrarSesion } = useTiendaAuth();
+  // Determinar si el usuario es admin (requiere que el perfil tenga is_admin)
+  const esAdmin = usuario && usuario.user_metadata?.is_admin;
   const [perfilMenuAbierto, establecerPerfilMenuAbierto] = useState(false);
 
   const manejarCambioCategoria = (slug: string | null) => {
@@ -127,6 +129,16 @@ export default function BarraNavegacion() {
               >
                 <User className="h-5 w-5" />
               </button>
+            )}
+
+
+            {esAdmin && (
+              <Link
+                to="/admin/products"
+                className="inline-flex items-center gap-2 rounded-full border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+              >
+                Panel Admin
+              </Link>
             )}
 
             <Link
