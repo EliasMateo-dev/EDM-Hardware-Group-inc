@@ -15,37 +15,16 @@ const navItems = [
 
 const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
-  const { user, loading } = useTiendaAuth();
-  const { tema, toggleTema } = useTiendaTema();
-  const [allowedEmails, setAllowedEmails] = useState<string[] | null>(null);
-
-  // Consultar gmails autorizados desde la base de datos
-  useEffect(() => {
-    if (allowedEmails === null && user) {
-      import("../utils/supabase").then(({ supabase }) => {
-        supabase
-          .from("admin_emails")
-          .select("email")
-          .then(({ data, error }) => {
-            if (!error && data) {
-              setAllowedEmails(data.map((row: any) => row.email));
-            } else {
-              setAllowedEmails([]);
-            }
-          });
-      });
-    }
-  }, [allowedEmails, user]);
+  const { usuario, perfil, cargando } = useTiendaAuth();
+  const { tema, alternarTema } = useTiendaTema();
 
   useEffect(() => {
-    if (!loading && allowedEmails !== null) {
-      const email = user?.email || "";
-      const isAllowed = allowedEmails.includes(email);
-      if (!user || !isAllowed) {
+    if (!cargando) {
+      if (!usuario || !perfil?.is_admin) {
         navigate("/", { replace: true });
       }
     }
-  }, [user, loading, allowedEmails, navigate]);
+  }, [usuario, perfil, cargando, navigate]);
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -54,7 +33,7 @@ const AdminLayout: React.FC = () => {
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700">
           <span className="font-bold text-lg text-gray-800 dark:text-gray-100">Admin Panel</span>
           <button
-            onClick={toggleTema}
+            onClick={alternarTema}
             className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
             aria-label="Toggle theme"
           >
