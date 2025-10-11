@@ -64,11 +64,20 @@ const AdminProductForm: React.FC = () => {
           } else if (data) {
             setForm({
               ...data,
-            specifications: typeof data.specifications === "object" ? data.specifications : {}, // Cambiado a un objeto
+              specifications: typeof data.specifications === "object" ? data.specifications : {},
             });
+            // Inicializar specs desde las especificaciones existentes
+            if (data.specifications && typeof data.specifications === "object") {
+              setSpecs(Object.entries(data.specifications).map(([key, value]) => ({ key, value: String(value) })));
+            } else {
+              setSpecs([]);
+            }
           }
           setLoading(false);
         });
+    } else {
+      // Nuevo producto: specs vacío
+      setSpecs([]);
     }
   }, [id, showNotification]);
 
