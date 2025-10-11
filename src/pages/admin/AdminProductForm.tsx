@@ -179,7 +179,7 @@ const AdminProductForm: React.FC = () => {
               />
               <input
                 type="text"
-                placeholder="Valor (ej: azul)"
+                placeholder="Valor "
                 value={spec.value}
                 onChange={e => handleSpecChange(idx, 'value', e.target.value)}
                 className="px-2 py-1 border rounded w-1/2"
