@@ -164,25 +164,33 @@ const AdminProductForm: React.FC = () => {
       </div>
       <div className="mb-4">
         <label className="block mb-1">Especificaciones</label>
-        {specs.map((spec, idx) => (
-          <div key={idx} className="flex gap-2 mb-2">
-            <input
-              type="text"
-              placeholder="Clave"
-              value={spec.key}
-              onChange={e => handleSpecChange(idx, 'key', e.target.value)}
-              className="px-2 py-1 border rounded w-1/2"
-            />
-            <input
-              type="text"
-              placeholder="Valor (ej: azul)"
-              value={spec.value}
-              onChange={e => handleSpecChange(idx, 'value', e.target.value)}
-              className="px-2 py-1 border rounded w-1/2"
-            />
-            <button type="button" onClick={() => handleRemoveSpec(idx)} className="text-red-600">✕</button>
-          </div>
-        ))}
+        {specs && specs.length > 0 ? (
+          specs.map((spec, idx) => (
+            <div key={idx} className="flex gap-2 mb-2">
+              <input
+                type="text"
+                placeholder="Clave"
+                value={spec.key}
+                onChange={e => handleSpecChange(idx, 'key', e.target.value)}
+                className="px-2 py-1 border rounded w-1/2"
+                autoComplete="off"
+                spellCheck={false}
+              />
+              <input
+                type="text"
+                placeholder="Valor (ej: azul)"
+                value={spec.value}
+                onChange={e => handleSpecChange(idx, 'value', e.target.value)}
+                className="px-2 py-1 border rounded w-1/2"
+                autoComplete="off"
+                spellCheck={false}
+              />
+              <button type="button" onClick={() => handleRemoveSpec(idx)} className="text-red-600">✕</button>
+            </div>
+          ))
+        ) : (
+          <div className="text-gray-400 italic mb-2">No hay especificaciones. Agrega una.</div>
+        )}
         <button type="button" onClick={handleAddSpec} className="bg-gray-200 px-2 py-1 rounded mt-1">Agregar especificación</button>
       </div>
       <div className="mb-4">
