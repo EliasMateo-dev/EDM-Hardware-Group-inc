@@ -58,18 +58,20 @@ const AdminProductForm: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    let mounted = true;
     if (id) {
       setLoading(true);
       supabase.from("products").select("name, brand, model, description, price, stock, category_id, specifications, image_url, is_active").eq("id", id).single()
         .then(({ data, error }) => {
+          if (!mounted) return;
           if (error) {
             showNotification("Error al cargar producto", "error");
           } else if (data) {
             setForm({
               ...data,
-              specifications: typeof data.specifications === "object" ? data.specifications : {},
+              // No tocar specifications acá, solo specs maneja eso
             });
-            // Inicializar specs desde las especificaciones existentes
+            // Inicializar specs desde las especificaciones existentes SOLO una vez
             if (data.specifications && typeof data.specifications === "object") {
               setSpecs(Object.entries(data.specifications).map(([key, value]) => ({ key, value: String(value) })));
             } else {
@@ -79,9 +81,9 @@ const AdminProductForm: React.FC = () => {
           setLoading(false);
         });
     } else {
-      // Nuevo producto: specs vacío
       setSpecs([]);
     }
+    return () => { mounted = false; };
   }, [id, showNotification]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
