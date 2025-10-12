@@ -17,7 +17,12 @@ const AdminUsers: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
-      const { data, error } = await supabase.from("profiles").select("id, email, full_name, is_admin");
+      // Traer todos los usuarios, tanto admins como no admins
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, email, full_name, is_admin")
+        .order('is_admin', { ascending: false })
+        .order('full_name', { ascending: true });
       if (error) {
         showNotification("Error al cargar usuarios", "error");
       } else {
