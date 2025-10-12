@@ -37,9 +37,9 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
     new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(precio);
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(precio / 100);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
