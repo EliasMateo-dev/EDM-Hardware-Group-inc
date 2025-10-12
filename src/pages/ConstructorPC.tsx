@@ -2,15 +2,17 @@
 import { Box, CircuitBoard, Cpu, HardDrive, MemoryStick, Monitor, Zap, AlertCircle, Check, Plus, Minus } from 'lucide-react';
 import { useTiendaProductos } from '../stores/tiendaProductos';
 import { useTiendaCarrito } from '../stores/tiendaCarrito';
+import { supabase } from '../utils/supabase';
+
 
 const steps = [
-  { icon: Cpu, label: 'CPU', description: 'Procesador', categoryId: 'cat-cpu' },
-  { icon: CircuitBoard, label: 'Motherboard', description: 'Placa base', categoryId: 'cat-motherboard' },
-  { icon: MemoryStick, label: 'RAM', description: 'Memoria', categoryId: 'cat-ram' },
-  { icon: Monitor, label: 'GPU', description: 'Tarjeta grafica', categoryId: 'cat-gpu' },
-  { icon: Zap, label: 'PSU', description: 'Fuente de poder', categoryId: 'cat-psu' },
-  { icon: Box, label: 'Gabinete', description: 'Case', categoryId: 'cat-case' },
-  { icon: HardDrive, label: 'SSD', description: 'Almacenamiento', categoryId: 'cat-ssd' },
+  { icon: Cpu, label: 'CPU', description: 'Procesador', slug: 'cat-cpu' },
+  { icon: CircuitBoard, label: 'Motherboard', description: 'Placa base', slug: 'cat-motherboard' },
+  { icon: MemoryStick, label: 'RAM', description: 'Memoria', slug: 'cat-ram' },
+  { icon: Monitor, label: 'GPU', description: 'Tarjeta grafica', slug: 'cat-gpu' },
+  { icon: Zap, label: 'PSU', description: 'Fuente de poder', slug: 'cat-psu' },
+  { icon: Box, label: 'Gabinete', description: 'Case', slug: 'cat-case' },
+  { icon: HardDrive, label: 'SSD', description: 'Almacenamiento', slug: 'cat-ssd' },
 ];
 
 // Interfaz para los errores de validación
@@ -19,10 +21,12 @@ interface ValidationErrors {
 }
 
 // Interfaz para los componentes seleccionados
+import type { Product } from '../utils/supabase';
 interface SelectedComponents {
   [key: string]: {
     id: string;
     quantity: number;
+    producto: Product;
   } | null;
 }
 
@@ -48,16 +52,36 @@ export default function PCBuilder() {
   const [successMessages, setSuccessMessages] = useState<{ [key: string]: string }>({});
   // Estado para componentes con error (resaltados)
   const [highlightedErrors, setHighlightedErrors] = useState<{ [key: string]: boolean }>({});
-  // ...existing code...
+  // Mapeo de slug (cat-*) a id real de categoría
+  const [slugToCategoryId, setSlugToCategoryId] = useState<{ [slug: string]: string }>({});
 
   // Obtener productos y carrito de las tiendas
   const { productos, cargarProductos } = useTiendaProductos();
-  const { agregarAlCarrito } = useTiendaCarrito();
+  const agregarAlCarrito = useTiendaCarrito((s) => s.agregarAlCarrito);
 
-  // Cargar productos al montar el componente
+
+  // Cargar categorías al montar el componente y productos de la categoría actual al cambiar de paso
   useEffect(() => {
-    cargarProductos();
-  }, [cargarProductos]);
+    const fetchCategories = async () => {
+      const { data } = await supabase.from('categories').select('id, slug');
+      if (data) {
+        const mapping: { [slug: string]: string } = {};
+        data.forEach((cat: { id: string; slug: string }) => {
+          mapping[cat.slug] = cat.id;
+        });
+        setSlugToCategoryId(mapping);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Cargar productos de la categoría actual cada vez que cambias de paso
+  useEffect(() => {
+    const slug = steps[currentStep]?.slug;
+    if (slug) {
+      cargarProductos(slug);
+    }
+  }, [currentStep, cargarProductos]);
 
   // Validar inventario al seleccionar un componente
   const validateInventory = (productId: string, quantity: number): boolean => {
@@ -147,26 +171,30 @@ export default function PCBuilder() {
   };
 
   // Manejar selección de componente
-  const handleComponentSelect = (categoryId: string, productId: string, quantity: number = 1) => {
+  const handleComponentSelect = (categorySlug: string, productId: string, quantity: number = 1) => {
     // Validar inventario
     if (!validateInventory(productId, quantity)) {
       return;
     }
 
     // Verificar restricciones de cantidad
-    const restrictions = componentRestrictions[categoryId as keyof typeof componentRestrictions];
+    const restrictions = componentRestrictions[categorySlug as keyof typeof componentRestrictions];
     if (restrictions && quantity > restrictions.max) {
       setValidationErrors({
         ...validationErrors,
-        [`${categoryId}_limit`]: `Máximo ${restrictions.max} ${restrictions.name.toLowerCase()} permitido`
+        [`${categorySlug}_limit`]: `Máximo ${restrictions.max} ${restrictions.name.toLowerCase()} permitido`
       });
       return;
     }
 
-    // Actualizar componentes seleccionados 
+    // Buscar el producto completo
+    const producto = productos.find(p => p.id === productId);
+    if (!producto) return;
+
+    // Actualizar componentes seleccionados (guardar el producto completo)
     setSelectedComponents({
       ...selectedComponents,
-      [categoryId]: { id: productId, quantity }
+      [categorySlug]: { id: productId, quantity, producto }
     });
 
     // Validar reglas de negocio
@@ -174,14 +202,14 @@ export default function PCBuilder() {
   };
 
   // Función para aumentar la cantidad de un componente
-  const handleIncreaseQuantity = (productId: string, categoryId: string) => {
-    const component = selectedComponents[categoryId];
+  const handleIncreaseQuantity = (productId: string, categorySlug: string) => {
+    const component = selectedComponents[categorySlug];
     if (!component || component.id !== productId) return;
 
     const product = productos.find(p => p.id === productId);
     if (!product) return;
 
-    const restriction = componentRestrictions[categoryId as keyof typeof componentRestrictions];
+    const restriction = componentRestrictions[categorySlug as keyof typeof componentRestrictions];
     const newQuantity = component.quantity + 1;
 
     // Verificar si excede el máximo permitido
@@ -205,7 +233,7 @@ export default function PCBuilder() {
     // Actualizar la cantidad
     setSelectedComponents(prev => ({
       ...prev,
-      [categoryId]: { ...component, quantity: newQuantity }
+      [categorySlug]: { ...component, quantity: newQuantity }
     }));
 
     // Limpiar error si existe
@@ -222,39 +250,35 @@ export default function PCBuilder() {
   };
 
   // Función para disminuir la cantidad de un componente
-  const handleDecreaseQuantity = (productId: string, categoryId: string, removeAll = false) => {
-    const component = selectedComponents[categoryId];
+  const handleDecreaseQuantity = (productId: string, categorySlug: string, removeAll = false) => {
+    const component = selectedComponents[categorySlug];
     if (!component || component.id !== productId) return;
 
-    const restrictions = componentRestrictions[categoryId as keyof typeof componentRestrictions];
+    const restrictions = componentRestrictions[categorySlug as keyof typeof componentRestrictions];
 
     if (removeAll || restrictions?.max === 1) {
-      // Si se indica removeAll o es un componente de máximo 1, eliminamos el componente completo
       setSelectedComponents(prev => {
         const newComponents = { ...prev };
-        delete newComponents[categoryId];
+        delete newComponents[categorySlug];
         return newComponents;
       });
     } else {
       const newQuantity = component.quantity - 1;
 
       if (newQuantity <= 0) {
-        // Si la cantidad llega a 0, eliminamos el componente
         setSelectedComponents(prev => {
           const newComponents = { ...prev };
-          delete newComponents[categoryId];
+          delete newComponents[categorySlug];
           return newComponents;
         });
       } else {
-        // Actualizar la cantidad
         setSelectedComponents(prev => ({
           ...prev,
-          [categoryId]: { ...component, quantity: newQuantity }
+          [categorySlug]: { ...component, quantity: newQuantity }
         }));
       }
     }
 
-    // Limpiar error si existe
     if (validationErrors[productId]) {
       setValidationErrors(prev => {
         const newErrors = { ...prev };
@@ -263,7 +287,6 @@ export default function PCBuilder() {
       });
     }
 
-    // Validar reglas de negocio
     validateBusinessRules();
   };
 
@@ -271,7 +294,7 @@ export default function PCBuilder() {
   // ...existing code...
 
   // Agregar al carrito desde el botón (sin formulario de contacto)
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     setHighlightedErrors({});
     // Limpiar mensajes de éxito anteriores
     const newSuccessMessages = { ...successMessages };
@@ -355,24 +378,21 @@ export default function PCBuilder() {
         return;
       }
       try {
-        // Agregar componentes al carrito
+        // Cargar todos los productos antes de agregar al carrito
+        await cargarProductos();
         Object.values(selectedComponents).forEach(component => {
-          if (component) {
-            console.log(`Agregando al carrito: ${component.id}, cantidad: ${component.quantity}`);
+          if (component && component.producto) {
             agregarAlCarrito(component.id, component.quantity);
           }
         });
-        // Mostrar mensaje de éxito
         setSuccessMessages({
           ...successMessages,
           form: 'Todos los productos se han agregado correctamente al carrito',
           cart: 'Componentes agregados al carrito correctamente'
         });
-        // Redirigir al carrito después de 1 segundo
         setTimeout(() => {
           window.location.href = '/carrito';
         }, 1000);
-        // Limpiar selección de componentes
         setSelectedComponents({});
         setValidationErrors({});
       } catch (error) {
@@ -385,8 +405,9 @@ export default function PCBuilder() {
     }
   };
 
-  // Filtrar productos por categoría actual
-  const currentCategoryId = steps[currentStep]?.categoryId;
+  // Obtener el slug y el id real de la categoría actual
+  const currentCategorySlug = steps[currentStep]?.slug;
+  const currentCategoryId = slugToCategoryId[currentCategorySlug] || '';
   const currentCategoryProducts = productos.filter(p => p.category_id === currentCategoryId);
 
   return (
@@ -453,43 +474,46 @@ export default function PCBuilder() {
 
       {/* Pasos del constructor */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-7">
-        {steps.map((step, index) => (
-          <article
-            key={index}
-            className={`flex cursor-pointer flex-col items-center rounded-xl border p-4 text-center transition-colors ${highlightedErrors[step.categoryId]
-              ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
-              : currentStep === index
-                ? 'border-blue-500 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20'
-                : (!selectedComponents[step.categoryId] || selectedComponents[step.categoryId]?.quantity === 0)
-                  ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
-                  : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
-              }`}
-            onClick={() => setCurrentStep(index)}
-          >
-            <span className={`mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full ${currentStep === index
-              ? 'bg-blue-500 text-white dark:bg-blue-600'
-              : 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-              }`}>
-              <step.icon className="h-5 w-5" />
-            </span>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{step.label}</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">{step.description}</p>
-
-            {/* Indicador de componente seleccionado */}
-            {selectedComponents[step.categoryId] && (
-              <span className="mt-1 inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                <Check className="mr-1 h-3 w-3" />
-                {selectedComponents[step.categoryId]?.quantity && (selectedComponents[step.categoryId]?.quantity ?? 0) > 1 ?
-                  `${selectedComponents[step.categoryId]?.quantity} unidades` :
-                  'Seleccionado'}
+        {steps.map((step, index) => {
+          const slugKey = step.slug;
+          return (
+            <article
+              key={index}
+              className={`flex cursor-pointer flex-col items-center rounded-xl border p-4 text-center transition-colors ${highlightedErrors[slugKey]
+                ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
+                : currentStep === index
+                  ? 'border-blue-500 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20'
+                  : (!selectedComponents[slugKey] || selectedComponents[slugKey]?.quantity === 0)
+                    ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
+                    : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
+                }`}
+              onClick={() => setCurrentStep(index)}
+            >
+              <span className={`mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full ${currentStep === index
+                ? 'bg-blue-500 text-white dark:bg-blue-600'
+                : 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                }`}>
+                <step.icon className="h-5 w-5" />
               </span>
-            )}
-          </article>
-        ))}
+              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{step.label}</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{step.description}</p>
+
+              {/* Indicador de componente seleccionado */}
+              {selectedComponents[slugKey] && (
+                <span className="mt-1 inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                  <Check className="mr-1 h-3 w-3" />
+                  {selectedComponents[slugKey]?.quantity && (selectedComponents[slugKey]?.quantity ?? 0) > 1 ?
+                    `${selectedComponents[slugKey]?.quantity} unidades` :
+                    'Seleccionado'}
+                </span>
+              )}
+            </article>
+          );
+        })}
       </div>
 
       {/* Productos de la categoría actual */}
-      {currentCategoryProducts.length > 0 && (
+  {currentCategoryProducts.length > 0 && (
         <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-slate-100">
             Selecciona tu {steps[currentStep]?.description}
@@ -497,14 +521,13 @@ export default function PCBuilder() {
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {currentCategoryProducts.map(product => {
-              const isSelected = selectedComponents[currentCategoryId]?.id === product.id;
-              const currentQuantity = selectedComponents[currentCategoryId]?.quantity || 0;
-              const restrictions = componentRestrictions[currentCategoryId as keyof typeof componentRestrictions];
-              const selectedQuantity = selectedComponents[currentCategoryId]?.id === product.id
-                ? selectedComponents[currentCategoryId]?.quantity || 0
-                : 0;
+              // Usar el slug como clave para selectedComponents y restricciones
+              const slugKey = currentCategorySlug;
+              const isSelected = selectedComponents[slugKey]?.id === product.id;
+              const currentQuantity = selectedComponents[slugKey]?.quantity || 0;
+              const restrictions = componentRestrictions[slugKey as keyof typeof componentRestrictions];
+              const selectedQuantity = isSelected ? currentQuantity : 0;
               const stockDisponible = product.stock - selectedQuantity;
-
 
               return (
                 <div
@@ -551,7 +574,7 @@ export default function PCBuilder() {
                       <div className="mt-3 flex items-center justify-center">
                         <button
                           className="mt-4 w-full rounded-lg px-4 py-2 text-sm font-medium text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700"
-                          onClick={() => handleDecreaseQuantity(product.id, currentCategoryId, true)}
+                          onClick={() => handleDecreaseQuantity(product.id, slugKey, true)}
                         >
                           Eliminar
                         </button>
@@ -561,7 +584,7 @@ export default function PCBuilder() {
                         <div className="flex items-center justify-between">
                           <button
                             className={`rounded-md bg-slate-200 px-3 py-1 text-sm font-medium dark:bg-slate-700 ${currentQuantity <= 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            onClick={() => handleDecreaseQuantity(product.id, currentCategoryId)}
+                            onClick={() => handleDecreaseQuantity(product.id, slugKey)}
                             disabled={currentQuantity <= 1}
                           >
                             <Minus size={16} />
@@ -569,7 +592,7 @@ export default function PCBuilder() {
                           <span className="text-sm font-medium">{currentQuantity}</span>
                           <button
                             className={`rounded-md bg-slate-200 px-3 py-1 text-sm font-medium dark:bg-slate-700 ${currentQuantity >= Math.min(product.stock, restrictions?.max || Infinity) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            onClick={() => handleIncreaseQuantity(product.id, currentCategoryId)}
+                            onClick={() => handleIncreaseQuantity(product.id, slugKey)}
                             disabled={currentQuantity >= Math.min(product.stock, restrictions?.max || Infinity)}
                           >
                             <Plus size={16} />
@@ -577,7 +600,7 @@ export default function PCBuilder() {
                         </div>
                         <button
                           className="mt-2 w-full rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700"
-                          onClick={() => handleDecreaseQuantity(product.id, currentCategoryId, true)}
+                          onClick={() => handleDecreaseQuantity(product.id, slugKey, true)}
                         >
                           Eliminar
                         </button>
@@ -586,7 +609,7 @@ export default function PCBuilder() {
                   ) : (
                     <button
                       className={`mt-4 w-full rounded-lg px-4 py-2 text-sm font-medium ${product.stock === 0 ? 'cursor-not-allowed bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-400' : 'bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'}`}
-                      onClick={() => handleComponentSelect(currentCategoryId, product.id, 1)}
+                      onClick={() => handleComponentSelect(slugKey, product.id, 1)}
                       disabled={product.stock === 0}
                     >
                       Seleccionar
