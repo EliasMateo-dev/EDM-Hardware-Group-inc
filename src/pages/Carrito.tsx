@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 import { useTiendaCarrito } from '../stores/tiendaCarrito';
+import { useTiendaProductos } from '../stores/tiendaProductos';
 import PaymentModal from '../components/PaymentModal';
 
 
@@ -13,6 +14,7 @@ const formatearPrecio = (precio: number | undefined) => {
   }).format(precio);
 };
 
+
 export default function Carrito() {
   const [showPaymentModal, setShowPaymentModal] = React.useState(false);
   const elementos = useTiendaCarrito((estado) => estado.elementos);
@@ -21,10 +23,15 @@ export default function Carrito() {
   const eliminarDelCarrito = useTiendaCarrito((estado) => estado.eliminarDelCarrito);
   const vaciarCarrito = useTiendaCarrito((estado) => estado.vaciarCarrito);
   const obtenerTotalPrecio = useTiendaCarrito((estado) => estado.obtenerTotalPrecio);
+  const cargarProductos = useTiendaProductos((s) => s.cargarProductos);
 
   useEffect(() => {
-    cargarCarrito();
-  }, [cargarCarrito]);
+    // Cargar todos los productos antes de hidratar el carrito
+    (async () => {
+      await cargarProductos();
+      cargarCarrito();
+    })();
+  }, [cargarCarrito, cargarProductos]);
 
   if (elementos.length === 0) {
     return (
