@@ -160,7 +160,7 @@ const AdminProductForm: React.FC = () => {
         setSpecs([]);
         setSpecsKey(k => k + 1);
         setTimeout(() => {
-          setSpecs(defaultSpecsByCategory[cat.slug].map(s => ({ ...s })));
+    setSpecs(defaultSpecsByCategory[cat.slug].map(s => ({ key: s.key, value: '' })));
           setSpecsKey(k => k + 1);
         }, 0);
       } else {
