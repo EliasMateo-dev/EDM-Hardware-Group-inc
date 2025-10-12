@@ -148,23 +148,22 @@ const AdminProductForm: React.FC = () => {
       ...prev,
       [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
-    // Si cambia la categoría y es nuevo, setear specs por defecto
-    if (name === 'category_id' && !id) {
-      if (!value) {
-        setSpecs([]);
-        setSpecsKey(k => k + 1);
-        return;
-      }
-      const cat = categories.find(c => c.id === value);
+  };
+
+  // Efecto dedicado: cuando cambia la categoría y es nuevo, setear specs por defecto SOLO si specs está vacío
+  useEffect(() => {
+    if (!id && form.category_id && categories.length > 0 && specs.length === 0) {
+      const cat = categories.find(c => c.id === form.category_id);
       if (cat && cat.slug && defaultSpecsByCategory[cat.slug]) {
         setSpecs(defaultSpecsByCategory[cat.slug].map(s => ({ key: s.key, value: '' })));
         setSpecsKey(k => k + 1);
-      } else {
-        setSpecs([]);
-        setSpecsKey(k => k + 1);
       }
     }
-  };
+    if (!id && !form.category_id && specs.length > 0) {
+      setSpecs([]);
+      setSpecsKey(k => k + 1);
+    }
+  }, [form.category_id, categories, id]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
