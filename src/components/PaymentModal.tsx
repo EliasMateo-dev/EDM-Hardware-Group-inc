@@ -37,9 +37,9 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
     new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(precio);
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(precio / 100);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -91,50 +91,48 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
     setErrorMessage('');
 
     try {
-      // Crear producto dinámico basado en el carrito
       const dynamicProduct = createDynamicProduct(elementos, totalAmount);
-      
       // Crear line items para Stripe
-      const lineItems = elementos.map(elemento => ({
-        price_data: {
-          currency: 'ars',
-          product_data: {
-            name: elemento.producto.name,
-            description: `${elemento.producto.brand} ${elemento.producto.model}`,
-            images: elemento.producto.image_url ? [elemento.producto.image_url] : [],
+      const lineItems = elementos.map(elemento => {
+        const unitAmount = Math.round(Number(elemento.producto.price));
+        if (isNaN(unitAmount) || unitAmount <= 0 || unitAmount > 100000000) {
+          throw new Error(`Precio inválido para el producto: ${elemento.producto.name} (${elemento.producto.price})`);
+        }
+        return {
+          price_data: {
+            currency: 'ars',
+            product_data: {
+              name: elemento.producto.name,
+            },
+            unit_amount: unitAmount,
           },
-          unit_amount: Math.round(elemento.producto.price * 100), // Convertir a centavos
-        },
-        quantity: elemento.cantidad,
-      }));
+          quantity: elemento.cantidad,
+        };
+      });
 
+      // Construir el payload
+      const payload = {
+        line_items: lineItems,
+        customer_data: {
+          name: customerData.name,
+          email: customerData.email,
+          phone: customerData.phone,
+          address: customerData.address,
+        },
+        success_url: `${window.location.origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${window.location.origin}/carrito`,
+        mode: 'payment',
+        metadata: {
+          user_id: usuario.id,
+          total_amount: totalAmount,
+          items_count: elementos.length
+        }
+      };
+      // Log para depuración
+      console.log('Checkout payload:', JSON.stringify(payload, null, 2));
       // Crear sesión de checkout usando Supabase Edge Function
       const { data, error: functionError } = await supabase.functions.invoke('stripe-checkout', {
-        body: {
-          line_items: lineItems,
-          customer_data: {
-            name: customerData.name,
-            email: customerData.email,
-            phone: customerData.phone,
-            address: customerData.address,
-          },
-          success_url: `${window.location.origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${window.location.origin}/carrito`,
-          mode: 'payment',
-          metadata: {
-            user_id: usuario.id,
-            order_data: JSON.stringify({
-              items: elementos.map(el => ({
-                product_id: el.producto.id,
-                name: el.producto.name,
-                quantity: el.cantidad,
-                price: el.producto.price
-              })),
-              customer_data: customerData,
-              total_amount: totalAmount
-            })
-          }
-        },
+        body: payload,
         headers: {
           Authorization: `Bearer ${sesion.access_token}`,
         },
