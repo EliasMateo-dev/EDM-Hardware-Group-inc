@@ -116,13 +116,13 @@ const AdminProductForm: React.FC = () => {
     });
   }, []);
 
+
+  // Solo para edición: cargar producto existente
   useEffect(() => {
-    let mounted = true;
     if (id) {
       setLoading(true);
       supabase.from("products").select("name, brand, model, description, price, stock, category_id, specifications, image_url, is_active").eq("id", id).single()
         .then(({ data, error }) => {
-          if (!mounted) return;
           if (error) {
             showNotification("Error al cargar producto", "error");
           } else if (data) {
@@ -136,21 +136,23 @@ const AdminProductForm: React.FC = () => {
           }
           setLoading(false);
         });
-    } else {
-      // Si es nuevo, setear specs por defecto según la categoría seleccionada
-      if (form.category_id && categories.length > 0) {
-        const cat = categories.find(c => c.id === form.category_id);
-        if (cat && cat.slug && defaultSpecsByCategory[cat.slug]) {
-          setSpecs(defaultSpecsByCategory[cat.slug]);
-        } else {
-          setSpecs([]);
-        }
+    }
+  }, [id, showNotification]);
+
+  // Para creación: cada vez que cambia la categoría, setear specs por defecto
+  useEffect(() => {
+    if (!id && form.category_id && categories.length > 0) {
+      const cat = categories.find(c => c.id === form.category_id);
+      if (cat && cat.slug && defaultSpecsByCategory[cat.slug]) {
+        setSpecs(defaultSpecsByCategory[cat.slug]);
       } else {
         setSpecs([]);
       }
     }
-    return () => { mounted = false; };
-  }, [id, showNotification, form.category_id, categories]);
+    if (!id && !form.category_id) {
+      setSpecs([]);
+    }
+  }, [form.category_id, categories, id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
