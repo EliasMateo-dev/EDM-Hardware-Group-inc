@@ -149,9 +149,13 @@ const AdminProductForm: React.FC = () => {
     }));
     // Si cambia la categoría y es nuevo, setear specs por defecto
     if (name === 'category_id' && !id) {
+      if (!value) {
+        setSpecs([]);
+        return;
+      }
       const cat = categories.find(c => c.id === value);
       if (cat && cat.slug && defaultSpecsByCategory[cat.slug]) {
-        setSpecs([...defaultSpecsByCategory[cat.slug]]);
+        setSpecs(defaultSpecsByCategory[cat.slug].map(s => ({ ...s })));
       } else {
         setSpecs([]);
       }
