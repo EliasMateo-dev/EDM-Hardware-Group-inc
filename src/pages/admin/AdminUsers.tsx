@@ -57,25 +57,22 @@ const AdminUsers: React.FC = () => {
               <tr>
                 <th className="px-4 py-2 text-center">Email</th>
                 <th className="px-4 py-2 text-center">Nombre</th>
-                <th className="px-4 py-2 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={3} className="text-center py-6">Cargando...</td>
+                  <td colSpan={2} className="text-center py-6">Cargando...</td>
                 </tr>
               ) : adminUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="text-center py-6">No hay administradores</td>
+                  <td colSpan={2} className="text-center py-6">No hay administradores</td>
                 </tr>
               ) : (
                 adminUsers.map((u) => (
                   <tr key={u.id} className="border-t text-center">
                     <td className="px-4 py-2">{u.email}</td>
                     <td className="px-4 py-2">{u.full_name || "-"}</td>
-                    <td className="px-4 py-2">
-                    </td>
                   </tr>
                 ))
               )}
