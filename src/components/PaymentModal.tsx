@@ -95,16 +95,23 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
       const dynamicProduct = createDynamicProduct(elementos, totalAmount);
       
       // Crear line items para Stripe
-      const lineItems = elementos.map(elemento => ({
-        price_data: {
-          currency: 'ars',
-          product_data: {
-            name: elemento.producto.name,
+      // Siempre enviar el precio en centavos
+      const lineItems = elementos.map(elemento => {
+        const unitAmount = Math.round(Number(elemento.producto.price) * 100);
+        if (isNaN(unitAmount) || unitAmount <= 0 || unitAmount > 100000000) {
+          throw new Error(`Precio inválido para el producto: ${elemento.producto.name} (${elemento.producto.price})`);
+        }
+        return {
+          price_data: {
+            currency: 'ars',
+            product_data: {
+              name: elemento.producto.name,
+            },
+            unit_amount: unitAmount,
           },
-          unit_amount: Math.round(elemento.producto.price),
-        },
-        quantity: elemento.cantidad,
-      }));
+          quantity: elemento.cantidad,
+        };
+      });
 
       // Construir el payload
       const payload = {
