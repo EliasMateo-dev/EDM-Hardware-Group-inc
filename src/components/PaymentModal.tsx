@@ -96,11 +96,14 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
       
       // Crear line items para Stripe
       const lineItems = elementos.map(elemento => ({
-        // Solo los campos mínimos requeridos por Stripe/Edge Function
-        name: elemento.producto.name,
-        unit_amount: Math.round(elemento.producto.price * 100),
+        price_data: {
+          currency: 'ars',
+          product_data: {
+            name: elemento.producto.name,
+          },
+          unit_amount: Math.round(elemento.producto.price * 100),
+        },
         quantity: elemento.cantidad,
-        product_id: elemento.producto.id,
       }));
 
       // Crear sesión de checkout usando Supabase Edge Function
