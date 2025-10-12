@@ -97,7 +97,7 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
       // Crear line items para Stripe
       // Siempre enviar el precio en centavos
       const lineItems = elementos.map(elemento => {
-        const unitAmount = Math.round(Number(elemento.producto.price));
+        const unitAmount = Math.round(Number(elemento.producto.price) * 100);
         if (isNaN(unitAmount) || unitAmount <= 0 || unitAmount > 100000000) {
           throw new Error(`Precio inválido para el producto: ${elemento.producto.name} (${elemento.producto.price})`);
         }
