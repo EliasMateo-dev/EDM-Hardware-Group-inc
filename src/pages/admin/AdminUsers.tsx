@@ -38,9 +38,52 @@ const AdminUsers: React.FC = () => {
     }
   };
 
+  const adminUsers = users.filter(u => u.is_admin);
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Usuarios</h1>
+      {/* Sección de administradores */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold mb-2">Administradores</h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white dark:bg-gray-800 border rounded">
+            <thead>
+              <tr>
+                <th className="px-4 py-2 text-center">Email</th>
+                <th className="px-4 py-2 text-center">Nombre</th>
+                <th className="px-4 py-2 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={3} className="text-center py-6">Cargando...</td>
+                </tr>
+              ) : adminUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={3} className="text-center py-6">No hay administradores</td>
+                </tr>
+              ) : (
+                adminUsers.map((u) => (
+                  <tr key={u.id} className="border-t text-center">
+                    <td className="px-4 py-2">{u.email}</td>
+                    <td className="px-4 py-2">{u.full_name || "-"}</td>
+                    <td className="px-4 py-2">
+                      <button
+                        onClick={() => handleToggleAdmin(u.id, u.is_admin)}
+                        className="px-3 py-1 rounded bg-gray-300 text-gray-800 hover:bg-gray-400"
+                      >
+                        Quitar admin
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {/* Tabla completa de usuarios */}
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white dark:bg-gray-800 border rounded">
           <thead>
