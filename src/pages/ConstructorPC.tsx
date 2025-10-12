@@ -216,7 +216,7 @@ export default function PCBuilderCompatibility() {
     }
 
     // Overhead estimado (motherboard, RAM, SSD, fans, etc.)
-    const hasMotherboard = selectedComponents['cat-motherboard'] !== null;
+    const hasMotherboard = selectedComponents['cat-motherboard']?.producto;
     const ramCount = selectedComponents['cat-ram']?.quantity ?? 0;
     const ssdCount = selectedComponents['cat-ssd']?.quantity ?? 0;
 
@@ -317,27 +317,25 @@ export default function PCBuilderCompatibility() {
         </ul>
       </div>
 
-      {Object.keys(selectedComponents).length > 0 && (
-        <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-slate-100">Consumo estimado</h2>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600 dark:text-slate-400">Watts totales estimados:</span>
-              <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{calculateTotalWatts()}W</span>
-            </div>
-            {selectedComponents['cat-psu']?.producto && (
-              <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600 dark:text-slate-400">PSU seleccionada:</span>
-                  <span className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                    {parseNumber(getSpec(selectedComponents['cat-psu'].producto, 'wattage'))}W
-                  </span>
-                </div>
-              </div>
-            )}
+      <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-slate-100">Consumo estimado</h2>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-slate-600 dark:text-slate-400">Watts totales estimados:</span>
+            <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{calculateTotalWatts()}W</span>
           </div>
+          {selectedComponents['cat-psu']?.producto && (
+            <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-600 dark:text-slate-400">PSU seleccionada:</span>
+                <span className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  {parseNumber(getSpec(selectedComponents['cat-psu'].producto, 'wattage'))}W
+                </span>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-7">
         {steps.map((step, i) => {
