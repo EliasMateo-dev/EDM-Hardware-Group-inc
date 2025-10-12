@@ -51,8 +51,8 @@ const AdminUsers: React.FC = () => {
           <table className="min-w-full bg-white dark:bg-gray-800 border rounded">
             <thead>
               <tr>
-                <th className="px-4 py-2 text-center">Email</th>
-                <th className="px-4 py-2 text-center">Nombre</th>
+                <th className="px-4 py-2 text-left">Email</th>
+                <th className="px-4 py-2 text-left">Nombre</th>
               </tr>
             </thead>
             <tbody>
@@ -66,9 +66,9 @@ const AdminUsers: React.FC = () => {
                 </tr>
               ) : (
                 adminUsers.map((u) => (
-                  <tr key={u.id} className="border-t text-center">
-                    <td className="px-4 py-2">{u.email}</td>
-                    <td className="px-4 py-2">{u.full_name || "-"}</td>
+                  <tr key={u.id} className="border-t">
+                    <td className="px-4 py-2 text-left">{u.email}</td>
+                    <td className="px-4 py-2 text-left">{u.full_name || "-"}</td>
                   </tr>
                 ))
               )}
@@ -81,9 +81,9 @@ const AdminUsers: React.FC = () => {
         <table className="min-w-full bg-white dark:bg-gray-800 border rounded">
           <thead>
             <tr>
-              <th className="px-4 py-2 text-center">Email</th>
-              <th className="px-4 py-2 text-center">Nombre</th>
-              <th className="px-4 py-2 text-center">Acciones</th>
+              <th className="px-4 py-2 text-left">Email</th>
+              <th className="px-4 py-2 text-left">Nombre</th>
+              <th className="px-4 py-2 text-left">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -97,10 +97,10 @@ const AdminUsers: React.FC = () => {
               </tr>
             ) : (
               normalUsers.map((u) => (
-                <tr key={u.id} className="border-t text-center">
-                  <td className="px-4 py-2">{u.email}</td>
-                  <td className="px-4 py-2">{u.full_name || "-"}</td>
-                  <td className="px-4 py-2">
+                <tr key={u.id} className="border-t">
+                  <td className="px-4 py-2 text-left">{u.email}</td>
+                  <td className="px-4 py-2 text-left">{u.full_name || "-"}</td>
+                  <td className="px-4 py-2 text-left">
                     <button
                       onClick={() => handleToggleAdmin(u.id, u.is_admin)}
                       className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700"
