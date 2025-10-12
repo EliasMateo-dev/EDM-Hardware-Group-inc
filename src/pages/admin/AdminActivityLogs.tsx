@@ -17,14 +17,33 @@ const AdminActivityLogs: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { showNotification } = useNotificationStore();
 
+  const [userMap, setUserMap] = useState<Record<string, { email: string; full_name?: string }>>({});
   useEffect(() => {
     const fetchLogs = async () => {
       setLoading(true);
-      const { data, error } = await supabase.from("activity_logs").select("id, user_id, action, entity_type, entity_id, details, created_at").order("created_at", { ascending: false });
-      if (error) {
+      // Traer logs
+      const { data: logsData, error: logsError } = await supabase
+        .from("activity_logs")
+        .select("id, user_id, action, entity_type, entity_id, details, created_at")
+        .order("created_at", { ascending: false });
+      if (logsError) {
         showNotification("Error al cargar logs", "error");
-      } else {
-        setLogs(data || []);
+        setLoading(false);
+        return;
+      }
+      setLogs(logsData || []);
+      // Traer emails/nombres de usuarios únicos
+      const userIds = Array.from(new Set((logsData || []).map((l: any) => l.user_id)));
+      if (userIds.length > 0) {
+        const { data: usersData } = await supabase
+          .from("profiles")
+          .select("id, email, full_name")
+          .in("id", userIds);
+        const map: Record<string, { email: string; full_name?: string }> = {};
+        (usersData || []).forEach((u: any) => {
+          map[u.id] = { email: u.email, full_name: u.full_name };
+        });
+        setUserMap(map);
       }
       setLoading(false);
     };
@@ -38,12 +57,12 @@ const AdminActivityLogs: React.FC = () => {
         <table className="min-w-full bg-white dark:bg-gray-800 border rounded">
           <thead>
             <tr>
-              <th className="px-4 py-2">Fecha</th>
-              <th className="px-4 py-2">Usuario</th>
-              <th className="px-4 py-2">Acción</th>
-              <th className="px-4 py-2">Entidad</th>
-              <th className="px-4 py-2">ID Entidad</th>
-              <th className="px-4 py-2">Detalles</th>
+              <th className="px-4 py-2 text-left">Fecha</th>
+              <th className="px-4 py-2 text-left">Usuario</th>
+              <th className="px-4 py-2 text-left">Acción</th>
+              <th className="px-4 py-2 text-left">Entidad</th>
+              <th className="px-4 py-2 text-left">ID Entidad</th>
+              <th className="px-4 py-2 text-left">Detalles</th>
             </tr>
           </thead>
           <tbody>
@@ -58,12 +77,17 @@ const AdminActivityLogs: React.FC = () => {
             ) : (
               logs.map((log) => (
                 <tr key={log.id} className="border-t">
-                  <td className="px-4 py-2 whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</td>
-                  <td className="px-4 py-2">{log.user_id}</td>
-                  <td className="px-4 py-2">{log.action}</td>
-                  <td className="px-4 py-2">{log.entity_type}</td>
-                  <td className="px-4 py-2">{log.entity_id || "-"}</td>
-                  <td className="px-4 py-2 text-xs max-w-xs overflow-x-auto">
+                  <td className="px-4 py-2 text-left whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</td>
+                  <td className="px-4 py-2 text-left">
+                    {userMap[log.user_id]?.email || log.user_id}
+                    {userMap[log.user_id]?.full_name ? (
+                      <span className="block text-xs text-gray-500">{userMap[log.user_id].full_name}</span>
+                    ) : null}
+                  </td>
+                  <td className="px-4 py-2 text-left">{log.action}</td>
+                  <td className="px-4 py-2 text-left">{log.entity_type}</td>
+                  <td className="px-4 py-2 text-left">{log.entity_id || "-"}</td>
+                  <td className="px-4 py-2 text-left text-xs max-w-xs overflow-x-auto">
                     <pre className="whitespace-pre-wrap break-all">{JSON.stringify(log.details, null, 2)}</pre>
                   </td>
                 </tr>
