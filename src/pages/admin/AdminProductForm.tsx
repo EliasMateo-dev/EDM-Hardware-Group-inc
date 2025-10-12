@@ -139,20 +139,7 @@ const AdminProductForm: React.FC = () => {
     }
   }, [id, showNotification]);
 
-  // Para creación: cada vez que cambia la categoría, setear specs por defecto
-  useEffect(() => {
-    if (!id && form.category_id && categories.length > 0) {
-      const cat = categories.find(c => c.id === form.category_id);
-      if (cat && cat.slug && defaultSpecsByCategory[cat.slug]) {
-        setSpecs(defaultSpecsByCategory[cat.slug]);
-      } else {
-        setSpecs([]);
-      }
-    }
-    if (!id && !form.category_id) {
-      setSpecs([]);
-    }
-  }, [form.category_id, categories, id]);
+  // (Eliminado: ahora el seteo se hace solo en handleChange)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -164,7 +151,7 @@ const AdminProductForm: React.FC = () => {
     if (name === 'category_id' && !id) {
       const cat = categories.find(c => c.id === value);
       if (cat && cat.slug && defaultSpecsByCategory[cat.slug]) {
-        setSpecs(defaultSpecsByCategory[cat.slug]);
+        setSpecs([...defaultSpecsByCategory[cat.slug]]);
       } else {
         setSpecs([]);
       }
