@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNotificationStore } from "../../stores/useNotificationStore";
 import { supabase } from "../../utils/supabase";
 import { useNavigate, useParams } from "react-router-dom";
+import { categorias as localCategorias } from "../../data/catalogo";
 
 interface ProductForm {
   name: string;
@@ -150,13 +151,62 @@ const AdminProductForm: React.FC = () => {
     }));
   };
 
+  // Resolver alias/slug de categoría con múltiples candidatos y normalización.
+  // Devuelve el alias que exista en defaultSpecsByCategory o null.
+  const resolveCategoryAlias = (cat: { id: string; name: string; slug: string } | undefined) => {
+    if (!cat) return null;
+    const normalize = (s?: string | null) => s ? s.toLowerCase().trim().replace(/\s+/g, '_').replace(/[^a-z0-9_\-]/g, '') : null;
+    const candidates: (string | null)[] = [];
+    candidates.push(normalize(cat.slug));
+    // slug sin prefijo tipo 'cat-' o 'cat_'
+    if (cat.slug) {
+      candidates.push(normalize(cat.slug.replace(/^cat[-_]/i, '')));
+    }
+    candidates.push(normalize(cat.id));
+    candidates.push(normalize(cat.name));
+    // buscar en catálogo local por id o nombre
+    const local = localCategorias.find(lc => lc.id === cat.id || lc.nombre.toLowerCase() === (cat.name || '').toLowerCase());
+    if (local && local.alias) candidates.push(normalize(local.alias));
+
+    // debug: mostrar candidatos
+    console.debug('[AdminProductForm] resolveCategoryAlias candidates:', candidates, 'for category:', cat);
+    // retornar el primer candidato que tenga specs por defecto
+    for (const c of candidates) {
+      if (c && defaultSpecsByCategory[c]) {
+        console.debug('[AdminProductForm] resolveCategoryAlias matched alias:', c);
+        return c;
+      }
+    }
+    console.debug('[AdminProductForm] resolveCategoryAlias no match');
+    return null;
+  };
+
+  // Handler específico para el select de categoría: setea form y fuerza las specs por defecto inmediatamente
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setForm((prev) => ({ ...prev, category_id: value }));
+    // Solo setear specs automáticas si NO estamos en modo edición (nuevo producto)
+    if (id) return;
+    const selected = categories.find(c => c.id === value);
+    const alias = resolveCategoryAlias(selected);
+    console.debug('[AdminProductForm] handleCategoryChange selected:', selected, 'resolved alias:', alias);
+    if (alias && defaultSpecsByCategory[alias]) {
+      setSpecs(defaultSpecsByCategory[alias].map(s => ({ key: s.key, value: '' })));
+    } else {
+      setSpecs([]);
+    }
+    setSpecsKey(k => k + 1);
+  };
+
   // Efecto: SIEMPRE que cambia la categoría (y NO es edición), setear specs por defecto de esa categoría
   useEffect(() => {
     if (!id) {
       if (form.category_id && categories.length > 0) {
         const cat = categories.find(c => c.id === form.category_id);
-        if (cat && cat.slug && defaultSpecsByCategory[cat.slug]) {
-          setSpecs(defaultSpecsByCategory[cat.slug].map(s => ({ key: s.key, value: '' })));
+        const alias = resolveCategoryAlias(cat);
+        console.debug('[AdminProductForm] effect on category change:', { category_id: form.category_id, alias, categoriesLoaded: categories.length });
+        if (alias && defaultSpecsByCategory[alias]) {
+          setSpecs(defaultSpecsByCategory[alias].map(s => ({ key: s.key, value: '' })));
         } else {
           setSpecs([]);
         }
@@ -230,7 +280,7 @@ const AdminProductForm: React.FC = () => {
       </div>
       <div className="mb-4">
         <label className="block mb-1">Categoría</label>
-        <select name="category_id" value={form.category_id} onChange={handleChange} className="w-full px-3 py-2 border rounded" required>
+        <select name="category_id" value={form.category_id} onChange={handleCategoryChange} className="w-full px-3 py-2 border rounded" required>
           <option value="">Seleccionar...</option>
           {categories.map((cat) => (
             <option key={cat.id} value={cat.id} data-slug={cat.slug}>{cat.name}</option>
