@@ -22,10 +22,7 @@ const AdminActivityLogs: React.FC = () => {
     const fetchLogs = async () => {
       setLoading(true);
       // Traer logs
-      const { data: logsData, error: logsError } = await supabase
-        .from("activity_logs")
-        .select("id, user_id, action, entity_type, entity_id, details, created_at")
-        .order("created_at", { ascending: false });
+      const { data: logsData, error: logsError } = await supabase.rpc('get_admin_activity_logs');
       if (logsError) {
         showNotification("Error al cargar logs", "error");
         setLoading(false);
