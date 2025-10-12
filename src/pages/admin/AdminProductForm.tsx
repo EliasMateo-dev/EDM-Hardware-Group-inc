@@ -29,6 +29,64 @@ const initialState: ProductForm = {
   is_active: true,
 };
 
+// Especificaciones por defecto por alias de categoría
+const defaultSpecsByCategory: Record<string, { key: string; value: string }[]> = {
+  cpu: [
+    { key: 'tdp', value: '' },
+    { key: 'cores', value: '' },
+    { key: 'socket', value: '' },
+    { key: 'threads', value: '' },
+    { key: 'base_clock', value: '' },
+    { key: 'boost_clock', value: '' },
+    { key: 'architecture', value: '' },
+  ],
+  gpu: [
+    { key: 'memory', value: '' },
+    { key: 'base_clock', value: '' },
+    { key: 'cuda_cores', value: '' },
+    { key: 'boost_clock', value: '' },
+    { key: 'memory_speed', value: '' },
+    { key: 'power_consumption', value: '' },
+  ],
+  motherboard: [
+    { key: 'socket', value: '' },
+    { key: 'chipset', value: '' },
+    { key: 'max_memory', value: '' },
+    { key: 'form_factor', value: '' },
+    { key: 'memory_type', value: '' },
+    { key: 'memory_slots', value: '' },
+  ],
+  ssd: [
+    { key: 'capacity', value: '' },
+    { key: 'interface', value: '' },
+    { key: 'read_speed', value: '' },
+    { key: 'form_factor', value: '' },
+    { key: 'write_speed', value: '' },
+  ],
+  ram: [
+    { key: 'kit', value: '' },
+    { key: 'type', value: '' },
+    { key: 'speed', value: '' },
+    { key: 'voltage', value: '' },
+    { key: 'capacity', value: '' },
+    { key: 'cas_latency', value: '' },
+  ],
+  case: [
+    { key: 'drive_bays', value: '' },
+    { key: 'form_factor', value: '' },
+    { key: 'fans_included', value: '' },
+    { key: 'max_cpu_cooler', value: '' },
+    { key: 'max_gpu_length', value: '' },
+  ],
+  psu: [
+    { key: 'modular', value: '' },
+    { key: 'wattage', value: '' },
+    { key: 'efficiency', value: '' },
+    { key: 'pcie_connectors', value: '' },
+    { key: 'sata_connectors', value: '' },
+  ],
+};
+
 const AdminProductForm: React.FC = () => {
   const [form, setForm] = useState<ProductForm>(initialState);
   const [specs, setSpecs] = useState<{ key: string; value: string }[]>([]);
@@ -46,14 +104,14 @@ const AdminProductForm: React.FC = () => {
     setSpecs((prev) => prev.filter((_, i) => i !== idx));
   };
   const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+  const [categories, setCategories] = useState<{id: string, name: string, slug: string}[]>([]);
   const { showNotification } = useNotificationStore();
   const navigate = useNavigate();
   const { id } = useParams();
 
   useEffect(() => {
     // Cargar categorías para el select
-    supabase.from("categories").select("id, name").then(({ data }) => {
+    supabase.from("categories").select("id, name, slug").then(({ data }) => {
       setCategories(data || []);
     });
   }, []);
@@ -68,10 +126,8 @@ const AdminProductForm: React.FC = () => {
           if (error) {
             showNotification("Error al cargar producto", "error");
           } else if (data) {
-            // Excluir specifications de setForm para evitar sobrescribir specs
             const { specifications, ...rest } = data;
             setForm(rest);
-            // Inicializar specs desde las especificaciones existentes SOLO una vez
             if (specifications && typeof specifications === "object") {
               setSpecs(Object.entries(specifications).map(([key, value]) => ({ key, value: String(value) })));
             } else {
@@ -81,10 +137,20 @@ const AdminProductForm: React.FC = () => {
           setLoading(false);
         });
     } else {
-      setSpecs([]);
+      // Si es nuevo, setear specs por defecto según la categoría seleccionada
+      if (form.category_id && categories.length > 0) {
+        const cat = categories.find(c => c.id === form.category_id);
+        if (cat && cat.slug && defaultSpecsByCategory[cat.slug]) {
+          setSpecs(defaultSpecsByCategory[cat.slug]);
+        } else {
+          setSpecs([]);
+        }
+      } else {
+        setSpecs([]);
+      }
     }
     return () => { mounted = false; };
-  }, [id, showNotification]);
+  }, [id, showNotification, form.category_id, categories]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -92,6 +158,15 @@ const AdminProductForm: React.FC = () => {
       ...prev,
       [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
+    // Si cambia la categoría y es nuevo, setear specs por defecto
+    if (name === 'category_id' && !id) {
+      const cat = categories.find(c => c.id === value);
+      if (cat && cat.slug && defaultSpecsByCategory[cat.slug]) {
+        setSpecs(defaultSpecsByCategory[cat.slug]);
+      } else {
+        setSpecs([]);
+      }
+    }
   };
 
 
@@ -159,7 +234,7 @@ const AdminProductForm: React.FC = () => {
         <select name="category_id" value={form.category_id} onChange={handleChange} className="w-full px-3 py-2 border rounded" required>
           <option value="">Seleccionar...</option>
           {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>{cat.name}</option>
+            <option key={cat.id} value={cat.id} data-slug={cat.slug}>{cat.name}</option>
           ))}
         </select>
       </div>
