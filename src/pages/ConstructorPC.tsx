@@ -338,7 +338,7 @@ export default function PCBuilderCompatibility() {
           </div>
         </div>
       )}
-  
+
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-7">
         {steps.map((step, i) => {
           const key = step.slug;
@@ -347,13 +347,18 @@ export default function PCBuilderCompatibility() {
             <article
               key={key}
               onClick={() => setCurrentStep(i)}
-              className={`flex cursor-pointer flex-col items-center rounded-xl border p-4 text-center transition-colors 
-                ${currentStep === i
+              className={`flex cursor-pointer flex-col items-center rounded-xl border p-4 text-center transition-colors
+    ${currentStep === i
                   ? 'border-blue-500 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20'
-                  : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
-                }`}>
+                  : (!selectedComponents[key] || selectedComponents[key]?.quantity === 0)
+                    ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
+                    : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
+                }`}
+            >
+
               <span className={`mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full 
               ${currentStep === i
+
                   ? 'bg-blue-500 text-white dark:bg-blue-600'
                   : 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
                 }`}>
@@ -404,10 +409,10 @@ export default function PCBuilderCompatibility() {
                     ${product.price?.toLocaleString?.('es-AR') ?? product.price}
                   </p>
                   <p className={`mt-1 text-xs ${stockDisponible > 5
-                      ? 'text-green-600 dark:text-green-400'
-                      : stockDisponible > 0
-                        ? 'text-yellow-600 dark:text-yellow-400'
-                        : 'text-red-600 dark:text-red-400'
+                    ? 'text-green-600 dark:text-green-400'
+                    : stockDisponible > 0
+                      ? 'text-yellow-600 dark:text-yellow-400'
+                      : 'text-red-600 dark:text-red-400'
                     }`}>
                     {stockDisponible > 5
                       ? `En stock (${stockDisponible})`
@@ -464,7 +469,7 @@ export default function PCBuilderCompatibility() {
                                       ? 'opacity-50 cursor-not-allowed'
                                       : ''
                                     }`}
-                                  onClick={() => handleIncreaseQuantity(slugKey)} 
+                                  onClick={() => handleIncreaseQuantity(slugKey)}
                                   disabled={curQty >= Math.min(product.stock, restrictions?.max ?? Infinity)}>
                                   <Plus size={16} />
                                 </button>
@@ -480,8 +485,8 @@ export default function PCBuilderCompatibility() {
                         <button
                           onClick={() => handleComponentSelect(slugKey, product, 1)}
                           className={`mt-4 w-full rounded-lg px-4 py-2 text-sm font-medium ${product.stock === 0
-                              ? 'cursor-not-allowed bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
-                              : 'bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'
+                            ? 'cursor-not-allowed bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                            : 'bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'
                             }`}
                           disabled={product.stock === 0}>Seleccionar</button>
                       )}
