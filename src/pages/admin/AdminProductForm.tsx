@@ -155,7 +155,11 @@ const AdminProductForm: React.FC = () => {
       }
       const cat = categories.find(c => c.id === value);
       if (cat && cat.slug && defaultSpecsByCategory[cat.slug]) {
-        setSpecs(defaultSpecsByCategory[cat.slug].map(s => ({ ...s })));
+        // Limpia antes de setear para forzar el render
+        setSpecs([]);
+        setTimeout(() => {
+          setSpecs(defaultSpecsByCategory[cat.slug].map(s => ({ ...s })));
+        }, 0);
       } else {
         setSpecs([]);
       }
