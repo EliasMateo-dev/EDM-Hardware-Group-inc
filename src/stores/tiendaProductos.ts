@@ -27,6 +27,11 @@ export const useTiendaProductos = create<EstadoProductos>((establecer, obtener) 
   cargarProductos: async (aliasCategoria) => {
     const { showNotification } = useNotificationStore.getState();
     establecer({ cargando: true });
+    // watchdog: si por alguna razón el proceso queda colgado, limpiar el flag
+    const watchdog = setTimeout(() => {
+      console.warn('cargarProductos watchdog triggered — clearing cargando flag');
+      establecer({ cargando: false });
+    }, 15000);
     try {
       let categoriaId: string | null = null;
       if (aliasCategoria) {
@@ -39,6 +44,7 @@ export const useTiendaProductos = create<EstadoProductos>((establecer, obtener) 
       if (categoriaId) query = query.eq('category_id', categoriaId);
       const { data, error } = await query;
       if (error) throw error;
+      clearTimeout(watchdog);
       establecer({
         productos: data || [],
         categoriaSeleccionada: aliasCategoria ?? null,
@@ -48,6 +54,7 @@ export const useTiendaProductos = create<EstadoProductos>((establecer, obtener) 
       console.error('cargarProductos error', err);
       try { showNotification && showNotification('Error al cargar productos', 'error'); } catch {}
       // ensure state updated
+      clearTimeout(watchdog);
       establecer({ cargando: false });
     }
   },

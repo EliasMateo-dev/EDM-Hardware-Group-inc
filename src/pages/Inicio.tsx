@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Loader2, Database } from 'lucide-react';
 import { useTiendaProductos } from '../stores/tiendaProductos';
@@ -12,6 +12,21 @@ export default function Inicio() {
   const obtenerProductosFiltrados = useTiendaProductos((estado) => estado.obtenerProductosFiltrados);
   const productos = obtenerProductosFiltrados();
   const terminoBusqueda = useTiendaProductos((estado) => estado.terminoBusqueda);
+  const cargarCategorias = useTiendaProductos((estado) => estado.cargarCategorias);
+
+  const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => {
+    let t: any;
+    if (cargando) {
+      setTimedOut(false);
+      t = setTimeout(() => setTimedOut(true), 12000);
+    } else {
+      setTimedOut(false);
+      if (t) clearTimeout(t);
+    }
+    return () => { if (t) clearTimeout(t); };
+  }, [cargando]);
 
   useEffect(() => {
     establecerCategoriaSeleccionada(null);
@@ -68,12 +83,21 @@ export default function Inicio() {
           <p className="text-sm text-slate-400 dark:text-slate-500">{productos.length} productos disponibles</p>
         </header>
 
-        {cargando ? (
+          {cargando ? (
           <div className="flex min-h-[280px] items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white transition-colors dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex items-center gap-3 text-sm font-medium text-slate-500 dark:text-slate-400">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Cargando catalogo...
-            </div>
+            {!timedOut ? (
+              <div className="flex items-center gap-3 text-sm font-medium text-slate-500 dark:text-slate-400">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Cargando catalogo...
+              </div>
+            ) : (
+              <div className="text-center">
+                <div className="mb-3 text-sm text-red-600">Tardó demasiado en cargar el catálogo.</div>
+                <div className="flex items-center justify-center gap-2">
+                  <button onClick={() => { cargarCategorias(); cargarProductos(null); }} className="bg-blue-600 text-white px-4 py-2 rounded">Reintentar</button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

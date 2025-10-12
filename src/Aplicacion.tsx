@@ -30,11 +30,17 @@ function Aplicacion() {
   const inicializarAuth = useTiendaAuth((estado) => estado.inicializarAuth);
 
   useEffect(() => {
-    inicializarTema();
-    inicializarAuth();
-    cargarCategorias();
-    cargarProductos(null);
-    cargarCarrito();
+    (async () => {
+      try {
+        inicializarTema();
+        await inicializarAuth();
+        await cargarCategorias();
+        await cargarProductos(null);
+        await cargarCarrito();
+      } catch (err) {
+        console.error('Error during app initialization', err);
+      }
+    })();
   }, [cargarCategorias, cargarProductos, cargarCarrito, inicializarTema, inicializarAuth]);
 
   return (
