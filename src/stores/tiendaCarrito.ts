@@ -74,9 +74,15 @@ export const useTiendaCarrito = create<EstadoCarrito>((establecer, obtener) => (
   },
 
   agregarAlCarrito: (productoId, cantidad = 1) => {
-  const producto = useTiendaProductos.getState().productos.find((p) => p.id === productoId);
+    const producto = useTiendaProductos.getState().productos.find((p) => p.id === productoId);
     if (!producto) {
       console.warn('Producto no encontrado para el carrito:', productoId);
+      return;
+    }
+    // Validar que el producto tenga nombre y precio válidos
+    if (!producto.name || typeof producto.price !== 'number' || isNaN(producto.price)) {
+      console.warn('Producto inválido para el carrito:', producto);
+      alert('Este producto no tiene información válida y no puede ser agregado al carrito.');
       return;
     }
 
