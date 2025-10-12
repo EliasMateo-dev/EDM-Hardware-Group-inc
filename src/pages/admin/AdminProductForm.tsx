@@ -150,16 +150,19 @@ const AdminProductForm: React.FC = () => {
     }));
   };
 
-  // Efecto dedicado: cuando cambia la categoría y es nuevo, setear specs por defecto SOLO si specs está vacío
+  // Efecto dedicado: cuando cambia la categoría y es nuevo, setear specs por defecto SIEMPRE
   useEffect(() => {
-    if (!id && form.category_id && categories.length > 0 && specs.length === 0) {
+    if (!id && form.category_id && categories.length > 0) {
       const cat = categories.find(c => c.id === form.category_id);
       if (cat && cat.slug && defaultSpecsByCategory[cat.slug]) {
         setSpecs(defaultSpecsByCategory[cat.slug].map(s => ({ key: s.key, value: '' })));
         setSpecsKey(k => k + 1);
+      } else {
+        setSpecs([]);
+        setSpecsKey(k => k + 1);
       }
     }
-    if (!id && !form.category_id && specs.length > 0) {
+    if (!id && !form.category_id) {
       setSpecs([]);
       setSpecsKey(k => k + 1);
     }
