@@ -90,6 +90,7 @@ const defaultSpecsByCategory: Record<string, { key: string; value: string }[]> =
 const AdminProductForm: React.FC = () => {
   const [form, setForm] = useState<ProductForm>(initialState);
   const [specs, setSpecs] = useState<{ key: string; value: string }[]>([]);
+  const [specsKey, setSpecsKey] = useState(0); // Para forzar rerender
 
   // Manejo de especificaciones dinámicas
   const handleSpecChange = (idx: number, field: 'key' | 'value', value: string) => {
@@ -151,17 +152,20 @@ const AdminProductForm: React.FC = () => {
     if (name === 'category_id' && !id) {
       if (!value) {
         setSpecs([]);
+        setSpecsKey(k => k + 1);
         return;
       }
       const cat = categories.find(c => c.id === value);
       if (cat && cat.slug && defaultSpecsByCategory[cat.slug]) {
-        // Limpia antes de setear para forzar el render
         setSpecs([]);
+        setSpecsKey(k => k + 1);
         setTimeout(() => {
           setSpecs(defaultSpecsByCategory[cat.slug].map(s => ({ ...s })));
+          setSpecsKey(k => k + 1);
         }, 0);
       } else {
         setSpecs([]);
+        setSpecsKey(k => k + 1);
       }
     }
   };
@@ -239,7 +243,7 @@ const AdminProductForm: React.FC = () => {
         <label className="block mb-1">Especificaciones</label>
         {specs && specs.length > 0 ? (
           specs.map((spec, idx) => (
-            <div key={idx} className="flex gap-2 mb-2">
+            <div key={specsKey + '-' + idx} className="flex gap-2 mb-2">
               <input
                 type="text"
                 placeholder="Clave"
