@@ -37,35 +37,29 @@ const AdminProducts: React.FC = () => {
     if (!perfil || !perfil.is_admin) return;
     const fetchAll = async () => {
       setLoading(true);
-      try {
-        const [{ data: prodData, error: prodError }, { data: catData, error: catError }] = await Promise.all([
-          supabase.from("products").select("id, name, brand, price, stock, category_id, is_active"),
-          supabase.from("categories").select("id, name")
-        ]);
-        if (prodError) {
-          showNotification("Error al cargar productos", "error");
-        } else {
-          setProducts(prodData || []);
-        }
-        if (catError) {
-          showNotification("Error al cargar categorías", "error");
-        } else {
-          const map: CategoryMap = {};
-          (catData || []).forEach((c: any) => { map[c.id] = c.name; });
-          setCategories(map);
-        }
-      } catch (err) {
-        console.error('fetchAll error', err);
-        showNotification('Error al cargar datos', 'error');
-      } finally {
-        setLoading(false);
+      const [{ data: prodData, error: prodError }, { data: catData, error: catError }] = await Promise.all([
+        supabase.from("products").select("id, name, brand, price, stock, category_id, is_active"),
+        supabase.from("categories").select("id, name")
+      ]);
+      if (prodError) {
+        showNotification("Error al cargar productos", "error");
+      } else {
+        setProducts(prodData || []);
       }
+      if (catError) {
+        showNotification("Error al cargar categorías", "error");
+      } else {
+        const map: CategoryMap = {};
+        (catData || []).forEach((c: any) => { map[c.id] = c.name; });
+        setCategories(map);
+      }
+      setLoading(false);
     };
     fetchAll();
   }, [showNotification, perfil]);
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Seguro que querés eliminar este producto?")) return;
+    if (!window.confirm("¿Seguro que deseas eliminar este producto?")) return;
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) {
       showNotification("Error al eliminar producto", "error");

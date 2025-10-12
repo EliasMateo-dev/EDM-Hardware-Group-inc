@@ -17,36 +17,25 @@ const AdminUsers: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
-      try {
-        // Usar la función RPC para que los admins vean todos y los usuarios normales solo el suyo
-        const { data, error } = await supabase.rpc('get_all_profiles');
-        if (error) {
-          showNotification("Error al cargar usuarios", "error");
-        } else {
-          setUsers(Array.isArray(data) ? data : []);
-        }
-      } catch (err) {
-        console.error('fetchUsers error', err);
-        showNotification('Error al cargar usuarios', 'error');
-      } finally {
-        setLoading(false);
+      // Usar la función RPC para que los admins vean todos y los usuarios normales solo el suyo
+      const { data, error } = await supabase.rpc('get_all_profiles');
+      if (error) {
+        showNotification("Error al cargar usuarios", "error");
+      } else {
+        setUsers(Array.isArray(data) ? data : []);
       }
+      setLoading(false);
     };
     fetchUsers();
   }, [showNotification]);
 
   const handleToggleAdmin = async (id: string, current: boolean) => {
-    try {
-      const { error } = await supabase.from("profiles").update({ is_admin: !current }).eq("id", id);
-      if (error) {
-        showNotification("Error al actualizar usuario", "error");
-      } else {
-        setUsers((prev) => prev.map((u) => u.id === id ? { ...u, is_admin: !current } : u));
-        showNotification("Permisos actualizados", "success");
-      }
-    } catch (err) {
-      console.error('handleToggleAdmin error', err);
-      showNotification('Error al actualizar usuario', 'error');
+    const { error } = await supabase.from("profiles").update({ is_admin: !current }).eq("id", id);
+    if (error) {
+      showNotification("Error al actualizar usuario", "error");
+    } else {
+      setUsers((prev) => prev.map((u) => u.id === id ? { ...u, is_admin: !current } : u));
+      showNotification("Permisos actualizados", "success");
     }
   };
 

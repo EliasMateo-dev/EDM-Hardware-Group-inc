@@ -26,22 +26,16 @@ const AdminCategoryForm: React.FC = () => {
 
   useEffect(() => {
     if (id) {
-      (async () => {
-        setLoading(true);
-        try {
-          const { data, error } = await supabase.from("categories").select("name, slug, description, icon").eq("id", id).single();
+      setLoading(true);
+      supabase.from("categories").select("name, slug, description, icon").eq("id", id).single()
+        .then(({ data, error }) => {
           if (error) {
             showNotification("Error al cargar categoría", "error");
           } else if (data) {
             setForm(data);
           }
-        } catch (err) {
-          console.error('Error cargar categoría', err);
-          showNotification("Error al cargar categoría", "error");
-        } finally {
           setLoading(false);
-        }
-      })();
+        });
     }
   }, [id, showNotification]);
 
@@ -53,32 +47,26 @@ const AdminCategoryForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      if (id) {
-        // Update
-        const { error } = await supabase.from("categories").update(form).eq("id", id);
-        if (error) {
-          showNotification("Error al actualizar categoría", "error");
-        } else {
-          showNotification("Categoría actualizada", "success");
-          navigate("/admin/categories");
-        }
+    if (id) {
+      // Update
+      const { error } = await supabase.from("categories").update(form).eq("id", id);
+      if (error) {
+        showNotification("Error al actualizar categoría", "error");
       } else {
-        // Create
-        const { error } = await supabase.from("categories").insert([form]);
-        if (error) {
-          showNotification("Error al crear categoría", "error");
-        } else {
-          showNotification("Categoría creada", "success");
-          navigate("/admin/categories");
-        }
+        showNotification("Categoría actualizada", "success");
+        navigate("/admin/categories");
       }
-    } catch (err) {
-      console.error('Error handleSubmit category', err);
-      showNotification('Error al guardar categoría', 'error');
-    } finally {
-      setLoading(false);
+    } else {
+      // Create
+      const { error } = await supabase.from("categories").insert([form]);
+      if (error) {
+        showNotification("Error al crear categoría", "error");
+      } else {
+        showNotification("Categoría creada", "success");
+        navigate("/admin/categories");
+      }
     }
+    setLoading(false);
   };
 
   return (

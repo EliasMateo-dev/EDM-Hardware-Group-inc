@@ -21,33 +21,28 @@ const AdminActivityLogs: React.FC = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       setLoading(true);
-      try {
-        // Traer logs
-        const { data: logsData, error: logsError } = await supabase.rpc('get_admin_activity_logs');
-        if (logsError) {
-          showNotification("Error al cargar logs", "error");
-          return;
-        }
-        setLogs(logsData || []);
-        // Traer emails/nombres de usuarios únicos
-        const userIds = Array.from(new Set((logsData || []).map((l: any) => l.user_id)));
-        if (userIds.length > 0) {
-          const { data: usersData } = await supabase
-            .from("profiles")
-            .select("id, email, full_name")
-            .in("id", userIds);
-          const map: Record<string, { email: string; full_name?: string }> = {};
-          (usersData || []).forEach((u: any) => {
-            map[u.id] = { email: u.email, full_name: u.full_name };
-          });
-          setUserMap(map);
-        }
-      } catch (err) {
-        console.error('fetchLogs error', err);
-        showNotification('Error al cargar logs', 'error');
-      } finally {
+      // Traer logs
+      const { data: logsData, error: logsError } = await supabase.rpc('get_admin_activity_logs');
+      if (logsError) {
+        showNotification("Error al cargar logs", "error");
         setLoading(false);
+        return;
       }
+      setLogs(logsData || []);
+      // Traer emails/nombres de usuarios únicos
+      const userIds = Array.from(new Set((logsData || []).map((l: any) => l.user_id)));
+      if (userIds.length > 0) {
+        const { data: usersData } = await supabase
+          .from("profiles")
+          .select("id, email, full_name")
+          .in("id", userIds);
+        const map: Record<string, { email: string; full_name?: string }> = {};
+        (usersData || []).forEach((u: any) => {
+          map[u.id] = { email: u.email, full_name: u.full_name };
+        });
+        setUserMap(map);
+      }
+      setLoading(false);
     };
     fetchLogs();
   }, [showNotification]);

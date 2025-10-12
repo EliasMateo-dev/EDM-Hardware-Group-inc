@@ -122,28 +122,22 @@ const AdminProductForm: React.FC = () => {
   // Solo para edición: cargar producto existente
   useEffect(() => {
     if (id) {
-      (async () => {
-        setLoading(true);
-        try {
-          const { data, error } = await supabase.from("products").select("name, brand, model, description, price, stock, category_id, specifications, image_url, is_active").eq("id", id).single();
+      setLoading(true);
+      supabase.from("products").select("name, brand, model, description, price, stock, category_id, specifications, image_url, is_active").eq("id", id).single()
+        .then(({ data, error }) => {
           if (error) {
             showNotification("Error al cargar producto", "error");
           } else if (data) {
             const { specifications, ...rest } = data;
-            setForm(rest as any);
+            setForm(rest);
             if (specifications && typeof specifications === "object") {
               setSpecs(Object.entries(specifications).map(([key, value]) => ({ key, value: String(value) })));
             } else {
               setSpecs([]);
             }
           }
-        } catch (err) {
-          console.error('Error cargar producto', err);
-          showNotification("Error al cargar producto", "error");
-        } finally {
           setLoading(false);
-        }
-      })();
+        });
     }
   }, [id, showNotification]);
 
@@ -228,39 +222,33 @@ const AdminProductForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      let imageUrl = form.image_url;
-      // Construir especificaciones desde specs
-      let specifications: Record<string, string> = {};
-      specs.forEach(({ key, value }) => {
-        if (key.trim()) specifications[key.trim()] = value.trim();
-      });
-      const payload = { ...form, image_url: imageUrl, specifications };
-      if (id) {
-        // Update
-        const { error } = await supabase.from("products").update(payload).eq("id", id);
-        if (error) {
-          showNotification("Error al actualizar producto", "error");
-        } else {
-          showNotification("Producto actualizado", "success");
-          navigate("/admin/products");
-        }
+    let imageUrl = form.image_url;
+    // Construir especificaciones desde specs
+    let specifications: Record<string, string> = {};
+    specs.forEach(({ key, value }) => {
+      if (key.trim()) specifications[key.trim()] = value.trim();
+    });
+    const payload = { ...form, image_url: imageUrl, specifications };
+    if (id) {
+      // Update
+      const { error } = await supabase.from("products").update(payload).eq("id", id);
+      if (error) {
+        showNotification("Error al actualizar producto", "error");
       } else {
-        // Create
-        const { error } = await supabase.from("products").insert([payload]);
-        if (error) {
-          showNotification("Error al crear producto", "error");
-        } else {
-          showNotification("Producto creado", "success");
-          navigate("/admin/products");
-        }
+        showNotification("Producto actualizado", "success");
+        navigate("/admin/products");
       }
-    } catch (err) {
-      console.error('handleSubmit product error', err);
-      showNotification('Error al guardar producto', 'error');
-    } finally {
-      setLoading(false);
+    } else {
+      // Create
+      const { error } = await supabase.from("products").insert([payload]);
+      if (error) {
+        showNotification("Error al crear producto", "error");
+      } else {
+        showNotification("Producto creado", "success");
+        navigate("/admin/products");
+      }
     }
+    setLoading(false);
   };
 
   return (
