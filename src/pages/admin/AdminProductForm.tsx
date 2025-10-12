@@ -150,21 +150,21 @@ const AdminProductForm: React.FC = () => {
     }));
   };
 
-  // Efecto dedicado: cuando cambia la categoría y es nuevo, setear specs por defecto SIEMPRE
+  // Efecto: SIEMPRE que cambia la categoría (y NO es edición), setear specs por defecto de esa categoría
   useEffect(() => {
-    if (!id && form.category_id && categories.length > 0) {
-      const cat = categories.find(c => c.id === form.category_id);
-      if (cat && cat.slug && defaultSpecsByCategory[cat.slug]) {
-        setSpecs(defaultSpecsByCategory[cat.slug].map(s => ({ key: s.key, value: '' })));
+    if (!id) {
+      if (form.category_id && categories.length > 0) {
+        const cat = categories.find(c => c.id === form.category_id);
+        if (cat && cat.slug && defaultSpecsByCategory[cat.slug]) {
+          setSpecs(defaultSpecsByCategory[cat.slug].map(s => ({ key: s.key, value: '' })));
+        } else {
+          setSpecs([]);
+        }
         setSpecsKey(k => k + 1);
       } else {
         setSpecs([]);
         setSpecsKey(k => k + 1);
       }
-    }
-    if (!id && !form.category_id) {
-      setSpecs([]);
-      setSpecsKey(k => k + 1);
     }
   }, [form.category_id, categories, id]);
 
