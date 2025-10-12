@@ -13,6 +13,15 @@ import ConstructorPC from './pages/ConstructorPC';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailure from './pages/PaymentFailure';
 import PaymentPending from './pages/PaymentPending';
+// Admin imports
+import AdminLayout from './components/AdminLayout';
+import AdminProducts from './pages/admin/AdminProducts';
+import AdminProductForm from './pages/admin/AdminProductForm';
+import AdminCategories from './pages/admin/AdminCategories';
+import AdminCategoryForm from './pages/admin/AdminCategoryForm';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminUserForm from './pages/admin/AdminUserForm';
+import AdminActivityLogs from './pages/admin/AdminActivityLogs';
 
 function Aplicacion() {
   const { cargarCategorias, cargarProductos } = useTiendaProductos();
@@ -39,6 +48,20 @@ function Aplicacion() {
         <Route path="payment/failure" element={<PaymentFailure />} />
         <Route path="payment/pending" element={<PaymentPending />} />
         <Route path="supabase-test" element={<SupabaseTest />} />
+      </Route>
+      {/* Admin routes */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<AdminProducts />} />
+        <Route path="products" element={<AdminProducts />} />
+        <Route path="products/new" element={<AdminProductForm />} />
+        <Route path="products/edit/:id" element={<AdminProductForm />} />
+        <Route path="categories" element={<AdminCategories />} />
+        <Route path="categories/new" element={<AdminCategoryForm />} />
+        <Route path="categories/edit/:id" element={<AdminCategoryForm />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="users/new" element={<AdminUserForm />} />
+        <Route path="users/edit/:id" element={<AdminUserForm />} />
+        <Route path="logs" element={<AdminActivityLogs />} />
       </Route>
     </Routes>
   );

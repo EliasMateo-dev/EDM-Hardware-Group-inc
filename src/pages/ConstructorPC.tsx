@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, CircuitBoard, Cpu, HardDrive, MemoryStick, Monitor, Zap, AlertCircle, Check, Plus, Minus } from 'lucide-react';
 import { supabase, Product, Category } from '../utils/supabase';
 import { useTiendaCarrito } from '../stores/tiendaCarrito';
@@ -35,6 +36,7 @@ const componentRestrictions = {
 };
 
 export default function PCBuilderCompatibility() {
+  const navigate = useNavigate();
   // Estado para el paso actual
   const [currentStep, setCurrentStep] = useState<number>(0);
   // Estado para los componentes seleccionados
@@ -272,11 +274,27 @@ export default function PCBuilderCompatibility() {
   };
 
   const handleAddToCart = async () => {
+    // Validar que todos los componentes requeridos estén seleccionados
+    const missing: string[] = [];
+    Object.entries(componentRestrictions).forEach(([slug, restr]) => {
+      const comp = selectedComponents[slug];
+      if (!comp || comp.quantity < restr.min) {
+        missing.push(restr.name);
+      }
+    });
+    if (missing.length > 0) {
+      setValidationErrors(prev => ({ ...prev, general: `Faltan seleccionar: ${missing.join(', ')}` }));
+      setTimeout(() => setValidationErrors(prev => { const c = { ...prev }; delete c.general; return c; }), 3000);
+      return;
+    }
     Object.values(selectedComponents).forEach(c => {
       if (c) agregarAlCarrito(c.id, c.quantity);
     });
     setSuccessMessages({ form: 'Componentes agregados al carrito' });
-    setTimeout(() => setSuccessMessages({}), 1500);
+    setTimeout(() => {
+      setSuccessMessages({});
+      navigate('/carrito');
+    }, 1000);
   };
 
   const currentSlug = steps[currentStep]?.slug;
