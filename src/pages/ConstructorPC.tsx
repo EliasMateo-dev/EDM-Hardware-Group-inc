@@ -71,10 +71,10 @@ export default function PCBuilder() {
       return false;
     }
 
-    if (quantity > product.existencias) {
+    if (quantity > product.stock) {
       setValidationErrors({
         ...validationErrors,
-        [productId]: `Solo hay ${product.existencias} unidades disponibles`
+        [productId]: `Solo hay ${product.stock} unidades disponibles`
       });
       return false;
     }
@@ -119,8 +119,8 @@ export default function PCBuilder() {
 
       if (cpuProduct && mbProduct) {
         // Ejemplo: Validar socket compatible
-        if (cpuProduct.especificaciones.socket !== mbProduct.especificaciones.socket) {
-          newErrors['compatibility'] = `El socket del CPU (${cpuProduct.especificaciones.socket}) no es compatible con la placa base (${mbProduct.especificaciones.socket})`;
+        if (cpuProduct.specifications.socket !== mbProduct.specifications.socket) {
+          newErrors['compatibility'] = `El socket del CPU (${cpuProduct.specifications.socket}) no es compatible con la placa base (${mbProduct.specifications.socket})`;
           isValid = false;
         } else {
           delete newErrors['compatibility'];
@@ -194,10 +194,10 @@ export default function PCBuilder() {
     }
 
     // Verificar si hay suficiente stock
-    if (product.existencias < newQuantity) {
+    if (product.stock < newQuantity) {
       setValidationErrors(prev => ({
         ...prev,
-        [productId]: `Solo hay ${product.existencias} unidades disponibles`
+        [productId]: `Solo hay ${product.stock} unidades disponibles`
       }));
       return;
     }
@@ -344,8 +344,8 @@ export default function PCBuilder() {
       Object.entries(selectedComponents).forEach(([categoryId, component]) => {
         if (component) {
           const product = productos.find(p => p.id === component.id);
-          if (product && product.existencias < component.quantity) {
-            newErrors[product.id] = `Solo hay ${product.existencias} unidades disponibles`;
+          if (product && product.stock < component.quantity) {
+            newErrors[product.id] = `Solo hay ${product.stock} unidades disponibles`;
             allInStock = false;
           }
         }
@@ -387,7 +387,7 @@ export default function PCBuilder() {
 
   // Filtrar productos por categoría actual
   const currentCategoryId = steps[currentStep]?.categoryId;
-  const currentCategoryProducts = productos.filter(p => p.categoriaId === currentCategoryId);
+  const currentCategoryProducts = productos.filter(p => p.category_id === currentCategoryId);
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
@@ -503,7 +503,7 @@ export default function PCBuilder() {
               const selectedQuantity = selectedComponents[currentCategoryId]?.id === product.id
                 ? selectedComponents[currentCategoryId]?.quantity || 0
                 : 0;
-              const stockDisponible = product.existencias - selectedQuantity;
+              const stockDisponible = product.stock - selectedQuantity;
 
 
               return (
@@ -514,10 +514,10 @@ export default function PCBuilder() {
                     : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60'
                     }`}
                 >
-                  <h3 className="font-medium text-slate-900 dark:text-slate-100">{product.nombre}</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">{product.marca} {product.modelo}</p>
+                  <h3 className="font-medium text-slate-900 dark:text-slate-100">{product.name}</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{product.brand} {product.model}</p>
                   <p className="mt-2 font-semibold text-slate-900 dark:text-slate-100">
-                    ${product.precio.toLocaleString('es-AR')}
+                    ${product.price.toLocaleString('es-AR')}
                   </p>
 
                   {/* Inventario */}
@@ -568,9 +568,9 @@ export default function PCBuilder() {
                           </button>
                           <span className="text-sm font-medium">{currentQuantity}</span>
                           <button
-                            className={`rounded-md bg-slate-200 px-3 py-1 text-sm font-medium dark:bg-slate-700 ${currentQuantity >= Math.min(product.existencias, restrictions?.max || Infinity) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`rounded-md bg-slate-200 px-3 py-1 text-sm font-medium dark:bg-slate-700 ${currentQuantity >= Math.min(product.stock, restrictions?.max || Infinity) ? 'opacity-50 cursor-not-allowed' : ''}`}
                             onClick={() => handleIncreaseQuantity(product.id, currentCategoryId)}
-                            disabled={currentQuantity >= Math.min(product.existencias, restrictions?.max || Infinity)}
+                            disabled={currentQuantity >= Math.min(product.stock, restrictions?.max || Infinity)}
                           >
                             <Plus size={16} />
                           </button>
@@ -585,9 +585,9 @@ export default function PCBuilder() {
                     )
                   ) : (
                     <button
-                      className={`mt-4 w-full rounded-lg px-4 py-2 text-sm font-medium ${product.existencias === 0 ? 'cursor-not-allowed bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-400' : 'bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'}`}
+                      className={`mt-4 w-full rounded-lg px-4 py-2 text-sm font-medium ${product.stock === 0 ? 'cursor-not-allowed bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-400' : 'bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'}`}
                       onClick={() => handleComponentSelect(currentCategoryId, product.id, 1)}
-                      disabled={product.existencias === 0}
+                      disabled={product.stock === 0}
                     >
                       Seleccionar
                     </button>
