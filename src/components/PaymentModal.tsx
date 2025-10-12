@@ -99,11 +99,11 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
         price_data: {
           currency: 'ars',
           product_data: {
-            name: elemento.producto.nombre,
-            description: `${elemento.producto.marca} ${elemento.producto.modelo}`,
-            images: elemento.producto.imagen ? [elemento.producto.imagen] : [],
+            name: elemento.producto.name,
+            description: `${elemento.producto.brand} ${elemento.producto.model}`,
+            images: elemento.producto.image_url ? [elemento.producto.image_url] : [],
           },
-          unit_amount: Math.round(elemento.producto.precio * 100), // Convertir a centavos
+          unit_amount: Math.round(elemento.producto.price * 100), // Convertir a centavos
         },
         quantity: elemento.cantidad,
       }));
@@ -126,9 +126,9 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
             order_data: JSON.stringify({
               items: elementos.map(el => ({
                 product_id: el.producto.id,
-                name: el.producto.nombre,
+                name: el.producto.name,
                 quantity: el.cantidad,
-                price: el.producto.precio
+                price: el.producto.price
               })),
               customer_data: customerData,
               total_amount: totalAmount
