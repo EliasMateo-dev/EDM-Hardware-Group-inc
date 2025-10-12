@@ -75,12 +75,6 @@ const AdminUsers: React.FC = () => {
                     <td className="px-4 py-2">{u.email}</td>
                     <td className="px-4 py-2">{u.full_name || "-"}</td>
                     <td className="px-4 py-2">
-                      <button
-                        onClick={() => handleToggleAdmin(u.id, u.is_admin)}
-                        className="px-3 py-1 rounded bg-gray-300 text-gray-800 hover:bg-gray-400"
-                      >
-                        Quitar admin
-                      </button>
                     </td>
                   </tr>
                 ))
