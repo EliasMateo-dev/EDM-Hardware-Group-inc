@@ -101,7 +101,7 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
           product_data: {
             name: elemento.producto.name,
           },
-          unit_amount: Math.round(elemento.producto.price * 100),
+          unit_amount: Math.round(elemento.producto.price),
         },
         quantity: elemento.cantidad,
       }));
