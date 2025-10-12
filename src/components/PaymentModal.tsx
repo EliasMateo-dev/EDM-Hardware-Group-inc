@@ -127,16 +127,8 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
         mode: 'payment',
         metadata: {
           user_id: usuario.id,
-          order_data: JSON.stringify({
-            items: elementos.map(el => ({
-              product_id: el.producto.id,
-              name: el.producto.name,
-              quantity: el.cantidad,
-              price: el.producto.price
-            })),
-            customer_data: customerData,
-            total_amount: totalAmount
-          })
+          total_amount: totalAmount,
+          items_count: elementos.length
         }
       };
       // Log para depuración
