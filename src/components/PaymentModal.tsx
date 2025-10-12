@@ -106,33 +106,37 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
         quantity: elemento.cantidad,
       }));
 
+      // Construir el payload
+      const payload = {
+        line_items: lineItems,
+        customer_data: {
+          name: customerData.name,
+          email: customerData.email,
+          phone: customerData.phone,
+          address: customerData.address,
+        },
+        success_url: `${window.location.origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${window.location.origin}/carrito`,
+        mode: 'payment',
+        metadata: {
+          user_id: usuario.id,
+          order_data: JSON.stringify({
+            items: elementos.map(el => ({
+              product_id: el.producto.id,
+              name: el.producto.name,
+              quantity: el.cantidad,
+              price: el.producto.price
+            })),
+            customer_data: customerData,
+            total_amount: totalAmount
+          })
+        }
+      };
+      // Log para depuración
+      console.log('Checkout payload:', JSON.stringify(payload, null, 2));
       // Crear sesión de checkout usando Supabase Edge Function
       const { data, error: functionError } = await supabase.functions.invoke('stripe-checkout', {
-        body: {
-          line_items: lineItems,
-          customer_data: {
-            name: customerData.name,
-            email: customerData.email,
-            phone: customerData.phone,
-            address: customerData.address,
-          },
-          success_url: `${window.location.origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${window.location.origin}/carrito`,
-          mode: 'payment',
-          metadata: {
-            user_id: usuario.id,
-            order_data: JSON.stringify({
-              items: elementos.map(el => ({
-                product_id: el.producto.id,
-                name: el.producto.name,
-                quantity: el.cantidad,
-                price: el.producto.price
-              })),
-              customer_data: customerData,
-              total_amount: totalAmount
-            })
-          }
-        },
+        body: payload,
         headers: {
           Authorization: `Bearer ${sesion.access_token}`,
         },
