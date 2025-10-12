@@ -17,11 +17,8 @@ const AdminUsers: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
-      // Traer todos los usuarios, sin paginación ni filtro accidental
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, email, full_name, is_admin")
-        .limit(1000); // Asegura traer todos
+      // Usar la función RPC para que los admins vean todos y los usuarios normales solo el suyo
+      const { data, error } = await supabase.rpc('get_all_profiles');
       if (error) {
         showNotification("Error al cargar usuarios", "error");
       } else {

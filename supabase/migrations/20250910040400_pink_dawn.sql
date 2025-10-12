@@ -1,3 +1,19 @@
+-- Función RPC para que los admins vean todos los perfiles y los usuarios normales solo el suyo
+create or replace function get_all_profiles()
+returns setof profiles
+language plpgsql
+security definer
+as $$
+begin
+  if exists (
+    select 1 from profiles where id = auth.uid() and is_admin = true
+  ) then
+    return query select * from profiles;
+  else
+    return query select * from profiles where id = auth.uid();
+  end if;
+end;
+$$;
 /*
   # Schema inicial para e-commerce de hardware
 
@@ -93,7 +109,6 @@ ALTER TABLE cart_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 
--- Políticas para profiles
 CREATE POLICY "Users can read own profile"
   ON profiles FOR SELECT
   TO authenticated
