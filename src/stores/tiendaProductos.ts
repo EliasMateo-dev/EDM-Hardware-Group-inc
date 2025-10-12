@@ -1,8 +1,7 @@
 ﻿import { create } from 'zustand';
 import type { Product, Category } from '../utils/supabase';
 import { supabase } from '../utils/supabase';
-
-const esperar = (ms: number) => new Promise((resolver) => setTimeout(resolver, ms));
+import { useNotificationStore } from './useNotificationStore';
 
 interface EstadoProductos {
   productos: Product[];
@@ -26,26 +25,44 @@ export const useTiendaProductos = create<EstadoProductos>((establecer, obtener) 
   terminoBusqueda: '',
 
   cargarProductos: async (aliasCategoria) => {
+    const { showNotification } = useNotificationStore.getState();
     establecer({ cargando: true });
-    let categoriaId: string | null = null;
-    if (aliasCategoria) {
-      // Buscar el id de la categoría por alias
-      const { data: cats } = await supabase.from('categories').select('id, slug');
-      categoriaId = cats?.find((c) => c.slug === aliasCategoria)?.id ?? null;
+    try {
+      let categoriaId: string | null = null;
+      if (aliasCategoria) {
+        // Buscar el id de la categoría por alias
+        const { data: cats, error: catsErr } = await supabase.from('categories').select('id, slug');
+        if (catsErr) throw catsErr;
+        categoriaId = cats?.find((c) => c.slug === aliasCategoria)?.id ?? null;
+      }
+      let query = supabase.from('products').select('*').eq('is_active', true);
+      if (categoriaId) query = query.eq('category_id', categoriaId);
+      const { data, error } = await query;
+      if (error) throw error;
+      establecer({
+        productos: data || [],
+        categoriaSeleccionada: aliasCategoria ?? null,
+        cargando: false,
+      });
+    } catch (err: any) {
+      console.error('cargarProductos error', err);
+      try { showNotification && showNotification('Error al cargar productos', 'error'); } catch {}
+      // ensure state updated
+      establecer({ cargando: false });
     }
-    let query = supabase.from('products').select('*').eq('is_active', true);
-    if (categoriaId) query = query.eq('category_id', categoriaId);
-    const { data, error } = await query;
-    establecer({
-      productos: data || [],
-      categoriaSeleccionada: aliasCategoria ?? null,
-      cargando: false,
-    });
   },
 
   cargarCategorias: async () => {
-    const { data, error } = await supabase.from('categories').select('*');
-    establecer({ categorias: data || [] });
+    const { showNotification } = useNotificationStore.getState();
+    try {
+      const { data, error } = await supabase.from('categories').select('*');
+      if (error) throw error;
+      establecer({ categorias: data || [] });
+    } catch (err) {
+      console.error('cargarCategorias error', err);
+      try { showNotification && showNotification('Error al cargar categorías', 'error'); } catch {}
+      establecer({ categorias: [] });
+    }
   },
 
   establecerCategoriaSeleccionada: (aliasCategoria) => {
