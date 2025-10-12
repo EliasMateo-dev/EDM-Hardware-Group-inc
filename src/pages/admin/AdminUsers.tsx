@@ -17,16 +17,15 @@ const AdminUsers: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
-      // Traer todos los usuarios, tanto admins como no admins
+      // Traer todos los usuarios, sin paginación ni filtro accidental
       const { data, error } = await supabase
         .from("profiles")
         .select("id, email, full_name, is_admin")
-        .order('is_admin', { ascending: false })
-        .order('full_name', { ascending: true });
+        .limit(1000); // Asegura traer todos
       if (error) {
         showNotification("Error al cargar usuarios", "error");
       } else {
-        setUsers(data || []);
+        setUsers(Array.isArray(data) ? data : []);
       }
       setLoading(false);
     };
@@ -43,8 +42,8 @@ const AdminUsers: React.FC = () => {
     }
   };
 
-  const adminUsers = users.filter(u => u.is_admin);
-  const normalUsers = users.filter(u => !u.is_admin);
+  const adminUsers = Array.isArray(users) ? users.filter(u => u.is_admin) : [];
+  const normalUsers = Array.isArray(users) ? users.filter(u => !u.is_admin) : [];
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Usuarios</h1>
