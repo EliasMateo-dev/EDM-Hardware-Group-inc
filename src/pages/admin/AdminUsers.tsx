@@ -39,6 +39,7 @@ const AdminUsers: React.FC = () => {
   };
 
   const adminUsers = users.filter(u => u.is_admin);
+  const normalUsers = users.filter(u => !u.is_admin);
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Usuarios</h1>
@@ -83,38 +84,36 @@ const AdminUsers: React.FC = () => {
           </table>
         </div>
       </div>
-      {/* Tabla completa de usuarios */}
+      {/* Tabla de usuarios normales (no admins) */}
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white dark:bg-gray-800 border rounded">
           <thead>
             <tr>
               <th className="px-4 py-2 text-center">Email</th>
               <th className="px-4 py-2 text-center">Nombre</th>
-              <th className="px-4 py-2 text-center">Administrador</th>
               <th className="px-4 py-2 text-center">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={4} className="text-center py-6">Cargando...</td>
+                <td colSpan={3} className="text-center py-6">Cargando...</td>
               </tr>
-            ) : users.length === 0 ? (
+            ) : normalUsers.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center py-6">No hay usuarios</td>
+                <td colSpan={3} className="text-center py-6">No hay usuarios</td>
               </tr>
             ) : (
-              users.map((u) => (
+              normalUsers.map((u) => (
                 <tr key={u.id} className="border-t text-center">
                   <td className="px-4 py-2">{u.email}</td>
                   <td className="px-4 py-2">{u.full_name || "-"}</td>
-                  <td className="px-4 py-2">{u.is_admin ? "Sí" : "No"}</td>
                   <td className="px-4 py-2">
                     <button
                       onClick={() => handleToggleAdmin(u.id, u.is_admin)}
-                      className={`px-3 py-1 rounded ${u.is_admin ? "bg-gray-300 text-gray-800 hover:bg-gray-400" : "bg-green-600 text-white hover:bg-green-700"}`}
+                      className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700"
                     >
-                      {u.is_admin ? "Quitar admin" : "Hacer admin"}
+                      Hacer admin
                     </button>
                   </td>
                 </tr>
