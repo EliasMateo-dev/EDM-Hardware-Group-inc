@@ -235,8 +235,8 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
               <div className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
                 {elementos.slice(0, 3).map(elemento => (
                   <div key={elemento.producto.id} className="flex justify-between">
-                    <span>{elemento.producto.nombre} x{elemento.cantidad}</span>
-                    <span>{formatearPrecio(elemento.producto.precio * elemento.cantidad)}</span>
+                    <span>{elemento.producto.name} x{elemento.cantidad}</span>
+                    <span>{formatearPrecio(elemento.producto.price * elemento.cantidad)}</span>
                   </div>
                 ))}
                 {elementos.length > 3 && (
