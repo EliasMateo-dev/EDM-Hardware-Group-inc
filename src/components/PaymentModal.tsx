@@ -91,11 +91,8 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
     setErrorMessage('');
 
     try {
-      // Crear producto dinámico basado en el carrito
       const dynamicProduct = createDynamicProduct(elementos, totalAmount);
-      
       // Crear line items para Stripe
-      // Siempre enviar el precio en centavos
       const lineItems = elementos.map(elemento => {
         const unitAmount = Math.round(Number(elemento.producto.price));
         if (isNaN(unitAmount) || unitAmount <= 0 || unitAmount > 100000000) {
