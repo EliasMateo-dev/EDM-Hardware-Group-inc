@@ -50,6 +50,14 @@ export default function PCBuilderCompatibility() {
   const agregarAlCarrito = useTiendaCarrito(s => s.agregarAlCarrito);
   const { cargarProductos } = useTiendaProductos();
 
+  // Función para reiniciar el armado
+  const handleResetBuild = () => {
+    setSelectedComponents({});
+    setValidationErrors({});
+    setSuccessMessages({});
+    setCurrentStep(0);
+  };
+
   useEffect(() => {
     const load = async () => {
       const { data: catData, error: catErr } = await supabase.from('categories').select('id, slug, name');
@@ -508,9 +516,11 @@ export default function PCBuilderCompatibility() {
           </div>
         </div>
       )}
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 flex flex-col items-center">
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 flex flex-col items-center gap-3">
         <button onClick={handleAddToCart} className="w-full rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 
         dark:bg-blue-600 dark:hover:bg-blue-700">Agregar al carrito</button>
+        <button onClick={handleResetBuild} className="w-full rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 
+        dark:bg-red-600 dark:hover:bg-red-700">Reiniciar armado</button>
       </div>
     </section>
   );
