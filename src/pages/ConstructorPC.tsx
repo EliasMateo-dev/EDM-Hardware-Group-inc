@@ -10,9 +10,9 @@ const steps = [
   { icon: CircuitBoard, label: 'Motherboard', description: 'Placa base', slug: 'cat-motherboard' },
   { icon: MemoryStick, label: 'RAM', description: 'Memoria', slug: 'cat-ram' },
   { icon: Monitor, label: 'GPU', description: 'Tarjeta grafica', slug: 'cat-gpu' },
-  { icon: Zap, label: 'PSU', description: 'Fuente de poder', slug: 'cat-psu' },
-  { icon: Box, label: 'Gabinete', description: 'Case', slug: 'cat-case' },
   { icon: HardDrive, label: 'SSD', description: 'Almacenamiento', slug: 'cat-ssd' },
+  { icon: Box, label: 'Gabinete', description: 'Case', slug: 'cat-case' },
+  { icon: Zap, label: 'PSU', description: 'Fuente de poder', slug: 'cat-psu' },
 ];
 
 interface ValidationErrors { [key: string]: string; }
