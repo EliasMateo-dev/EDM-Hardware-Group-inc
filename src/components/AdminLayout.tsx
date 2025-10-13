@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useTiendaAuth } from "../stores/tiendaAuth";
 import NotificationDisplay from "./NotificationDisplay";
 import AdminDebugPanel from "./AdminDebugPanel";
+import ErrorBoundary from "./ErrorBoundary";
 
 import { useTiendaTema } from "../stores/tiendaTema";
 
@@ -74,9 +75,11 @@ const AdminLayout: React.FC = () => {
       </aside>
       {/* Main content */}
       <main className="flex-1 p-6 overflow-y-auto">
-        <NotificationDisplay />
-        <AdminDebugPanel />
-        <Outlet />
+        <ErrorBoundary>
+          <NotificationDisplay />
+          {import.meta.env.MODE !== 'production' && <AdminDebugPanel />}
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   );
