@@ -100,11 +100,12 @@ export default function PCBuilderCompatibility() {
     if (val == null) return undefined;
     if (typeof val === 'number') return val;
     if (typeof val === 'string') {
-      const m = val.match(/(\d+(\.\d+)?)/);
-      if (m) return Number(m[0]);
+      const match = val.trim().match(/^(\d+)(?:\s*[wW])?/);
+      if (match) return Number(match[1]);
     }
     return undefined;
   };
+
 
   const checkCompatibility = (product: Product): { compatible: boolean; reason?: string } => {
     const cpu = selectedComponents['cat-cpu']?.producto;
@@ -117,8 +118,8 @@ export default function PCBuilderCompatibility() {
 
     // CPU <-> Motherboard: socket
     if (cpu && isCategory('cat-motherboard', product)) {
-      const socketMb = getSpec(product, 'socket');
-      const socketCpu = getSpec(cpu, 'socket');
+      const socketMb = getSpec(product, 'socket').toUpperCase();
+      const socketCpu = getSpec(cpu, 'socket').toUpperCase();
       if (socketMb && socketCpu && socketMb !== socketCpu) {
         return { compatible: false, reason: `Socket incompatible: ${socketMb} vs ${socketCpu}` };
       }
@@ -133,7 +134,7 @@ export default function PCBuilderCompatibility() {
 
     // RAM <-> Motherboard: DDR
     if (mb && isCategory('cat-ram', product)) {
-      const memoryMb = getSpec(mb, 'memory');
+      const memoryMb = getSpec(mb, 'memory_type');
       const memoryRam = getSpec(product, 'type');
 
       if (memoryMb && memoryRam) {
@@ -150,7 +151,7 @@ export default function PCBuilderCompatibility() {
       }
     }
     if (ram && isCategory('cat-motherboard', product)) {
-      const memoryMb = getSpec(product, 'memory');
+      const memoryMb = getSpec(product, 'memory_type');
       const memoryRam = getSpec(ram, 'type');
 
       if (memoryMb && memoryRam) {
@@ -167,40 +168,43 @@ export default function PCBuilderCompatibility() {
       }
     }
 
-    // GPU <-> PSU: Watts
-    if (gpu && isCategory('cat-psu', product)) {
-      const psuW = parseNumber(getSpec(product, 'wattage'));
-      const gpuTdp = parseNumber(getSpec(gpu, 'tdp'));
-      const cpuTdp = cpu ? parseNumber(getSpec(cpu, 'tdp')) ?? 0 : 0;
-      const totalEstimated = (gpuTdp ?? 0) + cpuTdp + 100;
-
-      if (psuW != null && totalEstimated > 0 && psuW < totalEstimated) {
-        return { compatible: false, reason: `PSU ${psuW}W insuficiente (necesita ~${totalEstimated}W)` };
-      }
-    }
-    if (psu && isCategory('cat-gpu', product)) {
-      const psuW = parseNumber(getSpec(psu, 'wattage'));
-      const gpuTdp = parseNumber(getSpec(product, 'tdp'));
-      const cpuTdp = cpu ? parseNumber(getSpec(cpu, 'tdp')) ?? 0 : 0;
-      const totalEstimated = (gpuTdp ?? 0) + cpuTdp + 100;
-
-      if (psuW != null && totalEstimated > 0 && psuW < totalEstimated) {
-        return { compatible: false, reason: `GPU requiere ~${totalEstimated}W, la PSU tiene ${psuW}W` };
-      }
-    }
-
     // GPU <-> Case: tamaño
     if (gpu && isCategory('cat-case', product)) {
-      const clearanceStr = getSpec(product, 'clearance');
-      if (clearanceStr) {
-        const match = ('' + clearanceStr).match(/(\d+)\s*mm/);
-        if (match) {
-          const maxLen = Number(match[1]);
-          const gpuLen = 305;
-          if (maxLen < gpuLen) {
-            return { compatible: false, reason: `La GPU necesita más espacio` };
-          }
-        }
+      const maxGpuLen = parseNumber(getSpec(product, 'max_gpu_length')) ?? 0;
+      const gpuLen = 305;
+      if (maxGpuLen < gpuLen) {
+        return { compatible: false, reason: `La GPU necesita más espacio para este gabinete` };
+      }
+    }
+    const gabinete = selectedComponents['cat-case']?.producto;
+    if (gabinete && isCategory('cat-gpu', product)) {
+      const maxGpuLen = parseNumber(getSpec(gabinete, 'max_gpu_length')) ?? 0;
+      const gpuLen = 305;
+      if (maxGpuLen < gpuLen) {
+        return { compatible: false, reason: 'La GPU necesita más espacio en el gabinete seleccionado' };
+      }
+    }
+    
+    // PSU <-> Total Watts
+    if (isCategory('cat-psu', product)) {
+      const psuW = parseNumber(getSpec(product, 'wattage'));
+      const totalWatts = calculateTotalWatts();
+      if (psuW != null && totalWatts > psuW) {
+        return {
+          compatible: false,
+          reason: `Fuente insuficiente: el sistema requiere ${totalWatts}W y la PSU es de ${psuW}W`,
+        };
+      }
+    }
+    if (psu && !isCategory('cat-psu', product)) {
+      const psuW = parseNumber(getSpec(psu, 'wattage'));
+      const estimatedWatts = calculateTotalWatts() + estimateExtraWatts(product);
+
+      if (psuW != null && estimatedWatts > psuW) {
+        return {
+          compatible: false,
+          reason: `La fuente actual (${psuW}W) no alcanza si agregás este componente (${estimatedWatts}W)`,
+        };
       }
     }
 
@@ -221,7 +225,7 @@ export default function PCBuilderCompatibility() {
     // GPU TDP
     const gpu = selectedComponents['cat-gpu']?.producto;
     if (gpu) {
-      const tdp = parseNumber(getSpec(gpu, 'tdp'));
+      const tdp = parseNumber(getSpec(gpu, 'power_consumption'));
       if (tdp) total += tdp;
     }
 
@@ -229,12 +233,24 @@ export default function PCBuilderCompatibility() {
     const hasMotherboard = selectedComponents['cat-motherboard']?.producto;
     const ramCount = selectedComponents['cat-ram']?.quantity ?? 0;
     const ssdCount = selectedComponents['cat-ssd']?.quantity ?? 0;
-
-    if (hasMotherboard) total += 80; // MB + chipset
+    if (hasMotherboard) total += 50; // MB + chipset
     total += ramCount * 5; // ~5W por módulo RAM
     total += ssdCount * 5; // ~5W por SSD
 
     return Math.round(total);
+  };
+
+  // Calcular Watts a sumar
+  const estimateExtraWatts = (product: Product): number => {
+    const cat = Object.entries(slugToCategoryId).find(([, id]) => id === product.category_id)?.[0];
+
+    if (!cat) return 0;
+    if (cat === 'cat-cpu') return parseNumber(getSpec(product, 'tdp')) ?? 0;
+    if (cat === 'cat-gpu') return parseNumber(getSpec(product, 'tdp') || getSpec(product, 'power_consumption')) ?? 0;
+    if (cat === 'cat-ram') return 5;
+    if (cat === 'cat-ssd') return 5;
+    if (cat === 'cat-motherboard') return 50;
+    return 0;
   };
 
   // --- Selección / cantidades (guardamos producto completo al seleccionar) ---
@@ -287,6 +303,16 @@ export default function PCBuilderCompatibility() {
       setTimeout(() => setValidationErrors(prev => { const c = { ...prev }; delete c.general; return c; }), 3000);
       return;
     }
+    // Validar que la cantidad máxima de watts no exceda la de la fuente
+    const psu = selectedComponents['cat-psu']?.producto;
+    const psuWatts = psu ? parseNumber(getSpec(psu, 'wattage')) : undefined;
+    const totalWatts = calculateTotalWatts();
+    if (psuWatts != null && totalWatts > psuWatts) {
+      setValidationErrors(prev => ({
+        ...prev,
+        general: `El consumo estimado (${totalWatts}W) excede la capacidad de la fuente (${psuWatts}W)`
+      }));
+    }
     Object.values(selectedComponents).forEach(c => {
       if (c) agregarAlCarrito(c.id, c.quantity);
     });
@@ -335,9 +361,9 @@ export default function PCBuilderCompatibility() {
         <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Lo que esta en proceso</h2>
         <ul className="mt-6 grid gap-4 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-2">
           <li className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors dark:border-slate-800 dark:bg-slate-800/60 line-through">Compatibilidad de socket y chipset al instante.</li>
-          <li className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors dark:border-slate-800 dark:bg-slate-800/60">Validacion de memoria DDR4 o DDR5 y cantidad maxima.</li>
+          <li className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors dark:border-slate-800 dark:bg-slate-800/60 line-through">Validacion de memoria DDR4 o DDR5 y cantidad maxima.</li>
           <li className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors dark:border-slate-800 dark:bg-slate-800/60 line-through">Calculo automatico de potencia recomendada para la PSU.</li>
-          <li className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors dark:border-slate-800 dark:bg-slate-800/60">Verificacion de espacio para placas de video y cooling.</li>
+          <li className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors dark:border-slate-800 dark:bg-slate-800/60 line-through">Verificacion de espacio para placas de video y cooling.</li>
           <li className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors dark:border-slate-800 dark:bg-slate-800/60">Alertas de cuellos de botella segun CPU y GPU elegidos.</li>
           <li className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors dark:border-slate-800 dark:bg-slate-800/60">Sugerencias de upgrades rapidos segun tu presupuesto.</li>
         </ul>
