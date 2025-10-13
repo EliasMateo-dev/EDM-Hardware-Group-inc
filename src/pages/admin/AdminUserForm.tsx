@@ -56,26 +56,25 @@ const AdminUserForm: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      const withTimeout = async <T,>(p: Promise<T>, ms = 15000): Promise<T> => {
+        let timer: any;
+        const timeout = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error('timeout')), ms); });
+        try { return await Promise.race([p, timeout]); } finally { clearTimeout(timer); }
+      };
+
       if (id) {
-        const { error } = await supabase.from("profiles").update(form).eq("id", id);
-        if (error) {
-          showNotification("Error al actualizar usuario", "error");
-        } else {
-          showNotification("Usuario actualizado", "success");
-          navigate("/admin/users");
-        }
+        const res: any = await withTimeout((async () => await supabase.from("profiles").update(form).eq("id", id))());
+        if (res.error) { showNotification("Error al actualizar usuario", "error"); }
+        else { showNotification("Usuario actualizado", "success"); navigate("/admin/users"); }
       } else {
-        const { error } = await supabase.from("profiles").insert([form]);
-        if (error) {
-          showNotification("Error al crear usuario", "error");
-        } else {
-          showNotification("Usuario creado", "success");
-          navigate("/admin/users");
-        }
+        const res: any = await withTimeout((async () => await supabase.from("profiles").insert([form]))());
+        if (res.error) { showNotification("Error al crear usuario", "error"); }
+        else { showNotification("Usuario creado", "success"); navigate("/admin/users"); }
       }
     } catch (err) {
       console.error('AdminUserForm submit error', err);
-      try { showNotification('Error al guardar usuario', 'error'); } catch {}
+      if ((err as any)?.message === 'timeout') { try { showNotification('La operación tardó demasiado. Intenta de nuevo.', 'error'); } catch {} }
+      else { try { showNotification('Error al guardar usuario', 'error'); } catch {} }
     } finally {
       setLoading(false);
     }

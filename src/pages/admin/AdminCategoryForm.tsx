@@ -55,26 +55,27 @@ const AdminCategoryForm: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      const withTimeout = async <T,>(p: Promise<T>, ms = 15000): Promise<T> => {
+        let timer: any;
+        const timeout = new Promise<never>((_, rej) => {
+          timer = setTimeout(() => rej(new Error('timeout')), ms);
+        });
+        try { return await Promise.race([p, timeout]); } finally { clearTimeout(timer); }
+      };
+
       if (id) {
-        const { error } = await supabase.from("categories").update(form).eq("id", id);
-        if (error) {
-          showNotification("Error al actualizar categoría", "error");
-        } else {
-          showNotification("Categoría actualizada", "success");
-          navigate("/admin/categories");
-        }
+        const res: any = await withTimeout((async () => await supabase.from("categories").update(form).eq("id", id))());
+        if (res.error) { showNotification("Error al actualizar categoría", "error"); }
+        else { showNotification("Categoría actualizada", "success"); navigate("/admin/categories"); }
       } else {
-        const { error } = await supabase.from("categories").insert([form]);
-        if (error) {
-          showNotification("Error al crear categoría", "error");
-        } else {
-          showNotification("Categoría creada", "success");
-          navigate("/admin/categories");
-        }
+        const res: any = await withTimeout((async () => await supabase.from("categories").insert([form]))());
+        if (res.error) { showNotification("Error al crear categoría", "error"); }
+        else { showNotification("Categoría creada", "success"); navigate("/admin/categories"); }
       }
     } catch (err) {
       console.error('AdminCategoryForm submit error', err);
-      try { showNotification('Error al guardar categoría', 'error'); } catch {}
+      if ((err as any)?.message === 'timeout') { try { showNotification('La operación tardó demasiado. Intenta de nuevo.', 'error'); } catch {} }
+      else { try { showNotification('Error al guardar categoría', 'error'); } catch {} }
     } finally {
       setLoading(false);
     }

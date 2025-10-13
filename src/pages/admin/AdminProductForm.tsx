@@ -249,17 +249,33 @@ const AdminProductForm: React.FC = () => {
         if (key.trim()) specifications[key.trim()] = value.trim();
       });
       const payload = { ...form, image_url: imageUrl, specifications };
+      // helper: timeout wrapper to avoid hanging requests
+      const withTimeout = async <T,>(p: Promise<T>, ms = 15000): Promise<T> => {
+        let timer: any;
+        const timeout = new Promise<never>((_, rej) => {
+          timer = setTimeout(() => rej(new Error('timeout')), ms);
+        });
+        try {
+          return await Promise.race([p, timeout]);
+        } finally {
+          clearTimeout(timer);
+        }
+      };
+
       if (id) {
-        const { error } = await supabase.from("products").update(payload).eq("id", id);
-        if (error) {
+        const result = await withTimeout((async () => await supabase.from("products").update(payload).eq("id", id))());
+        // supabase returns { data, error }
+        const anyRes: any = result;
+        if (anyRes.error) {
           showNotification("Error al actualizar producto", "error");
         } else {
           showNotification("Producto actualizado", "success");
           navigate("/admin/products");
         }
       } else {
-        const { error } = await supabase.from("products").insert([payload]);
-        if (error) {
+        const result = await withTimeout((async () => await supabase.from("products").insert([payload]))());
+        const anyRes: any = result;
+        if (anyRes.error) {
           showNotification("Error al crear producto", "error");
         } else {
           showNotification("Producto creado", "success");
@@ -268,7 +284,11 @@ const AdminProductForm: React.FC = () => {
       }
     } catch (err) {
       console.error('AdminProductForm submit error', err);
-      try { showNotification('Error al guardar producto', 'error'); } catch {}
+      if ((err as any)?.message === 'timeout') {
+        try { showNotification('La operación tardó demasiado. Intenta de nuevo.', 'error'); } catch {}
+      } else {
+        try { showNotification('Error al guardar producto', 'error'); } catch {}
+      }
     } finally {
       setLoading(false);
     }
