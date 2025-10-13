@@ -106,7 +106,7 @@ export default function PCBuilderCompatibility() {
     return undefined;
   };
 
-
+  // Compatibilidad
   const checkCompatibility = (product: Product): { compatible: boolean; reason?: string } => {
     const cpu = selectedComponents['cat-cpu']?.producto;
     const mb = selectedComponents['cat-motherboard']?.producto;
@@ -184,7 +184,7 @@ export default function PCBuilderCompatibility() {
         return { compatible: false, reason: 'La GPU necesita más espacio en el gabinete seleccionado' };
       }
     }
-    
+
     // PSU <-> Total Watts
     if (isCategory('cat-psu', product)) {
       const psuW = parseNumber(getSpec(product, 'wattage'));
@@ -326,9 +326,17 @@ export default function PCBuilderCompatibility() {
   const currentSlug = steps[currentStep]?.slug;
   const currentCategoryId = slugToCategoryId[currentSlug] ?? null;
   const currentCategoryProducts = currentCategoryId
-    ? allProducts.filter(p => p.category_id === currentCategoryId)
-    : [];
+    ? (() => {
+      const products = allProducts.filter(p => p.category_id === currentCategoryId);
+      const compatibles = products.filter(p => checkCompatibility(p).compatible);
+      const incompatibles = products.filter(p => !checkCompatibility(p).compatible);
 
+      compatibles.sort((a, b) => a.price - b.price);
+      incompatibles.sort((a, b) => a.price - b.price);
+
+      return [...compatibles, ...incompatibles];
+    })()
+    : [];
   return (
     <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
       <header className="mb-12 space-y-4 text-center text-slate-900 dark:text-slate-100">
