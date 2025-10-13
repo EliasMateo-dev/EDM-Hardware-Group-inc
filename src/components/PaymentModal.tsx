@@ -74,6 +74,10 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
       setErrorMessage('La dirección es obligatoria');
       return false;
     }
+    if (!/^\d{10}$/.test(customerData.phone)) {
+    setErrorMessage('El teléfono debe contener exactamente 10 dígitos');
+    return false;
+  }
     return true;
   };
 
@@ -301,6 +305,7 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
                   name="phone"
                   value={customerData.phone}
                   onChange={handlePhoneChange}
+                  maxLength={10}
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                 />
               </div>
