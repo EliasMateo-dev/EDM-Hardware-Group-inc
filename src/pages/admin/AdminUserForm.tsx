@@ -24,16 +24,23 @@ const AdminUserForm: React.FC = () => {
 
   useEffect(() => {
     if (id) {
-      setLoading(true);
-      supabase.from("profiles").select("email, full_name, is_admin").eq("id", id).single()
-        .then(({ data, error }) => {
+      const load = async () => {
+        setLoading(true);
+        try {
+          const { data, error } = await supabase.from("profiles").select("email, full_name, is_admin").eq("id", id).single();
           if (error) {
             showNotification("Error al cargar usuario", "error");
           } else if (data) {
             setForm(data);
           }
+        } catch (err) {
+          console.error('AdminUserForm load error', err);
+          try { showNotification('Error al cargar usuario', 'error'); } catch {}
+        } finally {
           setLoading(false);
-        });
+        }
+      };
+      load();
     }
   }, [id, showNotification]);
 
@@ -48,26 +55,30 @@ const AdminUserForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    if (id) {
-      // Update
-      const { error } = await supabase.from("profiles").update(form).eq("id", id);
-      if (error) {
-        showNotification("Error al actualizar usuario", "error");
+    try {
+      if (id) {
+        const { error } = await supabase.from("profiles").update(form).eq("id", id);
+        if (error) {
+          showNotification("Error al actualizar usuario", "error");
+        } else {
+          showNotification("Usuario actualizado", "success");
+          navigate("/admin/users");
+        }
       } else {
-        showNotification("Usuario actualizado", "success");
-        navigate("/admin/users");
+        const { error } = await supabase.from("profiles").insert([form]);
+        if (error) {
+          showNotification("Error al crear usuario", "error");
+        } else {
+          showNotification("Usuario creado", "success");
+          navigate("/admin/users");
+        }
       }
-    } else {
-      // Create
-      const { error } = await supabase.from("profiles").insert([form]);
-      if (error) {
-        showNotification("Error al crear usuario", "error");
-      } else {
-        showNotification("Usuario creado", "success");
-        navigate("/admin/users");
-      }
+    } catch (err) {
+      console.error('AdminUserForm submit error', err);
+      try { showNotification('Error al guardar usuario', 'error'); } catch {}
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

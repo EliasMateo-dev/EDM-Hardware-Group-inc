@@ -37,23 +37,29 @@ const AdminProducts: React.FC = () => {
     if (!perfil || !perfil.is_admin) return;
     const fetchAll = async () => {
       setLoading(true);
-      const [{ data: prodData, error: prodError }, { data: catData, error: catError }] = await Promise.all([
-        supabase.from("products").select("id, name, brand, price, stock, category_id, is_active"),
-        supabase.from("categories").select("id, name")
-      ]);
-      if (prodError) {
-        showNotification("Error al cargar productos", "error");
-      } else {
-        setProducts(prodData || []);
+      try {
+        const [{ data: prodData, error: prodError }, { data: catData, error: catError }] = await Promise.all([
+          supabase.from("products").select("id, name, brand, price, stock, category_id, is_active"),
+          supabase.from("categories").select("id, name")
+        ]);
+        if (prodError) {
+          showNotification("Error al cargar productos", "error");
+        } else {
+          setProducts(prodData || []);
+        }
+        if (catError) {
+          showNotification("Error al cargar categor\u00edas", "error");
+        } else {
+          const map: CategoryMap = {};
+          (catData || []).forEach((c: any) => { map[c.id] = c.name; });
+          setCategories(map);
+        }
+      } catch (err) {
+        console.error('AdminProducts fetchAll error', err);
+        try { showNotification('Error al cargar datos del administrador', 'error'); } catch {}
+      } finally {
+        setLoading(false);
       }
-      if (catError) {
-        showNotification("Error al cargar categorías", "error");
-      } else {
-        const map: CategoryMap = {};
-        (catData || []).forEach((c: any) => { map[c.id] = c.name; });
-        setCategories(map);
-      }
-      setLoading(false);
     };
     fetchAll();
   }, [showNotification, perfil]);

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useTiendaAuth } from "../stores/tiendaAuth";
 import NotificationDisplay from "./NotificationDisplay";
+import AdminDebugPanel from "./AdminDebugPanel";
 
 import { useTiendaTema } from "../stores/tiendaTema";
 
@@ -74,6 +75,7 @@ const AdminLayout: React.FC = () => {
       {/* Main content */}
       <main className="flex-1 p-6 overflow-y-auto">
         <NotificationDisplay />
+        <AdminDebugPanel />
         <Outlet />
       </main>
     </div>

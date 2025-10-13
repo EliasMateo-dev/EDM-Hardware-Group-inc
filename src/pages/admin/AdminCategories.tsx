@@ -18,13 +18,19 @@ const AdminCategories: React.FC = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       setLoading(true);
-      const { data, error } = await supabase.from("categories").select("id, name, slug, description, icon");
-      if (error) {
-        showNotification("Error al cargar categorías", "error");
-      } else {
-        setCategories(data || []);
+      try {
+        const { data, error } = await supabase.from("categories").select("id, name, slug, description, icon");
+        if (error) {
+          showNotification("Error al cargar categorías", "error");
+        } else {
+          setCategories(data || []);
+        }
+      } catch (err) {
+        console.error('AdminCategories fetchCategories error', err);
+        try { showNotification('Error al cargar categorías', 'error'); } catch {}
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchCategories();
   }, [showNotification]);
