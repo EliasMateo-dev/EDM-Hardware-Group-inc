@@ -51,7 +51,7 @@ const AdminCategories: React.FC = () => {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4 text-center">Categorías</h1>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto card-lift slide-up">
         <table className="min-w-full bg-white dark:bg-gray-800 border rounded">
           <thead>
             <tr>

@@ -58,7 +58,7 @@ const AdminUsers: React.FC = () => {
     <div>
       <h1 className="text-2xl font-bold mb-4">Usuarios</h1>
       {/* Sección de administradores */}
-      <div className="mb-8">
+  <div className="mb-8 slide-up card-lift">
         <h2 className="text-lg font-semibold mb-2">Administradores</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white dark:bg-gray-800 border rounded">
@@ -90,7 +90,7 @@ const AdminUsers: React.FC = () => {
         </div>
       </div>
       {/* Tabla de usuarios normales (no admins) */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto card-lift slide-up">
         <table className="min-w-full bg-white dark:bg-gray-800 border rounded">
           <thead>
             <tr>

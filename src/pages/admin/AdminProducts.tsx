@@ -125,7 +125,7 @@ const AdminProducts: React.FC = () => {
         <div className="text-center py-8 bg-white dark:bg-gray-800 rounded shadow">No hay productos</div>
       ) : (
         Object.entries(grouped).map(([catId, prods]) => (
-          <section key={catId} className="mb-8 bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden">
+          <section key={catId} className="mb-8 bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden card-lift slide-up">
             <div className="px-6 py-3 border-b dark:border-gray-700 flex items-center justify-between">
               <h2 className="text-lg font-semibold">{categories[catId] || catId}</h2>
               <div className="text-sm text-gray-500">{prods.length} items</div>

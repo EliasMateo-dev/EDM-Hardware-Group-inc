@@ -82,8 +82,8 @@ const AdminLayout: React.FC = () => {
           <div className="h-12" />
         </div>
       </aside>
-      {/* Main content */}
-      <main className="flex-1 p-6 overflow-y-auto">
+  {/* Main content */}
+  <main className="flex-1 p-6 overflow-y-auto fade-in">
         <ErrorBoundary>
           <NotificationDisplay />
           {import.meta.env.MODE !== 'production' && <AdminDebugPanel />}

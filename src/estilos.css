@@ -5,3 +5,33 @@
 body {
   @apply bg-slate-100 text-slate-900 antialiased transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100;
 }
+
+/* Animation helpers */
+:root{
+  --ease-cubic: cubic-bezier(.2,.9,.3,1);
+}
+.fade-in {
+  opacity: 0;
+  transform: translateY(6px);
+  animation: fadeIn 420ms var(--ease-cubic) forwards;
+}
+.slide-up {
+  transform: translateY(10px);
+  opacity: 0;
+  animation: slideUp 420ms var(--ease-cubic) forwards;
+}
+.card-lift {
+  transition: transform 260ms var(--ease-cubic), box-shadow 260ms var(--ease-cubic);
+}
+.card-lift:hover{
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
