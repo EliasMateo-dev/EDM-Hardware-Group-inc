@@ -236,3 +236,30 @@ export const useTiendaCarrito = create<EstadoCarrito>((establecer, obtener) => (
     return obtener().elementos.reduce((total, elemento) => total + elemento.cantidad, 0);
   },
 }));
+
+// Subscribe to productos store changes and reconcile cart items immediately when products become available
+try {
+  useTiendaProductos.subscribe((state: any) => {
+    const productos: Product[] = state.productos;
+    if (!productos || productos.length === 0) return;
+    const { elementos } = useTiendaCarrito.getState();
+    if (!elementos || elementos.length === 0) return;
+    let changed = false;
+    const siguientes = elementos.map((el) => {
+      const auth = productos.find((p: Product) => p.id === el.producto.id);
+      if (auth && auth !== el.producto) {
+        changed = true;
+        return { producto: auth, cantidad: el.cantidad };
+      }
+      return el;
+    });
+    if (changed) {
+      // update store and persist
+      useTiendaCarrito.setState({ elementos: siguientes });
+      try { persistirCarrito(siguientes); } catch (e) { console.error('persistirCarrito error in subscription', e); }
+    }
+  });
+} catch (e) {
+  // subscription best-effort; log if subscribe API not available
+  console.debug('tiendaCarrito: productos subscription not attached', e);
+}

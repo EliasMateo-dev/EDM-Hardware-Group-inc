@@ -30,7 +30,8 @@ export default function Inicio() {
 
   useEffect(() => {
     establecerCategoriaSeleccionada(null);
-    cargarProductos(null);
+    const id = setTimeout(() => cargarProductos(null), 150);
+    return () => clearTimeout(id);
   }, [cargarProductos, establecerCategoriaSeleccionada]);
 
   return (

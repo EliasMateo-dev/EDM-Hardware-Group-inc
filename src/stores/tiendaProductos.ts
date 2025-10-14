@@ -22,8 +22,10 @@ interface EstadoProductos {
   cargando: boolean;
   categoriaSeleccionada: string | null;
   terminoBusqueda: string;
+  lastError?: string | null;
   cargarProductos: (aliasCategoria?: string | null) => Promise<void>;
   cargarCategorias: () => Promise<void>;
+  clearLastError: () => void;
   establecerCategoriaSeleccionada: (aliasCategoria: string | null) => void;
   establecerTerminoBusqueda: (termino: string) => void;
   obtenerProductosFiltrados: () => Product[];
@@ -34,17 +36,31 @@ export const useTiendaProductos = create<EstadoProductos>((establecer, obtener) 
   productos: [],
   categorias: [],
   cargando: false,
+  lastError: null,
+  clearLastError: () => { establecer({ lastError: null }); },
   categoriaSeleccionada: null,
   terminoBusqueda: '',
 
   cargarProductos: async (aliasCategoria) => {
     const { showNotification } = useNotificationStore.getState();
+    // request-versioning to avoid races when user navigates quickly between categories
+    // We store the latest request id in a module-scoped variable outside the store closure.
+    // Create (or reuse) a counter on the function object.
+    // @ts-ignore
+    if (typeof useTiendaProductos._productosReqId === 'undefined') useTiendaProductos._productosReqId = 0;
+    // increment and capture this request id
+    // @ts-ignore
+    const reqId = ++useTiendaProductos._productosReqId;
+    console.debug('[tiendaProductos] cargarProductos start', { aliasCategoria, reqId });
+    // mark loading for the latest request
     establecer({ cargando: true });
-    // watchdog: si por alguna razón el proceso queda colgado, limpiar el flag
     const watchdog = setTimeout(() => {
-      console.warn('cargarProductos watchdog triggered — clearing cargando flag');
-      establecer({ cargando: false });
+      console.warn('cargarProductos watchdog triggered — clearing cargando flag', { reqId });
+      // only clear loading if this is still the latest request
+      // @ts-ignore
+      if (useTiendaProductos._productosReqId === reqId) establecer({ cargando: false });
     }, 15000);
+
     try {
       let categoriaId: string | null = null;
       if (aliasCategoria) {
@@ -60,17 +76,35 @@ export const useTiendaProductos = create<EstadoProductos>((establecer, obtener) 
       if (productosRes?.error) throw productosRes.error;
       const data = productosRes.data;
       clearTimeout(watchdog);
-      establecer({
-        productos: data || [],
-        categoriaSeleccionada: aliasCategoria ?? null,
-        cargando: false,
-      });
+      // Only update state if this response belongs to the latest request
+      // @ts-ignore
+      if (useTiendaProductos._productosReqId === reqId) {
+        establecer({
+          productos: data || [],
+          categoriaSeleccionada: aliasCategoria ?? null,
+          cargando: false,
+          lastError: null,
+        });
+        console.debug('[tiendaProductos] cargarProductos success', { reqId, count: (data || []).length });
+      } else {
+        console.debug('[tiendaProductos] cargarProductos response ignored (stale)', { reqId });
+      }
     } catch (err: any) {
-      console.error('cargarProductos error', err);
+      console.error('cargarProductos error', err, { reqId });
       try { showNotification && showNotification('Error al cargar productos', 'error'); } catch {}
-      // ensure state updated and return safe defaults
       clearTimeout(watchdog);
-      establecer({ productos: [], categoriaSeleccionada: null, cargando: false });
+      // Only set error state if this is still the latest request
+      // @ts-ignore
+      if (useTiendaProductos._productosReqId === reqId) {
+        const msg = err?.message || String(err);
+        // If it was a timeout, keep existing productos (don't wipe) but expose the error
+        if (msg === 'timeout') {
+          console.warn('cargarProductos timed out, preserving existing productos', { reqId });
+          establecer({ cargando: false, lastError: 'timeout' });
+        } else {
+          establecer({ productos: [], categoriaSeleccionada: null, cargando: false, lastError: msg });
+        }
+      }
     }
   },
 

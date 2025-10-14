@@ -9,11 +9,14 @@ export default function Categoria() {
   const cargarProductos = useTiendaProductos((estado) => estado.cargarProductos);
   const categorias = useTiendaProductos((estado) => estado.categorias);
   const cargando = useTiendaProductos((estado) => estado.cargando);
+  const lastError = useTiendaProductos((estado) => (estado as any).lastError as string | null);
   const obtenerProductosFiltrados = useTiendaProductos((estado) => estado.obtenerProductosFiltrados);
   const productos = obtenerProductosFiltrados();
 
   useEffect(() => {
-    cargarProductos(slug ?? null);
+    // Debounce product loading to avoid rapid navigation races
+    const id = setTimeout(() => cargarProductos(slug ?? null), 150);
+    return () => clearTimeout(id);
   }, [cargarProductos, slug]);
 
   const categoriaActual = categorias.find((categoria) => categoria.slug === slug);
@@ -31,10 +34,19 @@ export default function Categoria() {
       </header>
       {cargando ? (
         <div className="flex min-h-[240px] items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white transition-colors dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center gap-3 text-sm font-medium text-slate-500 dark:text-slate-400">
-            <Loader2 className="h-5 w-5 animate-spin" />
-            Cargando {categoriaActual?.name?.toLowerCase() ?? 'componentes'}...
-          </div>
+              {!lastError ? (
+                <div className="flex items-center gap-3 text-sm font-medium text-slate-500 dark:text-slate-400">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Cargando {categoriaActual?.name?.toLowerCase() ?? 'componentes'}...
+                </div>
+              ) : (
+                <div className="text-center">
+                  <div className="mb-3 text-sm text-red-600">La carga tardó demasiado.</div>
+                  <div className="flex items-center justify-center gap-2">
+                    <button onClick={() => { useTiendaProductos.getState().clearLastError(); cargarProductos(slug ?? null); }} className="bg-blue-600 text-white px-4 py-2 rounded">Reintentar</button>
+                  </div>
+                </div>
+              )}
         </div>
       ) : productos.length === 0 ? (
         <div className="flex min-h-[240px] items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white transition-colors dark:border-slate-800 dark:bg-slate-900">
