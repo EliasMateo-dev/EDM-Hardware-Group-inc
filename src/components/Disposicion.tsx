@@ -1,6 +1,7 @@
-﻿import React from 'react';
+﻿// Using the automatic JSX runtime; no default React import required
 import { Outlet } from 'react-router-dom';
 import BarraNavegacion from './BarraNavegacion';
+import DevTelemetryBanner from './DevTelemetryBanner';
 
 export default function Disposicion() {
   return (
@@ -9,6 +10,7 @@ export default function Disposicion() {
       <main>
         <Outlet />
       </main>
+      <DevTelemetryBanner />
     </div>
   );
 }

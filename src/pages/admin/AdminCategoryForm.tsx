@@ -64,13 +64,27 @@ const AdminCategoryForm: React.FC = () => {
       };
 
       if (id) {
-        const res: any = await withTimeout((async () => await supabase.from("categories").update(form).eq("id", id))());
-        if (res.error) { showNotification("Error al actualizar categoría", "error"); }
-        else { showNotification("Categoría actualizada", "success"); navigate("/admin/categories"); }
+        try {
+          const res: any = await withTimeout(Promise.resolve(supabase.from("categories").update(form).eq("id", id).then((r:any)=>r)));
+          const { error } = res || {};
+          if (error) { showNotification("Error al actualizar categoría", "error"); }
+          else { showNotification("Categoría actualizada", "success"); navigate("/admin/categories"); }
+        } catch (err: any) {
+          console.warn('AdminCategoryForm update failed or timed out', err);
+          if (err?.message === 'timeout') { try { showNotification('La operación tardó demasiado. Intenta de nuevo.', 'error'); } catch {} }
+          else { try { showNotification('Error al actualizar categoría', 'error'); } catch {} }
+        }
       } else {
-        const res: any = await withTimeout((async () => await supabase.from("categories").insert([form]))());
-        if (res.error) { showNotification("Error al crear categoría", "error"); }
-        else { showNotification("Categoría creada", "success"); navigate("/admin/categories"); }
+        try {
+          const res: any = await withTimeout(Promise.resolve(supabase.from("categories").insert([form]).then((r:any)=>r)));
+          const { error } = res || {};
+          if (error) { showNotification("Error al crear categoría", "error"); }
+          else { showNotification("Categoría creada", "success"); navigate("/admin/categories"); }
+        } catch (err: any) {
+          console.warn('AdminCategoryForm insert failed or timed out', err);
+          if (err?.message === 'timeout') { try { showNotification('La operación tardó demasiado. Intenta de nuevo.', 'error'); } catch {} }
+          else { try { showNotification('Error al crear categoría', 'error'); } catch {} }
+        }
       }
     } catch (err) {
       console.error('AdminCategoryForm submit error', err);

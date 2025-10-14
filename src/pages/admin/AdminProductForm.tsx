@@ -263,23 +263,34 @@ const AdminProductForm: React.FC = () => {
       };
 
       if (id) {
-        const result = await withTimeout((async () => await supabase.from("products").update(payload).eq("id", id))());
-        // supabase returns { data, error }
-        const anyRes: any = result;
-        if (anyRes.error) {
-          showNotification("Error al actualizar producto", "error");
-        } else {
-          showNotification("Producto actualizado", "success");
-          navigate("/admin/products");
+        try {
+          const result: any = await withTimeout(Promise.resolve(supabase.from("products").update(payload).eq("id", id).then((r:any)=>r)));
+          const { error: updError } = result || {};
+          if (updError) {
+            showNotification("Error al actualizar producto", "error");
+          } else {
+            showNotification("Producto actualizado", "success");
+            navigate("/admin/products");
+          }
+        } catch (err: any) {
+          console.warn('AdminProductForm update failed or timed out', err);
+          if (err?.message === 'timeout') { try { showNotification('La operación tardó demasiado. Intenta de nuevo.', 'error'); } catch {} }
+          else { try { showNotification('Error al actualizar producto', 'error'); } catch {} }
         }
       } else {
-        const result = await withTimeout((async () => await supabase.from("products").insert([payload]))());
-        const anyRes: any = result;
-        if (anyRes.error) {
-          showNotification("Error al crear producto", "error");
-        } else {
-          showNotification("Producto creado", "success");
-          navigate("/admin/products");
+        try {
+          const result: any = await withTimeout(Promise.resolve(supabase.from("products").insert([payload]).then((r:any)=>r)));
+          const { error: insError } = result || {};
+          if (insError) {
+            showNotification("Error al crear producto", "error");
+          } else {
+            showNotification("Producto creado", "success");
+            navigate("/admin/products");
+          }
+        } catch (err: any) {
+          console.warn('AdminProductForm insert failed or timed out', err);
+          if (err?.message === 'timeout') { try { showNotification('La operación tardó demasiado. Intenta de nuevo.', 'error'); } catch {} }
+          else { try { showNotification('Error al crear producto', 'error'); } catch {} }
         }
       }
     } catch (err) {
