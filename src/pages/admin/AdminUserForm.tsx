@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNotificationStore } from "../../stores/useNotificationStore";
 import { supabase } from "../../utils/supabase";
 import { useNavigate, useParams } from "react-router-dom";
+import Button from '../../components/Button';
 
 interface UserForm {
   email: string;
@@ -95,9 +96,10 @@ const AdminUserForm: React.FC = () => {
         <input name="is_admin" type="checkbox" checked={form.is_admin} onChange={handleChange} id="is_admin" />
         <label htmlFor="is_admin">Administrador</label>
       </div>
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" disabled={loading}>
-        {loading ? "Guardando..." : id ? "Actualizar" : "Crear"}
-      </button>
+      <div className="flex items-center gap-3">
+        <Button type="submit" variant="primary" className="px-4 py-2" disabled={loading}>{loading ? "Guardando..." : id ? "Actualizar" : "Crear"}</Button>
+        <Button variant="secondary" href="/admin/users" className="px-4 py-2">Cancelar</Button>
+      </div>
     </form>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNotificationStore } from "../../stores/useNotificationStore";
+import Button from '../../components/Button';
 import { supabase } from "../../utils/supabase";
 
 interface UserProfile {
@@ -113,12 +114,13 @@ const AdminUsers: React.FC = () => {
                   <td className="px-4 py-2 text-left">{u.email}</td>
                   <td className="px-4 py-2 text-left">{u.full_name || "-"}</td>
                   <td className="px-4 py-2 text-left">
-                    <button
+                    <Button
                       onClick={() => handleToggleAdmin(u.id, u.is_admin)}
-                      className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700"
+                      variant="primary"
+                      className="px-3 py-1 text-sm"
                     >
                       Hacer admin
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))

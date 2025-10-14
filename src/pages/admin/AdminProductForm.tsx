@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNotificationStore } from "../../stores/useNotificationStore";
 import { supabase } from "../../utils/supabase";
 import { useNavigate, useParams } from "react-router-dom";
+import Button from '../../components/Button';
 import { categorias as localCategorias } from "../../data/catalogo";
 
 interface ProductForm {
@@ -370,7 +371,7 @@ const AdminProductForm: React.FC = () => {
         ) : (
           <div className="text-gray-400 italic mb-2">No hay especificaciones. Agrega una.</div>
         )}
-        <button type="button" onClick={handleAddSpec} className="bg-gray-200 px-2 py-1 rounded mt-1">Agregar especificación</button>
+        <Button type="button" variant="ghost" onClick={handleAddSpec} className="mt-1">Agregar especificación</Button>
       </div>
       <div className="mb-4">
         <label className="block mb-1">Imagen (URL)</label>
@@ -383,9 +384,10 @@ const AdminProductForm: React.FC = () => {
         <input name="is_active" type="checkbox" checked={form.is_active} onChange={handleChange} id="is_active" />
         <label htmlFor="is_active">Activo</label>
       </div>
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" disabled={loading}>
-        {loading ? "Guardando..." : id ? "Actualizar" : "Crear"}
-      </button>
+      <div className="flex items-center gap-3">
+        <Button type="submit" variant="primary" className="px-4 py-2" disabled={loading}>{loading ? "Guardando..." : id ? "Actualizar" : "Crear"}</Button>
+        <Button variant="secondary" href="/admin/products" className="px-4 py-2">Cancelar</Button>
+      </div>
     </form>
   );
 };

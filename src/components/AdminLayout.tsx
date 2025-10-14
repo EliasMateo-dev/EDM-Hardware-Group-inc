@@ -6,6 +6,7 @@ import AdminDebugPanel from "./AdminDebugPanel";
 import ErrorBoundary from "./ErrorBoundary";
 
 import { useTiendaTema } from "../stores/tiendaTema";
+import Button from './Button';
 
 const navItems = [
   { to: "/admin", label: "Dashboard" },
@@ -56,26 +57,29 @@ const AdminLayout: React.FC = () => {
         </div>
         <nav className="flex-1 px-2 py-4 space-y-1">
           {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `block px-4 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition ${
-                  isActive ? "bg-indigo-50 dark:bg-indigo-900 font-semibold text-indigo-700 dark:text-indigo-200" : ""
-                }`
-              }
-              end={item.to === "/admin"}
-            >
-              {item.label}
-            </NavLink>
+            <div key={item.to}>
+              <NavLink
+                to={item.to}
+                className={({ isActive }) =>
+                  `block px-4 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition ${
+                    isActive ? "bg-indigo-50 dark:bg-indigo-900 font-semibold text-indigo-700 dark:text-indigo-200" : ""
+                  }`
+                }
+                end={item.to === "/admin"}
+              >
+                {item.label}
+              </NavLink>
+              {item.to === '/admin/logs' && (
+                <div className="mt-2 px-4">
+                  <Button variant="secondary" href="/" className="w-full">Regresar</Button>
+                </div>
+              )}
+            </div>
           ))}
         </nav>
         <div className="px-4 py-4">
-          {/* reserve some space so absolute button doesn't overlap content on small sidebars */}
+          {/* spacer */}
           <div className="h-12" />
-        </div>
-        <div className="absolute left-4 right-4 bottom-6">
-          <NavLink to="/" className="block text-center w-full px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 transition-colors shadow-sm">Regresar</NavLink>
         </div>
       </aside>
       {/* Main content */}

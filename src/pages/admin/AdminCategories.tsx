@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNotificationStore } from "../../stores/useNotificationStore";
+import Button from '../../components/Button';
 import { supabase } from "../../utils/supabase";
 
 interface Category {
@@ -90,7 +91,7 @@ const AdminCategories: React.FC = () => {
         </table>
       </div>
       <div className="mt-4">
-        <a href="/admin/categories/new" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Nueva Categoría</a>
+        <Button href="/admin/categories/new" variant="primary" className="inline-flex items-center gap-2">Nueva Categoría</Button>
       </div>
     </div>
   );

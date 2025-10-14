@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNotificationStore } from "../../stores/useNotificationStore";
 import { supabase } from "../../utils/supabase";
 import { useNavigate, useParams } from "react-router-dom";
+import Button from '../../components/Button';
 
 interface CategoryForm {
   name: string;
@@ -114,9 +115,10 @@ const AdminCategoryForm: React.FC = () => {
         <label className="block mb-1">Icono (opcional)</label>
         <input name="icon" value={form.icon} onChange={handleChange} className="w-full px-3 py-2 border rounded" />
       </div>
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" disabled={loading}>
-        {loading ? "Guardando..." : id ? "Actualizar" : "Crear"}
-      </button>
+      <div className="flex items-center gap-3">
+        <Button type="submit" variant="primary" className="px-4 py-2" disabled={loading}>{loading ? "Guardando..." : id ? "Actualizar" : "Crear"}</Button>
+        <Button variant="secondary" href="/admin/categories" className="px-4 py-2">Cancelar</Button>
+      </div>
     </form>
   );
 };

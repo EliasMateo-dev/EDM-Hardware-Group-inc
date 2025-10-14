@@ -3,6 +3,7 @@ import { useNotificationStore } from "../../stores/useNotificationStore";
 import { supabase } from "../../utils/supabase";
 import { useTiendaAuth } from "../../stores/tiendaAuth";
 import { useNavigate } from "react-router-dom";
+import Button from '../../components/Button';
 
 interface CategoryMap {
   [id: string]: string;
@@ -110,15 +111,12 @@ const AdminProducts: React.FC = () => {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Productos</h1>
-        <a
-          href="/admin/products/new"
-          className="inline-flex items-center gap-2 bg-indigo-600 text-white px-3 py-2 rounded hover:bg-indigo-700 transition"
-        >
+        <Button href="/admin/products/new" className="inline-flex items-center gap-2" variant="primary">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
           Nuevo Producto
-        </a>
+        </Button>
       </div>
 
       {loading ? (
