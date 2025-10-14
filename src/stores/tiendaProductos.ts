@@ -3,6 +3,19 @@ import type { Product, Category } from '../utils/supabase';
 import { supabase } from '../utils/supabase';
 import { useNotificationStore } from './useNotificationStore';
 
+// Helper to apply a timeout to an async operation so callers don't await forever
+const withTimeout = async <T,>(p: Promise<T>, ms = 15000): Promise<T> => {
+  let timer: any;
+  const timeout = new Promise<never>((_, rej) => {
+    timer = setTimeout(() => rej(new Error('timeout')), ms);
+  });
+  try {
+    return await Promise.race([p, timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
 interface EstadoProductos {
   productos: Product[];
   categorias: Category[];
@@ -36,14 +49,16 @@ export const useTiendaProductos = create<EstadoProductos>((establecer, obtener) 
       let categoriaId: string | null = null;
       if (aliasCategoria) {
         // Buscar el id de la categoría por alias
-        const { data: cats, error: catsErr } = await supabase.from('categories').select('id, slug');
-        if (catsErr) throw catsErr;
-        categoriaId = cats?.find((c) => c.slug === aliasCategoria)?.id ?? null;
+        const catsRes: any = await withTimeout((async () => await supabase.from('categories').select('id, slug'))());
+        if (catsRes?.error) throw catsRes.error;
+        const cats = catsRes.data;
+        categoriaId = cats?.find((c: any) => c.slug === aliasCategoria)?.id ?? null;
       }
-      let query = supabase.from('products').select('*').eq('is_active', true);
-      if (categoriaId) query = query.eq('category_id', categoriaId);
-      const { data, error } = await query;
-      if (error) throw error;
+      let queryBuilder = supabase.from('products').select('*').eq('is_active', true);
+      if (categoriaId) queryBuilder = queryBuilder.eq('category_id', categoriaId);
+      const productosRes: any = await withTimeout((async () => await queryBuilder)());
+      if (productosRes?.error) throw productosRes.error;
+      const data = productosRes.data;
       clearTimeout(watchdog);
       establecer({
         productos: data || [],
@@ -53,18 +68,18 @@ export const useTiendaProductos = create<EstadoProductos>((establecer, obtener) 
     } catch (err: any) {
       console.error('cargarProductos error', err);
       try { showNotification && showNotification('Error al cargar productos', 'error'); } catch {}
-      // ensure state updated
+      // ensure state updated and return safe defaults
       clearTimeout(watchdog);
-      establecer({ cargando: false });
+      establecer({ productos: [], categoriaSeleccionada: null, cargando: false });
     }
   },
 
   cargarCategorias: async () => {
     const { showNotification } = useNotificationStore.getState();
     try {
-      const { data, error } = await supabase.from('categories').select('*');
-      if (error) throw error;
-      establecer({ categorias: data || [] });
+      const res: any = await withTimeout((async () => await supabase.from('categories').select('*'))());
+      if (res?.error) throw res.error;
+      establecer({ categorias: res.data || [] });
     } catch (err) {
       console.error('cargarCategorias error', err);
       try { showNotification && showNotification('Error al cargar categorías', 'error'); } catch {}
