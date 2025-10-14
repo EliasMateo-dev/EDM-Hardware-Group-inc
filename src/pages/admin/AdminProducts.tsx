@@ -147,14 +147,14 @@ const AdminProducts: React.FC = () => {
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
                   {prods.map((p) => (
                     <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-900 transition">
-                      <td className="px-4 py-3 align-middle text-sm font-medium text-slate-900">{p.name}</td>
-                      <td className="px-4 py-3 align-middle text-sm text-gray-600 dark:text-gray-300">{p.brand}</td>
-                      <td className="px-4 py-3 align-middle text-sm font-mono text-slate-900">${p.price}</td>
-                      <td className="px-4 py-3 align-middle text-sm text-slate-700">{p.stock}</td>
-                      <td className="px-4 py-3 align-middle text-sm text-slate-700">
+                      <td className="px-4 py-3 align-middle text-sm font-medium text-slate-900 text-left">{p.name}</td>
+                      <td className="px-4 py-3 align-middle text-sm text-gray-600 dark:text-gray-300 text-left">{p.brand}</td>
+                      <td className="px-4 py-3 align-middle text-sm font-mono text-slate-900 text-left">${p.price}</td>
+                      <td className="px-4 py-3 align-middle text-sm text-slate-700 text-left">{p.stock}</td>
+                      <td className="px-4 py-3 align-middle text-sm text-slate-700 text-left">
                         {p.is_active ? <span className="text-green-600 font-semibold">Sí</span> : <span className="text-red-500">No</span>}
                       </td>
-                      <td className="px-4 py-3 align-middle text-sm text-slate-700">
+                      <td className="px-4 py-3 align-middle text-sm text-slate-700 text-left">
                         <div className="inline-flex items-center gap-2">
                           <a
                             href={`/admin/products/edit/${p.id}`}

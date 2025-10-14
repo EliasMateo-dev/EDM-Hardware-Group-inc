@@ -95,9 +95,14 @@ const AdminUserForm: React.FC = () => {
         <input name="is_admin" type="checkbox" checked={form.is_admin} onChange={handleChange} id="is_admin" />
         <label htmlFor="is_admin">Administrador</label>
       </div>
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" disabled={loading}>
-        {loading ? "Guardando..." : id ? "Actualizar" : "Crear"}
-      </button>
+      <div className="flex items-center gap-3">
+        <button type="submit" className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition" disabled={loading}>
+          {loading ? "Guardando..." : id ? "Actualizar" : "Crear"}
+        </button>
+        <button type="button" onClick={() => navigate('/admin/users')} className="inline-flex items-center px-4 py-2 border border-slate-200 rounded hover:bg-slate-50 transition">
+          Cancelar
+        </button>
+      </div>
     </form>
   );
 };

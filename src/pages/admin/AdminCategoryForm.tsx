@@ -114,9 +114,14 @@ const AdminCategoryForm: React.FC = () => {
         <label className="block mb-1">Icono (opcional)</label>
         <input name="icon" value={form.icon} onChange={handleChange} className="w-full px-3 py-2 border rounded" />
       </div>
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" disabled={loading}>
-        {loading ? "Guardando..." : id ? "Actualizar" : "Crear"}
-      </button>
+          <div className="flex items-center gap-3">
+            <button type="submit" className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition" disabled={loading}>
+              {loading ? "Guardando..." : id ? "Actualizar" : "Crear"}
+            </button>
+            <button type="button" onClick={() => navigate('/admin/categories')} className="inline-flex items-center px-4 py-2 border border-slate-200 rounded hover:bg-slate-50 transition">
+              Cancelar
+            </button>
+          </div>
     </form>
   );
 };

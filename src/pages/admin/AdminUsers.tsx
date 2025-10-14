@@ -115,7 +115,7 @@ const AdminUsers: React.FC = () => {
                   <td className="px-4 py-2 text-left">
                     <button
                       onClick={() => handleToggleAdmin(u.id, u.is_admin)}
-                      className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700"
+                      className="inline-flex items-center px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
                     >
                       Hacer admin
                     </button>
