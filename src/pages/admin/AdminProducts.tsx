@@ -138,27 +138,27 @@ const AdminProducts: React.FC = () => {
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Marca</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Precio</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Stock</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Activo</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Precio</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Activo</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
                   {prods.map((p) => (
                     <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-900 transition">
-                      <td className="px-4 py-3 align-middle">{p.name}</td>
+                      <td className="px-4 py-3 align-middle text-sm font-medium text-slate-900">{p.name}</td>
                       <td className="px-4 py-3 align-middle text-sm text-gray-600 dark:text-gray-300">{p.brand}</td>
-                      <td className="px-4 py-3 align-middle text-right font-mono">${p.price}</td>
-                      <td className="px-4 py-3 align-middle text-right">{p.stock}</td>
-                      <td className="px-4 py-3 align-middle text-center">
+                      <td className="px-4 py-3 align-middle text-sm font-mono text-slate-900">${p.price}</td>
+                      <td className="px-4 py-3 align-middle text-sm text-slate-700">{p.stock}</td>
+                      <td className="px-4 py-3 align-middle text-sm text-slate-700">
                         {p.is_active ? <span className="text-green-600 font-semibold">Sí</span> : <span className="text-red-500">No</span>}
                       </td>
-                      <td className="px-4 py-3 align-middle text-center">
+                      <td className="px-4 py-3 align-middle text-sm text-slate-700">
                         <div className="inline-flex items-center gap-2">
                           <a
                             href={`/admin/products/edit/${p.id}`}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition"
+                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-900 rounded text-sm hover:bg-slate-50 transition"
                           >
                             Editar
                           </a>

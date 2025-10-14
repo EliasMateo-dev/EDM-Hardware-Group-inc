@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useTiendaAuth } from "../stores/tiendaAuth";
 import NotificationDisplay from "./NotificationDisplay";
@@ -31,7 +31,7 @@ const AdminLayout: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Sidebar */}
-      <aside className="w-72 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col shadow-sm">
+      <aside className="relative w-72 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col shadow-sm">
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-pink-500 rounded flex items-center justify-center text-white font-bold">ED</div>
@@ -70,8 +70,12 @@ const AdminLayout: React.FC = () => {
             </NavLink>
           ))}
         </nav>
-        <div className="mt-auto px-4 py-4">
-          <NavLink to="/" className="block text-center px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 transition-colors">Regresar</NavLink>
+        <div className="px-4 py-4">
+          {/* reserve some space so absolute button doesn't overlap content on small sidebars */}
+          <div className="h-12" />
+        </div>
+        <div className="absolute left-4 right-4 bottom-6">
+          <NavLink to="/" className="block text-center w-full px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 transition-colors shadow-sm">Regresar</NavLink>
         </div>
       </aside>
       {/* Main content */}
