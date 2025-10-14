@@ -11,7 +11,8 @@ export default function BarraNavegacion() {
   const navegar = useNavigate();
   const [menuAbierto, establecerMenuAbierto] = useState(false);
   const [authModalAbierto, establecerAuthModalAbierto] = useState(false);
-  const totalArticulos = useTiendaCarrito((estado) => estado.obtenerTotalArticulos());
+  // Compute cart totals from raw state to avoid calling store methods inside selectors
+  const totalArticulos = useTiendaCarrito((estado) => (estado.elementos || []).reduce((acc, el) => acc + (el?.cantidad || 0), 0));
   const categorias = useTiendaProductos((estado) => estado.categorias);
   const terminoBusqueda = useTiendaProductos((estado) => estado.terminoBusqueda);
   const categoriaSeleccionada = useTiendaProductos((estado) => estado.categoriaSeleccionada);

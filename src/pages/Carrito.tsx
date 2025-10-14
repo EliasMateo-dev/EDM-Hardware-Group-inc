@@ -22,7 +22,9 @@ export default function Carrito() {
   const actualizarCantidad = useTiendaCarrito((estado) => estado.actualizarCantidad);
   const eliminarDelCarrito = useTiendaCarrito((estado) => estado.eliminarDelCarrito);
   const vaciarCarrito = useTiendaCarrito((estado) => estado.vaciarCarrito);
-  const obtenerTotalPrecio = useTiendaCarrito((estado) => estado.obtenerTotalPrecio);
+  const obtenerTotalPrecioFn = useTiendaCarrito((estado) => {
+    return () => (estado.elementos || []).reduce((acc, el) => acc + ((el?.producto?.price || 0) * (el?.cantidad || 0)), 0);
+  });
   const cargarProductos = useTiendaProductos((s) => s.cargarProductos);
 
   useEffect(() => {
@@ -154,7 +156,7 @@ export default function Carrito() {
 
           <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-6 text-slate-600 dark:border-slate-800 dark:text-slate-300">
             <span className="text-sm font-medium">Total</span>
-            <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{formatearPrecio(obtenerTotalPrecio())}</span>
+            <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{formatearPrecio(obtenerTotalPrecioFn())}</span>
           </div>
 
           <button
@@ -169,7 +171,7 @@ export default function Carrito() {
       <PaymentModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        totalAmount={obtenerTotalPrecio()}
+        totalAmount={obtenerTotalPrecioFn()}
       />
     </section>
   );
