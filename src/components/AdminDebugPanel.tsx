@@ -5,7 +5,10 @@ import { useTiendaCarrito } from '../stores/tiendaCarrito';
 export default function AdminDebugPanel() {
   const auth = useTiendaAuth((s) => ({ cargando: s.cargando, usuario: s.usuario }));
   const productos = useTiendaProductos((s) => ({ cargando: s.cargando, categoria: s.categoriaSeleccionada }));
-  const carrito = useTiendaCarrito((s) => ({ cargando: s.cargando, total: s.obtenerTotalArticulos() }));
+  const carrito = useTiendaCarrito((s) => ({
+    cargando: s.cargando,
+    total: (s.elementos || []).reduce((acc, el) => acc + (el?.cantidad || 0), 0),
+  }));
 
   return (
     <div className="fixed right-4 bottom-4 z-50 p-3 bg-white dark:bg-gray-800 border rounded shadow text-xs w-64">

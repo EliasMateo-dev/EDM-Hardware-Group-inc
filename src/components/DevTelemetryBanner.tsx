@@ -11,13 +11,17 @@ export default function DevTelemetryBanner() {
   const productosState = useTiendaProductos((s) => ({
     cargando: s.cargando,
     lastError: s.lastError,
-    count: s.productos.length,
+    count: s.productos ? s.productos.length : 0,
   }));
-  const carritoState = useTiendaCarrito((s) => ({
-    count: s.obtenerTotalArticulos(),
-    total: s.obtenerTotalPrecio(),
-    elementos: s.elementos,
-  }));
+
+  // Compute derived values inside the selector from raw state to avoid
+  // invoking store methods that may call getState(), which can cause
+  // nested updates when used during render/effect mount.
+  const carritoState = useTiendaCarrito((s) => {
+    const count = (s.elementos || []).reduce((acc, el) => acc + (el?.cantidad || 0), 0);
+    const total = (s.elementos || []).reduce((acc, el) => acc + ((el?.producto?.price || 0) * (el?.cantidad || 0)), 0);
+    return { count, total, elementos: s.elementos };
+  });
 
   const payload = useMemo(() => ({
     productos: productosState,
