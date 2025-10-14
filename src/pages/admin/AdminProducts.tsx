@@ -37,11 +37,16 @@ const AdminProducts: React.FC = () => {
     if (!perfil || !perfil.is_admin) return;
     const fetchAll = async () => {
       setLoading(true);
+      const withTimeout = async <T,>(p: Promise<T>, ms = 15000): Promise<T> => {
+        let timer: any; const timeout = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error('timeout')), ms); });
+        try { return await Promise.race([p, timeout]); } finally { clearTimeout(timer); }
+      };
       try {
-        const [{ data: prodData, error: prodError }, { data: catData, error: catError }] = await Promise.all([
-          supabase.from("products").select("id, name, brand, price, stock, category_id, is_active"),
-          supabase.from("categories").select("id, name")
-        ]);
+        const prodPromise = supabase.from("products").select("id, name, brand, price, stock, category_id, is_active");
+        const catPromise = supabase.from("categories").select("id, name");
+        const [prodRes, catRes]: any = await withTimeout(Promise.all([prodPromise.then((r:any)=>r), catPromise.then((r:any)=>r)]));
+        const { data: prodData, error: prodError } = prodRes || {};
+        const { data: catData, error: catError } = catRes || {};
         if (prodError) {
           showNotification("Error al cargar productos", "error");
         } else {

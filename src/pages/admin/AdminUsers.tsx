@@ -18,13 +18,14 @@ const AdminUsers: React.FC = () => {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        // Usar la función RPC para que los admins vean todos y los usuarios normales solo el suyo
-        const { data, error } = await supabase.rpc('get_all_profiles');
-        if (error) {
-          showNotification("Error al cargar usuarios", "error");
-        } else {
-          setUsers(Array.isArray(data) ? data : []);
-        }
+        const withTimeout = async <T,>(p: Promise<T>, ms = 15000): Promise<T> => {
+          let timer: any; const timeout = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error('timeout')), ms); });
+          try { return await Promise.race([p, timeout]); } finally { clearTimeout(timer); }
+        };
+  const res: any = await withTimeout(Promise.resolve(supabase.rpc('get_all_profiles').then((r:any)=>r)));
+        const { data, error } = res || {};
+        if (error) { showNotification("Error al cargar usuarios", "error"); }
+        else { setUsers(Array.isArray(data) ? data : []); }
       } catch (err) {
         console.error('AdminUsers fetchUsers error', err);
         try { showNotification('Error al cargar usuarios', 'error'); } catch {}

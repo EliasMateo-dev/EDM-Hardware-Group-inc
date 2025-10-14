@@ -29,7 +29,7 @@ export default function Carrito() {
     // Cargar todos los productos antes de hidratar el carrito
     (async () => {
       await cargarProductos();
-      cargarCarrito();
+      await cargarCarrito();
     })();
   }, [cargarCarrito, cargarProductos]);
 

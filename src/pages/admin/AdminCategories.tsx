@@ -19,12 +19,13 @@ const AdminCategories: React.FC = () => {
     const fetchCategories = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase.from("categories").select("id, name, slug, description, icon");
-        if (error) {
-          showNotification("Error al cargar categorías", "error");
-        } else {
-          setCategories(data || []);
-        }
+        const withTimeout = async <T,>(p: Promise<T>, ms = 15000): Promise<T> => {
+          let timer: any; const timeout = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error('timeout')), ms); });
+          try { return await Promise.race([p, timeout]); } finally { clearTimeout(timer); }
+        };
+  const res: any = await withTimeout(Promise.resolve(supabase.from("categories").select("id, name, slug, description, icon").then((r:any)=>r)));
+        const { data, error } = res || {};
+        if (error) { showNotification("Error al cargar categorías", "error"); } else { setCategories(data || []); }
       } catch (err) {
         console.error('AdminCategories fetchCategories error', err);
         try { showNotification('Error al cargar categorías', 'error'); } catch {}

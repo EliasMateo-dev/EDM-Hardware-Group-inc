@@ -22,24 +22,20 @@ const AdminActivityLogs: React.FC = () => {
     const fetchLogs = async () => {
       setLoading(true);
       try {
-        // Traer logs
-        const { data: logsData, error: logsError } = await supabase.rpc('get_admin_activity_logs');
-        if (logsError) {
-          showNotification("Error al cargar logs", "error");
-          return;
-        }
+        const withTimeout = async <T,>(p: Promise<T>, ms = 15000): Promise<T> => {
+          let timer: any; const timeout = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error('timeout')), ms); });
+          try { return await Promise.race([p, timeout]); } finally { clearTimeout(timer); }
+        };
+  const logsRes: any = await withTimeout(Promise.resolve(supabase.rpc('get_admin_activity_logs').then((r:any)=>r)));
+        const { data: logsData, error: logsError } = logsRes || {};
+        if (logsError) { showNotification("Error al cargar logs", "error"); return; }
         setLogs(logsData || []);
-        // Traer emails/nombres de usuarios únicos
         const userIds = Array.from(new Set((logsData || []).map((l: any) => l.user_id)));
         if (userIds.length > 0) {
-          const { data: usersData } = await supabase
-            .from("profiles")
-            .select("id, email, full_name")
-            .in("id", userIds);
+          const usersRes: any = await withTimeout(Promise.resolve(supabase.from("profiles").select("id, email, full_name").in("id", userIds).then((r:any)=>r)));
+          const { data: usersData } = usersRes || {};
           const map: Record<string, { email: string; full_name?: string }> = {};
-          (usersData || []).forEach((u: any) => {
-            map[u.id] = { email: u.email, full_name: u.full_name };
-          });
+          (usersData || []).forEach((u: any) => { map[u.id] = { email: u.email, full_name: u.full_name }; });
           setUserMap(map);
         }
       } catch (err) {

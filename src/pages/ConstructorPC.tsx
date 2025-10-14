@@ -61,25 +61,39 @@ export default function PCBuilderCompatibility() {
   };
 
   useEffect(() => {
+    const withTimeout = async <T,>(p: Promise<T>, ms = 15000): Promise<T> => {
+      let timer: any;
+      const timeout = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error('timeout')), ms); });
+      try { return await Promise.race([p, timeout]); } finally { clearTimeout(timer); }
+    };
+
     const load = async () => {
-      const { data: catData, error: catErr } = await supabase.from('categories').select('id, slug, name');
-      if (catErr) {
-        console.error('categories fetch error', catErr);
-      } else if (catData) {
-        setCategories(catData as Category[]);
-        const map: Record<string, string> = {};
-        catData.forEach((c: any) => map[c.slug] = c.id);
-        setSlugToCategoryId(map);
-      }
+      try {
+  const catRes: any = await withTimeout(Promise.resolve(supabase.from('categories').select('id, slug, name').then((r: any) => r)));
+  const { data: catData, error: catErr } = catRes || {};
+        if (catErr) {
+          console.error('categories fetch error', catErr);
+        } else if (catData) {
+          setCategories(catData as Category[]);
+          const map: Record<string, string> = {};
+          catData.forEach((c: any) => map[c.slug] = c.id);
+          setSlugToCategoryId(map);
+        }
 
-      const { data: prodData, error: prodErr } = await supabase.from('products').select('*');
-      if (prodErr) {
-        console.error('products fetch error', prodErr);
-      } else {
-        setAllProducts(prodData as Product[]);
-      }
+  const prodRes: any = await withTimeout(Promise.resolve(supabase.from('products').select('*').then((r: any) => r)));
+        const { data: prodData, error: prodErr } = prodRes || {};
+        if (prodErr) {
+          console.error('products fetch error', prodErr);
+        } else if (prodData) {
+          setAllProducts(prodData as Product[]);
+        }
 
-      cargarProductos();
+        // Ensure tiendaProductos is populated as well; await to avoid races
+        try { await cargarProductos(); } catch (err) { console.warn('cargarProductos failed from ConstructorPC', err); }
+      } catch (err: any) {
+        if (err?.message === 'timeout') console.error('ConstructorPC: Supabase request timed out');
+        else console.error('ConstructorPC load error', err);
+      }
     };
 
     load();
@@ -366,7 +380,7 @@ export default function PCBuilderCompatibility() {
       )}
 
       <div className="mb-12 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900">
-        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Lo que esta en proceso</h2>
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Lo que está en proceso</h2>
         <ul className="mt-6 grid gap-4 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-2">
           <li className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors dark:border-slate-800 dark:bg-slate-800/60 line-through">Compatibilidad de socket y chipset al instante.</li>
           <li className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors dark:border-slate-800 dark:bg-slate-800/60 line-through">Validacion de memoria DDR4 o DDR5 y cantidad maxima.</li>
