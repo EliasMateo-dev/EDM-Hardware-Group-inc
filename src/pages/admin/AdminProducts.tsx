@@ -134,24 +134,24 @@ const AdminProducts: React.FC = () => {
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-900">
+                <thead className="bg-gray-800">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Marca</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Precio</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Activo</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase">Nombre</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase">Marca</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase">Precio</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase">Stock</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase">Activo</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
                   {prods.map((p) => (
                     <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-900 transition">
-                      <td className="px-4 py-3 align-middle text-sm font-medium text-slate-900">{p.name}</td>
-                      <td className="px-4 py-3 align-middle text-sm text-gray-600 dark:text-gray-300">{p.brand}</td>
-                      <td className="px-4 py-3 align-middle text-sm font-mono text-slate-900">${p.price}</td>
-                      <td className="px-4 py-3 align-middle text-sm text-slate-700">{p.stock}</td>
-                      <td className="px-4 py-3 align-middle text-sm text-slate-700">
+                      <td className="px-4 py-3 align-middle text-sm font-medium text-slate-100">{p.name}</td>
+                      <td className="px-4 py-3 align-middle text-sm text-slate-200">{p.brand}</td>
+                      <td className="px-4 py-3 align-middle text-sm font-mono text-slate-100">${p.price}</td>
+                      <td className="px-4 py-3 align-middle text-sm text-slate-200">{p.stock}</td>
+                      <td className="px-4 py-3 align-middle text-sm text-slate-200">
                         {p.is_active ? <span className="text-green-600 font-semibold">Sí</span> : <span className="text-red-500">No</span>}
                       </td>
                       <td className="px-4 py-3 align-middle text-sm text-slate-700">
