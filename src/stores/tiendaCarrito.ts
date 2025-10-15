@@ -35,7 +35,18 @@ const leerCarrito = (): ElementoCarrito[] => {
     if (!crudo) {
       return [];
     }
-    const parseado = JSON.parse(crudo) as ElementoCarritoAlmacenado[];
+    // Safety: avoid parsing extremely large or malicious strings that can freeze the thread.
+    const MAX_RAW_LENGTH = 2000000; // 2MB
+    const SAFE_MAX_ITEMS = 500; // don't process more than 500 items at once
+    const rawToParse = crudo.length > MAX_RAW_LENGTH ? crudo.slice(0, MAX_RAW_LENGTH) : crudo;
+    let parseadoAll = [] as ElementoCarritoAlmacenado[];
+    try {
+      parseadoAll = JSON.parse(rawToParse) as ElementoCarritoAlmacenado[];
+    } catch (err) {
+      console.error('Failed to JSON.parse carrito (possibly truncated or corrupted), falling back to empty', err);
+      return [];
+    }
+    const parseado = Array.isArray(parseadoAll) ? parseadoAll.slice(0, SAFE_MAX_ITEMS) : [];
     // Obtener productos actuales del store
     const productos = useTiendaProductos.getState().productos;
     return parseado
@@ -71,6 +82,16 @@ const leerCarrito = (): ElementoCarrito[] => {
   } catch (error) {
     console.error('Error al leer el carrito desde el almacenamiento:', error);
     return [];
+  }
+};
+
+// Utility to clear the stored carrito (used when corruption or enormous size found)
+export const limpiarCarritoAlmacenado = () => {
+  try {
+    if (typeof window === 'undefined') return;
+    window.localStorage.removeItem(CLAVE_ALMACEN_CARRITO);
+  } catch (e) {
+    console.error('Error clearing stored cart', e);
   }
 };
 

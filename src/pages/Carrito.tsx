@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
-import { useTiendaCarrito } from '../stores/tiendaCarrito';
+import { useTiendaCarrito, limpiarCarritoAlmacenado } from '../stores/tiendaCarrito';
 import { useTiendaProductos } from '../stores/tiendaProductos';
 import PaymentModal from '../components/PaymentModal';
 
@@ -40,6 +40,11 @@ export default function Carrito() {
     ? elementos.filter((el) => el && el.producto && typeof el.producto.id === 'string')
     : [];
 
+  const SAFE_MAX_RENDER = 500;
+
+  // If cart is excessively large (likely corrupted), avoid rendering to prevent freeze
+  const isCartTooLarge = safeElementos.length > SAFE_MAX_RENDER;
+
   if (safeElementos.length === 0) {
     return (
       <section className="mx-auto flex max-w-3xl flex-col items-center gap-6 px-4 py-24 text-center text-slate-900 dark:text-slate-100">
@@ -56,6 +61,35 @@ export default function Carrito() {
         >
           Ver catalogo
         </Link>
+      </section>
+    );
+  }
+
+  if (isCartTooLarge) {
+    return (
+      <section className="mx-auto flex max-w-3xl flex-col items-center gap-6 px-4 py-24 text-center text-slate-900 dark:text-slate-100">
+        <h1 className="text-2xl font-semibold">Carrito demasiado grande</h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Hemos detectado una cantidad muy alta de items en tu carrito, lo que puede deberse a datos corruptos en el almacenamiento local. Para evitar que la página se congele, puedes limpiar el carrito y volver a empezar.</p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => {
+              limpiarCarritoAlmacenado();
+              vaciarCarrito();
+            }}
+            className="rounded-full bg-red-600 px-4 py-2 text-white"
+          >
+            Limpiar carrito
+          </button>
+          <button
+            onClick={() => {
+              // fallback: navigate home so user can continue
+              window.location.href = '/';
+            }}
+            className="rounded-full bg-slate-900 px-4 py-2 text-white"
+          >
+            Ir al catálogo
+          </button>
+        </div>
       </section>
     );
   }
