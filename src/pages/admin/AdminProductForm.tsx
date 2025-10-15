@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNotificationStore } from "../../stores/useNotificationStore";
 import { supabase } from "../../utils/supabase";
 import { useNavigate, useParams } from "react-router-dom";
@@ -107,10 +107,89 @@ const AdminProductForm: React.FC = () => {
     setSpecs((prev) => prev.filter((_, i) => i !== idx));
   };
   const [loading, setLoading] = useState(false);
+  const [slowBannerVisible, setSlowBannerVisible] = useState(false);
+  const lastPayloadRef = useRef<any>(null);
+  const lastIsEditRef = useRef<boolean>(false);
+  const lastIdRef = useRef<string | undefined>(undefined);
+  const lastPendingPromiseRef = useRef<Promise<any> | null>(null);
   const [categories, setCategories] = useState<{id: string, name: string, slug: string}[]>([]);
   const { showNotification } = useNotificationStore();
   const navigate = useNavigate();
   const { id } = useParams();
+
+  // timeout helper (shared)
+  const withTimeout = async <T,>(p: Promise<T>, ms = 15000): Promise<T> => {
+    let timer: any;
+    const timeout = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error('timeout')), ms); });
+    try {
+      return await Promise.race([p, timeout]);
+    } finally { clearTimeout(timer); }
+  };
+
+  // marker to detect slow requests (2.5s)
+  const markSlow = (ms = 2500) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+  const performRequest = async (payloadParam: any, isEditParam: boolean, idParam?: string) => {
+    if (isEditParam) {
+      return await withTimeout(Promise.resolve(supabase.from('products').update(payloadParam).eq('id', idParam)));
+    }
+    return await withTimeout(Promise.resolve(supabase.from('products').insert([payloadParam])));
+  };
+
+  // Handlers for slow-banner actions
+  const handleRetry = async () => {
+    const payload = lastPayloadRef.current;
+    if (!payload) return;
+    setSlowBannerVisible(false);
+    setLoading(true);
+    try {
+      const res = await performRequest(payload, lastIsEditRef.current, lastIdRef.current);
+      if (res?.error) {
+        showNotification('Error en reintento', 'error');
+      } else {
+        showNotification('Operación completada', 'success');
+        navigate('/admin/products');
+      }
+    } catch (err: any) {
+      console.error('Retry request error:', err);
+      showNotification(err?.message || 'Error en reintento', 'error');
+    } finally {
+      setLoading(false);
+      lastPendingPromiseRef.current = null;
+    }
+  };
+
+  const handleKeepWaiting = async () => {
+    setSlowBannerVisible(false);
+    setLoading(true);
+    const p = lastPendingPromiseRef.current;
+    if (p) {
+      try {
+        const r = await p;
+        if (r?.error) {
+          showNotification('La operación falló', 'error');
+        } else {
+          showNotification('La operación finalizó', 'success');
+          navigate('/admin/products');
+        }
+      } catch (err) {
+        console.error('Background wait error:', err);
+        showNotification('Error al completar la operación', 'error');
+      } finally {
+        lastPendingPromiseRef.current = null;
+        setLoading(false);
+      }
+    } else {
+      // no pending promise, just retry
+      await handleRetry();
+    }
+  };
+
+  const handleCancelSlow = () => {
+    setSlowBannerVisible(false);
+    lastPendingPromiseRef.current = null;
+    setLoading(false);
+  };
 
   useEffect(() => {
     // Cargar categorías para el select
@@ -242,6 +321,7 @@ const AdminProductForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setSlowBannerVisible(false);
     // Build payload
     try {
       const imageUrl = form.image_url;
@@ -249,53 +329,64 @@ const AdminProductForm: React.FC = () => {
       specs.forEach(({ key, value }) => { if (key && key.trim()) specifications[key.trim()] = value.trim(); });
       const payload = { ...form, image_url: imageUrl, specifications };
 
-      // timeout helper
-      const withTimeout = async <T,>(p: Promise<T>, ms = 15000): Promise<T> => {
-        let timer: any;
-        const timeout = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error('timeout')), ms); });
-        try {
-          return await Promise.race([p, timeout]);
-        } finally { clearTimeout(timer); }
-      };
+      // timeout helper (shared)
+          // timeout helper (shared)
+      
 
       // perform update or insert using direct await (no extra .then wrappers)
       let res: any = null;
-      if (id) {
-        try {
-          res = await withTimeout(Promise.resolve(supabase.from('products').update(payload).eq('id', id)));
-        } catch (err: any) {
-          console.error('AdminProductForm update error:', err);
-          if (err?.message === 'timeout') {
-            showNotification('La actualización tardó demasiado. Intenta de nuevo.', 'error');
+      // run both: request and slow marker
+      const reqPromise = performRequest(payload, Boolean(id), id);
+      const slowMarker = markSlow(2500);
+
+      const winner = await Promise.race([reqPromise.then(() => 'req' as const), slowMarker.then(() => 'slow' as const)]);
+      const wasSlow = winner === 'slow';
+      if (wasSlow) {
+        // request hasn't finished within 2.5s -> give control to user
+        setSlowBannerVisible(true);
+        lastPayloadRef.current = payload;
+        lastIsEditRef.current = Boolean(id);
+        lastIdRef.current = id;
+        lastPendingPromiseRef.current = reqPromise;
+        // attach background handlers to notify the user when it eventually completes
+        reqPromise.then((r) => {
+          if (r?.error) {
+            showNotification(id ? 'Actualización fallida (resultado final).' : 'Creación fallida (resultado final).', 'error');
           } else {
-            showNotification('Error al actualizar producto', 'error');
+            showNotification(id ? 'Actualización completada (resultado final).' : 'Creación completada (resultado final).', 'success');
           }
-          return;
-        }
-        if (res?.error) {
-          console.error('Update response error:', res.error);
-          showNotification('Error al actualizar producto', 'error');
-        } else {
-          showNotification('Producto actualizado', 'success');
-          navigate('/admin/products');
-        }
+        }).catch((err) => {
+          console.error('Background request error after slow:', err);
+        }).finally(() => {
+          // keep banner visible; user can still act
+          lastPendingPromiseRef.current = null;
+        });
+        // stop here: user decides next action (retry / keep waiting / cancel)
+        setLoading(false);
+        return;
       } else {
+        // request finished quickly
         try {
-          res = await withTimeout(Promise.resolve(supabase.from('products').insert([payload])));
+          res = await reqPromise;
         } catch (err: any) {
-          console.error('AdminProductForm insert error:', err);
+          console.error('AdminProductForm quick request error:', err);
           if (err?.message === 'timeout') {
-            showNotification('La creación tardó demasiado. Intenta de nuevo.', 'error');
+            showNotification(id ? 'La actualización tardó demasiado. Intenta de nuevo.' : 'La creación tardó demasiado. Intenta de nuevo.', 'error');
           } else {
-            showNotification('Error al crear producto', 'error');
+            showNotification(id ? 'Error al actualizar producto' : 'Error al crear producto', 'error');
           }
           return;
         }
-        if (res?.error) {
-          console.error('Insert response error:', res.error);
-          showNotification('Error al crear producto', 'error');
-        } else {
-          showNotification('Producto creado', 'success');
+      }
+
+      // If we reached here and have a res, process it. Note: if slowBannerVisible=true we DON'T navigate automatically; user can choose to accept result and navigate via banner action.
+      if (res?.error) {
+        console.error('Request response error:', res.error);
+        showNotification(id ? 'Error al actualizar producto' : 'Error al crear producto', 'error');
+      } else if (res) {
+        showNotification(id ? 'Producto actualizado' : 'Producto creado', 'success');
+        // Only navigate automatically if the request was NOT slow-detected
+        if (!wasSlow) {
           navigate('/admin/products');
         }
       }
@@ -391,6 +482,21 @@ const AdminProductForm: React.FC = () => {
         <Button type="submit" variant="primary" className="px-4 py-2" disabled={loading}>{loading ? "Guardando..." : id ? "Actualizar" : "Crear"}</Button>
         <Button variant="secondary" href="/admin/products" className="px-4 py-2">Cancelar</Button>
       </div>
+      {slowBannerVisible && (
+        <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded">
+          <div className="flex items-start justify-between">
+            <div>
+              <strong>La petición está tardando más de lo esperado.</strong>
+              <div className="text-sm">Puedes seguir esperando, reintentar o cancelar.</div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="primary" onClick={handleRetry} className="px-3 py-1">Reintentar</Button>
+              <Button variant="secondary" onClick={handleKeepWaiting} className="px-3 py-1">Seguir esperando</Button>
+              <Button variant="ghost" onClick={handleCancelSlow} className="px-3 py-1">Cancelar</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 };
