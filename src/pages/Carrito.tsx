@@ -146,22 +146,36 @@ export default function Carrito() {
           </p>
 
           <div className="mt-6 space-y-3">
-            {elementos.map((elemento) => (
-              <div key={elemento.producto.id} className="flex justify-between text-sm text-slate-600 dark:text-slate-300">
-                <span>
-                  {elemento.producto.name}
-                  <span className="text-slate-400 dark:text-slate-500"> x {elemento.cantidad}</span>
-                </span>
-                <span className="font-medium text-slate-900 dark:text-slate-100">
-                  {formatearPrecio((typeof elemento.producto.price === 'number' ? elemento.producto.price : 0) * elemento.cantidad)}
-                </span>
-              </div>
-            ))}
+            {safeElementos.map((elemento) => {
+              const prod = elemento.producto || {} as any;
+              const prodId = typeof prod.id === 'string' ? prod.id : Math.random().toString(36).slice(2, 9);
+              const name = prod.name || 'Sin nombre';
+              const qty = typeof elemento.cantidad === 'number' ? elemento.cantidad : 0;
+              const price = typeof prod.price === 'number' ? prod.price : Number(prod.price || 0);
+              return (
+                <div key={prodId} className="flex justify-between text-sm text-slate-600 dark:text-slate-300">
+                  <span>
+                    {name}
+                    <span className="text-slate-400 dark:text-slate-500"> x {qty}</span>
+                  </span>
+                  <span className="font-medium text-slate-900 dark:text-slate-100">
+                    {formatearPrecio(price * qty)}
+                  </span>
+                </div>
+              );
+            })}
           </div>
 
           <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-6 text-slate-600 dark:border-slate-800 dark:text-slate-300">
             <span className="text-sm font-medium">Total</span>
-            <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{formatearPrecio(obtenerTotalPrecioFn())}</span>
+            <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{formatearPrecio(
+              safeElementos.reduce((acc, el) => {
+                const p = el?.producto || {} as any;
+                const pr = typeof p.price === 'number' ? p.price : Number(p.price || 0);
+                const q = typeof el.cantidad === 'number' ? el.cantidad : 0;
+                return acc + pr * q;
+              }, 0)
+            )}</span>
           </div>
 
           <button
