@@ -114,14 +114,16 @@ export const useTiendaCarrito = create<EstadoCarrito>((establecer, obtener) => (
   cargarCarrito: async () => {
     // If productos haven't loaded yet, wait a short while (poll) so we can
     // hydrate against the authoritative productos list when possible.
-    const productosState = useTiendaProductos.getState();
     const maxWaitMs = 3000;
     const intervalMs = 250;
     let waited = 0;
 
-    while (productosState.productos.length === 0 && waited < maxWaitMs) {
-      // If the productos store reports it's loading, wait; otherwise break early
-      if (!productosState.cargando) break;
+    // Poll the productos store snapshot until products appear or timeout
+    while (waited < maxWaitMs) {
+      const currentProductosState = useTiendaProductos.getState();
+      if ((currentProductosState.productos && currentProductosState.productos.length > 0) || !currentProductosState.cargando) {
+        break;
+      }
       await new Promise((res) => setTimeout(res, intervalMs));
       waited += intervalMs;
     }
@@ -244,6 +246,11 @@ try {
     if (!productos || productos.length === 0) return;
     const { elementos } = useTiendaCarrito.getState();
     if (!elementos || elementos.length === 0) return;
+    // safety: avoid processing extremely large carts (possible corruption)
+    if (elementos.length > 2000) {
+      console.warn('tiendaCarrito: elementos demasiado grande, saltando reconciliacion para evitar freeze', elementos.length);
+      return;
+    }
     let changed = false;
     const siguientes = elementos.map((el) => {
       const auth = productos.find((p: Product) => p.id === el.producto.id);
