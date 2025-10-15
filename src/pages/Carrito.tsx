@@ -146,14 +146,14 @@ export default function Carrito() {
           </p>
 
           <div className="mt-6 space-y-3">
-            {elementos.map((elemento) => (
+            {safeElementos.map((elemento) => (
               <div key={elemento.producto.id} className="flex justify-between text-sm text-slate-600 dark:text-slate-300">
                 <span>
-                  {elemento.producto.name}
+                  {elemento.producto?.name ?? 'Sin nombre'}
                   <span className="text-slate-400 dark:text-slate-500"> x {elemento.cantidad}</span>
                 </span>
                 <span className="font-medium text-slate-900 dark:text-slate-100">
-                  {formatearPrecio((typeof elemento.producto.price === 'number' ? elemento.producto.price : 0) * elemento.cantidad)}
+                  {formatearPrecio((typeof elemento.producto?.price === 'number' ? elemento.producto.price : 0) * elemento.cantidad)}
                 </span>
               </div>
             ))}

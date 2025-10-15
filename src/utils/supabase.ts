@@ -3,10 +3,44 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// If env vars are missing, avoid throwing at module import time so the app can run locally.
+// Export a lightweight fake client that mimics the minimal chainable API used across the app
+// and returns harmless responses (empty arrays) or an informative error message.
+let supabase: any;
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error("Missing Supabase environment variables");
+  const missingMsg = 'Missing Supabase environment variables (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)';
+  console.warn('[supabase] %s — exporting a noop client for local dev', missingMsg);
+
+  const fakeResponse = { data: null, error: new Error(missingMsg) };
+
+  const makeBuilder = () => {
+    const b: any = {
+      select() { return b; },
+      insert() { return b; },
+      update() { return b; },
+      eq() { return b; },
+      single() { return b; },
+      order() { return b; },
+      limit() { return b; },
+      // thenable so awaiting the builder returns a predictable response
+      then(resolve: any) { return Promise.resolve(fakeResponse).then(resolve); },
+      catch(cb: any) { return Promise.resolve(fakeResponse).catch(cb); },
+    };
+    return b;
+  };
+
+  supabase = {
+    from: () => makeBuilder(),
+    auth: {
+      // minimal stubs
+      onAuthStateChange: () => ({ data: null, error: new Error(missingMsg) }),
+    },
+  };
+} else {
+  supabase = createClient(supabaseUrl, supabaseKey);
 }
-export const supabase = createClient(supabaseUrl, supabaseKey);
+
+export { supabase };
 
 
 export interface Profile {

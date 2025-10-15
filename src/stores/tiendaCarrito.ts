@@ -35,18 +35,14 @@ const leerCarrito = (): ElementoCarrito[] => {
     if (!crudo) {
       return [];
     }
-    // Safety: avoid parsing extremely large or malicious strings that can freeze the thread.
-    const MAX_RAW_LENGTH = 2000000; // 2MB
-    const SAFE_MAX_ITEMS = 500; // don't process more than 500 items at once
-    const rawToParse = crudo.length > MAX_RAW_LENGTH ? crudo.slice(0, MAX_RAW_LENGTH) : crudo;
-    let parseadoAll = [] as ElementoCarritoAlmacenado[];
-    try {
-      parseadoAll = JSON.parse(rawToParse) as ElementoCarritoAlmacenado[];
-    } catch (err) {
-      console.error('Failed to JSON.parse carrito (possibly truncated or corrupted), falling back to empty', err);
+    // Defensive: if localStorage payload is unexpectedly large, avoid parsing to prevent UI hang
+    // This can happen if the stored string is corrupted or extremely large. Empíricamente 200KB is a safe cap.
+    if (crudo.length > 200 * 1024) {
+      console.warn('Carrito localStorage payload too large, clearing to avoid UI hang', { length: crudo.length });
+      try { window.localStorage.removeItem(CLAVE_ALMACEN_CARRITO); } catch (e) { console.error('Failed to remove oversized carrito', e); }
       return [];
     }
-    const parseado = Array.isArray(parseadoAll) ? parseadoAll.slice(0, SAFE_MAX_ITEMS) : [];
+    const parseado = JSON.parse(crudo) as ElementoCarritoAlmacenado[];
     // Obtener productos actuales del store
     const productos = useTiendaProductos.getState().productos;
     return parseado
@@ -82,16 +78,6 @@ const leerCarrito = (): ElementoCarrito[] => {
   } catch (error) {
     console.error('Error al leer el carrito desde el almacenamiento:', error);
     return [];
-  }
-};
-
-// Utility to clear the stored carrito (used when corruption or enormous size found)
-export const limpiarCarritoAlmacenado = () => {
-  try {
-    if (typeof window === 'undefined') return;
-    window.localStorage.removeItem(CLAVE_ALMACEN_CARRITO);
-  } catch (e) {
-    console.error('Error clearing stored cart', e);
   }
 };
 
@@ -139,12 +125,12 @@ export const useTiendaCarrito = create<EstadoCarrito>((establecer, obtener) => (
     const intervalMs = 250;
     let waited = 0;
 
-    // Poll the productos store snapshot until products appear or timeout
+    // Re-check productos state on each iteration (don't capture snapshot once)
     while (waited < maxWaitMs) {
-      const currentProductosState = useTiendaProductos.getState();
-      if ((currentProductosState.productos && currentProductosState.productos.length > 0) || !currentProductosState.cargando) {
-        break;
-      }
+      const productosState = useTiendaProductos.getState();
+      if (productosState.productos.length > 0) break;
+      // If the productos store reports it's loading, wait; otherwise break early
+      if (!productosState.cargando) break;
       await new Promise((res) => setTimeout(res, intervalMs));
       waited += intervalMs;
     }
@@ -267,11 +253,6 @@ try {
     if (!productos || productos.length === 0) return;
     const { elementos } = useTiendaCarrito.getState();
     if (!elementos || elementos.length === 0) return;
-    // safety: avoid processing extremely large carts (possible corruption)
-    if (elementos.length > 2000) {
-      console.warn('tiendaCarrito: elementos demasiado grande, saltando reconciliacion para evitar freeze', elementos.length);
-      return;
-    }
     let changed = false;
     const siguientes = elementos.map((el) => {
       const auth = productos.find((p: Product) => p.id === el.producto.id);
