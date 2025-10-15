@@ -107,24 +107,29 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
     setErrorMessage('');
 
     try {
-      const dynamicProduct = createDynamicProduct(elementos, totalAmount);
-      // Crear line items para Stripe
-      const lineItems = elementos.map(elemento => {
-        const unitAmount = Math.round(Number(elemento.producto.price));
-        if (isNaN(unitAmount) || unitAmount <= 0 || unitAmount > 100000000) {
-          throw new Error(`Precio inválido para el producto: ${elemento.producto.name} (${elemento.producto.price})`);
-        }
-        return {
+      const dynamicProduct = await createDynamicProduct(elementos, totalAmount);
+      // Crear line items para Stripe en USD (unit_amount en cents)
+      let lineItems: any[] = [];
+      if (dynamicProduct && dynamicProduct.items && dynamicProduct.items.length > 0) {
+        lineItems = dynamicProduct.items.map((it: any) => ({
           price_data: {
-            currency: 'ars',
-            product_data: {
-              name: elemento.producto.name,
-            },
-            unit_amount: unitAmount,
+            currency: 'usd',
+            product_data: { name: it.name },
+            unit_amount: it.unit_amount,
+          },
+          quantity: it.quantity,
+        }));
+      } else {
+        // Fallback: convert ARS price per product using totalAmount (not ideal)
+        lineItems = elementos.map(elemento => ({
+          price_data: {
+            currency: 'usd',
+            product_data: { name: elemento.producto.name },
+            unit_amount: Math.max(1, Math.round((Number(elemento.producto.price || 0) / 350) * 100)),
           },
           quantity: elemento.cantidad,
-        };
-      });
+        }));
+      }
 
       // Construir el payload
       const payload = {

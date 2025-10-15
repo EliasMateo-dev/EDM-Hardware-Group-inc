@@ -21,17 +21,61 @@ export const stripeProducts: StripeProduct[] = [
 ];
 
 // Función para crear un producto dinámico basado en el carrito
-export const createDynamicProduct = (items: any[], totalAmount: number): StripeProduct => ({
-  priceId: 'price_hardware_components', // Usar un price ID genérico
-  name: `Compra EDM Hardware - ${items.length} producto${items.length > 1 ? 's' : ''}`,
-  description: items.map(item => {
+// Create a dynamic product payload and convert ARS prices to USD using dolarapi.com
+export const createDynamicProduct = async (items: any[], totalAmount: number) => {
+  const endpoint = 'https://dolarapi.com/v1/dolares/oficial';
+  const fallbackRate = Number(import.meta.env.VITE_USD_FALLBACK) || 350; // ARS per USD
+  let rate = fallbackRate;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(endpoint, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = await res.json();
+      // API may return an object or an array — handle both
+      const info = Array.isArray(data) ? (data[0] || {}) : data || {};
+      const venta = info.venta ?? info.valor ?? info.value ?? null;
+      const parsed = Number(venta);
+      if (!isNaN(parsed) && parsed > 0) rate = parsed;
+    } else {
+      console.warn('[createDynamicProduct] failed to fetch rate, using fallback', res.status);
+    }
+  } catch (err) {
+    console.warn('[createDynamicProduct] error fetching rate, using fallback', err);
+  }
+
+  // Build per-item USD amounts (Stripe expects amounts in cents)
+  const itemsUsd = items.map((item: any) => {
     const prod = item.producto || {};
-    return `${prod.name || prod.nombre || 'Producto'} x${item.cantidad}`;
-  }).join(', '),
-  price: totalAmount,
-  currency: 'ars',
-  mode: 'payment'
-});
+    const arsUnit = Number(prod.price || prod.precio || 0);
+    const usdUnitCents = Math.max(1, Math.round((arsUnit / rate) * 100));
+    return {
+      name: prod.name || prod.nombre || 'Producto',
+      unit_amount: usdUnitCents,
+      quantity: Number(item.cantidad || 1),
+      original_ars: arsUnit,
+    };
+  });
+
+  const totalUsdCents = itemsUsd.reduce((s: number, it: any) => s + (it.unit_amount * it.quantity), 0);
+
+  return {
+    priceId: 'price_hardware_components',
+    name: `Compra EDM Hardware - ${items.length} producto${items.length > 1 ? 's' : ''}`,
+    description: items.map((item) => {
+      const prod = item.producto || {};
+      return `${prod.name || prod.nombre || 'Producto'} x${item.cantidad}`;
+    }).join(', '),
+    price: totalUsdCents,
+    currency: 'usd',
+    mode: 'payment',
+    rate,
+    items: itemsUsd,
+    totalUsdCents,
+  };
+};
 
 // Helper function to get product by price ID
 export const getProductByPriceId = (priceId: string) => 
