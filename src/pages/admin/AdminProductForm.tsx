@@ -242,66 +242,69 @@ const AdminProductForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    // Build payload
     try {
-      let imageUrl = form.image_url;
-      // Construir especificaciones desde specs
-      let specifications: Record<string, string> = {};
-      specs.forEach(({ key, value }) => {
-        if (key.trim()) specifications[key.trim()] = value.trim();
-      });
+      const imageUrl = form.image_url;
+      const specifications: Record<string, string> = {};
+      specs.forEach(({ key, value }) => { if (key && key.trim()) specifications[key.trim()] = value.trim(); });
       const payload = { ...form, image_url: imageUrl, specifications };
-      // helper: timeout wrapper to avoid hanging requests
+
+      // timeout helper
       const withTimeout = async <T,>(p: Promise<T>, ms = 15000): Promise<T> => {
         let timer: any;
-        const timeout = new Promise<never>((_, rej) => {
-          timer = setTimeout(() => rej(new Error('timeout')), ms);
-        });
+        const timeout = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error('timeout')), ms); });
         try {
           return await Promise.race([p, timeout]);
-        } finally {
-          clearTimeout(timer);
-        }
+        } finally { clearTimeout(timer); }
       };
 
+      // perform update or insert using direct await (no extra .then wrappers)
+      let res: any = null;
       if (id) {
         try {
-          const result: any = await withTimeout(Promise.resolve(supabase.from("products").update(payload).eq("id", id).then((r:any)=>r)));
-          const { error: updError } = result || {};
-          if (updError) {
-            showNotification("Error al actualizar producto", "error");
-          } else {
-            showNotification("Producto actualizado", "success");
-            navigate("/admin/products");
-          }
+          res = await withTimeout(Promise.resolve(supabase.from('products').update(payload).eq('id', id)));
         } catch (err: any) {
-          console.warn('AdminProductForm update failed or timed out', err);
-          if (err?.message === 'timeout') { try { showNotification('La operación tardó demasiado. Intenta de nuevo.', 'error'); } catch {} }
-          else { try { showNotification('Error al actualizar producto', 'error'); } catch {} }
+          console.error('AdminProductForm update error:', err);
+          if (err?.message === 'timeout') {
+            showNotification('La actualización tardó demasiado. Intenta de nuevo.', 'error');
+          } else {
+            showNotification('Error al actualizar producto', 'error');
+          }
+          return;
+        }
+        if (res?.error) {
+          console.error('Update response error:', res.error);
+          showNotification('Error al actualizar producto', 'error');
+        } else {
+          showNotification('Producto actualizado', 'success');
+          navigate('/admin/products');
         }
       } else {
         try {
-          const result: any = await withTimeout(Promise.resolve(supabase.from("products").insert([payload]).then((r:any)=>r)));
-          const { error: insError } = result || {};
-          if (insError) {
-            showNotification("Error al crear producto", "error");
-          } else {
-            showNotification("Producto creado", "success");
-            navigate("/admin/products");
-          }
+          res = await withTimeout(Promise.resolve(supabase.from('products').insert([payload])));
         } catch (err: any) {
-          console.warn('AdminProductForm insert failed or timed out', err);
-          if (err?.message === 'timeout') { try { showNotification('La operación tardó demasiado. Intenta de nuevo.', 'error'); } catch {} }
-          else { try { showNotification('Error al crear producto', 'error'); } catch {} }
+          console.error('AdminProductForm insert error:', err);
+          if (err?.message === 'timeout') {
+            showNotification('La creación tardó demasiado. Intenta de nuevo.', 'error');
+          } else {
+            showNotification('Error al crear producto', 'error');
+          }
+          return;
+        }
+        if (res?.error) {
+          console.error('Insert response error:', res.error);
+          showNotification('Error al crear producto', 'error');
+        } else {
+          showNotification('Producto creado', 'success');
+          navigate('/admin/products');
         }
       }
     } catch (err) {
-      console.error('AdminProductForm submit error', err);
-      if ((err as any)?.message === 'timeout') {
-        try { showNotification('La operación tardó demasiado. Intenta de nuevo.', 'error'); } catch {}
-      } else {
-        try { showNotification('Error al guardar producto', 'error'); } catch {}
-      }
+      console.error('AdminProductForm unexpected submit error', err);
+      const message = (err as any)?.message || 'Error al guardar producto';
+      showNotification(message, 'error');
     } finally {
+      // always reset loading so UI doesn't get stuck
       setLoading(false);
     }
   };
