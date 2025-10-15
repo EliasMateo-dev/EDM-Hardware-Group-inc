@@ -22,10 +22,17 @@ export default function Carrito() {
   const actualizarCantidad = useTiendaCarrito((estado) => estado.actualizarCantidad);
   const eliminarDelCarrito = useTiendaCarrito((estado) => estado.eliminarDelCarrito);
   const vaciarCarrito = useTiendaCarrito((estado) => estado.vaciarCarrito);
-  const obtenerTotalPrecioFn = useTiendaCarrito((estado) => {
-    return () => (estado.elementos || []).reduce((acc, el) => acc + ((el?.producto?.price || 0) * (el?.cantidad || 0)), 0);
-  });
   const cargarProductos = useTiendaProductos((s) => s.cargarProductos);
+
+  // derive safe elements and total using useMemo to avoid expensive recalcs or selector-induced loops
+  const safeElementos = React.useMemo(() => {
+    if (!Array.isArray(elementos)) return [];
+    return elementos.filter((el) => el && el.producto && typeof el.producto.id === 'string');
+  }, [elementos]);
+
+  const totalPrecio = React.useMemo(() => {
+    return safeElementos.reduce((acc, el) => acc + ((typeof el.producto?.price === 'number' ? el.producto.price : Number(el.producto?.price || 0)) * (el.cantidad || 0)), 0);
+  }, [safeElementos]);
 
   useEffect(() => {
     // Cargar todos los productos antes de hidratar el carrito
@@ -35,10 +42,7 @@ export default function Carrito() {
     })();
   }, [cargarCarrito, cargarProductos]);
 
-  // defensive: filter out any malformed entries that may exist in localStorage
-  const safeElementos = Array.isArray(elementos)
-    ? elementos.filter((el) => el && el.producto && typeof el.producto.id === 'string')
-    : [];
+  // (previously handled by memoized safeElementos)
 
   if (safeElementos.length === 0) {
     return (
@@ -78,9 +82,9 @@ export default function Carrito() {
 
       <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
         <div className="space-y-4">
-          {safeElementos.map((elemento) => (
+          {safeElementos.map((elemento, idx) => (
             <article
-              key={elemento.producto?.id ?? Math.random().toString(36).slice(2, 9)}
+              key={elemento.producto?.id ?? `fallback-${idx}`}
               className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 md:flex-row md:items-center"
             >
               <img
@@ -105,9 +109,9 @@ export default function Carrito() {
                 <p className="text-xs text-slate-400 dark:text-slate-500">Existencias: {typeof elemento.producto?.stock === 'number' ? elemento.producto.stock : 0}</p>
               </div>
 
-              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3">
                 <button
-                  onClick={() => elemento.producto && actualizarCantidad(elemento.producto.id, elemento.cantidad - 1)}
+                  onClick={() => { if (elemento.producto?.id) actualizarCantidad(elemento.producto.id, Math.max(1, elemento.cantidad - 1)); }}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-white"
                   type="button"
                 >
@@ -115,8 +119,8 @@ export default function Carrito() {
                 </button>
                 <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{elemento.cantidad}</span>
                 <button
-                  onClick={() => elemento.producto && actualizarCantidad(elemento.producto.id, elemento.cantidad + 1)}
-                  disabled={elemento.cantidad >= (typeof elemento.producto.stock === 'number' ? elemento.producto.stock : 0)}
+                  onClick={() => { if (elemento.producto?.id) actualizarCantidad(elemento.producto.id, elemento.cantidad + 1); }}
+                  disabled={elemento.cantidad >= (typeof elemento.producto?.stock === 'number' ? elemento.producto.stock : 0)}
                   className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200
                     ${elemento.cantidad + 1 > (typeof elemento.producto.stock === 'number' ? elemento.producto.stock : 0)
                       ? 'text-slate-200 border-slate-200 cursor-not-allowed dark:border-slate-700 dark:text-slate-700'
@@ -128,7 +132,7 @@ export default function Carrito() {
               </div>
 
                 <button
-                onClick={() => elemento.producto && eliminarDelCarrito(elemento.producto.id)}
+                onClick={() => { if (elemento.producto?.id) eliminarDelCarrito(elemento.producto.id); }}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-red-500 hover:text-red-500 dark:border-slate-800 dark:text-slate-400 dark:hover:border-red-400 dark:hover:text-red-400"
                 aria-label="Quitar del carrito"
                 type="button"
@@ -146,8 +150,8 @@ export default function Carrito() {
           </p>
 
           <div className="mt-6 space-y-3">
-            {safeElementos.map((elemento) => (
-              <div key={elemento.producto.id} className="flex justify-between text-sm text-slate-600 dark:text-slate-300">
+            {safeElementos.map((elemento, idx) => (
+              <div key={elemento.producto?.id ?? `res-${idx}`} className="flex justify-between text-sm text-slate-600 dark:text-slate-300">
                 <span>
                   {elemento.producto?.name ?? 'Sin nombre'}
                   <span className="text-slate-400 dark:text-slate-500"> x {elemento.cantidad}</span>
@@ -161,7 +165,7 @@ export default function Carrito() {
 
           <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-6 text-slate-600 dark:border-slate-800 dark:text-slate-300">
             <span className="text-sm font-medium">Total</span>
-            <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{formatearPrecio(obtenerTotalPrecioFn())}</span>
+            <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{formatearPrecio(totalPrecio)}</span>
           </div>
 
           <button
@@ -176,7 +180,7 @@ export default function Carrito() {
       <PaymentModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        totalAmount={obtenerTotalPrecioFn()}
+        totalAmount={totalPrecio}
       />
     </section>
   );
