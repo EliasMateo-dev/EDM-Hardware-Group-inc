@@ -24,7 +24,10 @@ export const stripeProducts: StripeProduct[] = [
 export const createDynamicProduct = (items: any[], totalAmount: number): StripeProduct => ({
   priceId: 'price_hardware_components', // Usar un price ID genérico
   name: `Compra EDM Hardware - ${items.length} producto${items.length > 1 ? 's' : ''}`,
-  description: items.map(item => `${item.producto.nombre} x${item.cantidad}`).join(', '),
+  description: items.map(item => {
+    const prod = item.producto || {};
+    return `${prod.name || prod.nombre || 'Producto'} x${item.cantidad}`;
+  }).join(', '),
   price: totalAmount,
   currency: 'ars',
   mode: 'payment'

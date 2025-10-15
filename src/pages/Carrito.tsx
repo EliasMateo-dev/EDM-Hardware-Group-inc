@@ -35,7 +35,12 @@ export default function Carrito() {
     })();
   }, [cargarCarrito, cargarProductos]);
 
-  if (elementos.length === 0) {
+  // defensive: filter out any malformed entries that may exist in localStorage
+  const safeElementos = Array.isArray(elementos)
+    ? elementos.filter((el) => el && el.producto && typeof el.producto.id === 'string')
+    : [];
+
+  if (safeElementos.length === 0) {
     return (
       <section className="mx-auto flex max-w-3xl flex-col items-center gap-6 px-4 py-24 text-center text-slate-900 dark:text-slate-100">
         <ShoppingBag className="h-16 w-16 text-slate-300 dark:text-slate-600" />
@@ -73,14 +78,14 @@ export default function Carrito() {
 
       <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
         <div className="space-y-4">
-          {elementos.map((elemento) => (
+          {safeElementos.map((elemento) => (
             <article
-              key={elemento.producto.id}
+              key={elemento.producto?.id ?? Math.random().toString(36).slice(2, 9)}
               className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 md:flex-row md:items-center"
             >
               <img
-                src={elemento.producto.image_url || '/placeholder.png'}
-                alt={elemento.producto.name}
+                src={(elemento.producto && elemento.producto.image_url) || '/placeholder.png'}
+                alt={(elemento.producto && elemento.producto.name) || 'Producto'}
                 className="h-28 w-28 rounded-2xl object-cover"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
@@ -90,19 +95,19 @@ export default function Carrito() {
               <div className="flex-1 space-y-2">
                 <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{elemento.producto.name}</h2>
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{elemento.producto?.name ?? 'Sin nombre'}</h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {elemento.producto.brand} - {elemento.producto.model}
+                      {elemento.producto?.brand ?? '-'} - {elemento.producto?.model ?? '-'}
                     </p>
                   </div>
-                  <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{formatearPrecio(elemento.producto.price)}</p>
+                  <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{formatearPrecio(typeof elemento.producto?.price === 'number' ? elemento.producto.price : Number(elemento.producto?.price || 0))}</p>
                 </div>
-                <p className="text-xs text-slate-400 dark:text-slate-500">Existencias: {typeof elemento.producto.stock === 'number' ? elemento.producto.stock : 0}</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">Existencias: {typeof elemento.producto?.stock === 'number' ? elemento.producto.stock : 0}</p>
               </div>
 
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => actualizarCantidad(elemento.producto.id, elemento.cantidad - 1)}
+                  onClick={() => elemento.producto && actualizarCantidad(elemento.producto.id, elemento.cantidad - 1)}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-white"
                   type="button"
                 >
@@ -110,7 +115,7 @@ export default function Carrito() {
                 </button>
                 <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{elemento.cantidad}</span>
                 <button
-                  onClick={() => actualizarCantidad(elemento.producto.id, elemento.cantidad + 1)}
+                  onClick={() => elemento.producto && actualizarCantidad(elemento.producto.id, elemento.cantidad + 1)}
                   disabled={elemento.cantidad >= (typeof elemento.producto.stock === 'number' ? elemento.producto.stock : 0)}
                   className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200
                     ${elemento.cantidad + 1 > (typeof elemento.producto.stock === 'number' ? elemento.producto.stock : 0)
@@ -122,8 +127,8 @@ export default function Carrito() {
                 </button>
               </div>
 
-              <button
-                onClick={() => eliminarDelCarrito(elemento.producto.id)}
+                <button
+                onClick={() => elemento.producto && eliminarDelCarrito(elemento.producto.id)}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-red-500 hover:text-red-500 dark:border-slate-800 dark:text-slate-400 dark:hover:border-red-400 dark:hover:text-red-400"
                 aria-label="Quitar del carrito"
                 type="button"
