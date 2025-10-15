@@ -28,6 +28,7 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [dynamicProductPreview, setDynamicProductPreview] = useState<any | null>(null);
 
   const elementos = useTiendaCarrito((state) => state.elementos);
   const vaciarCarrito = useTiendaCarrito((state) => state.vaciarCarrito);
@@ -107,7 +108,8 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
     setErrorMessage('');
 
     try {
-      const dynamicProduct = await createDynamicProduct(elementos, totalAmount);
+      // Reuse preview if available to avoid fetching rate twice
+      const dynamicProduct = dynamicProductPreview ?? await createDynamicProduct(elementos, totalAmount);
       // Crear line items para Stripe en USD (unit_amount en cents)
       let lineItems: any[] = [];
       if (dynamicProduct && dynamicProduct.items && dynamicProduct.items.length > 0) {
@@ -198,6 +200,22 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
       }));
     }
   }, [usuario, customerData.email]);
+
+  // Precompute USD conversion for display in the button and reuse in payment
+  React.useEffect(() => {
+    let mounted = true;
+    const compute = async () => {
+      try {
+        const dp = await createDynamicProduct(elementos, totalAmount);
+        if (mounted) setDynamicProductPreview(dp);
+      } catch (err) {
+        console.warn('Failed to compute USD preview', err);
+        if (mounted) setDynamicProductPreview(null);
+      }
+    };
+    if (isOpen) compute();
+    return () => { mounted = false; };
+  }, [isOpen, elementos, totalAmount]);
 
   if (!isOpen) return null;
 
@@ -350,7 +368,13 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
               ) : (
                 <>
                   <CreditCard className="h-4 w-4" />
-                  Pagar con Stripe {formatearPrecio(totalAmount)}
+                  Pagar con Stripe {dynamicProductPreview ? (
+                    // dynamicProductPreview.price is totalUsdCents
+                    // display in USD with cents
+                    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format((dynamicProductPreview.totalUsdCents || dynamicProductPreview.price || 0) / 100)
+                  ) : (
+                    formatearPrecio(totalAmount)
+                  )}
                 </>
               )}
             </button>
