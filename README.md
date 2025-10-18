@@ -1,8 +1,9 @@
 # EDM Hardware
+**Aclaración**: El Usuario **"CRUFTY"** y **"Elías Mateo"** son **Elías Mateo**
+
 
 Proyecto web de catálogo interactivo de componentes de hardware. Usa React + TypeScript, Vite y TailwindCSS. Incluye un catálogo consultado desde la base de datos, un carrito, un Constructor PC y un panel de administración.
 
-<!-- TOC -->
 ## Tabla de contenidos
 
 - [Descripción rápida](#descripción-rápida)
@@ -14,7 +15,7 @@ Proyecto web de catálogo interactivo de componentes de hardware. Usa React + Ty
 - [Panel de administración](#panel-de-administración)
 - [Constructor PC](#constructor-pc)
 - [Archivos relevantes](#archivos-relevantes)
-- [Pruebas rápidas (Try it)](#pruebas-rápidas-try-it)
+- [Pruebas rápidas](#pruebas-rápidas-try-it)
 - [Créditos y roles](#créditos-y-roles)
 - [Contribuir](#contribuir)
 
