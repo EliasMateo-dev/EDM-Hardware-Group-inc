@@ -88,7 +88,7 @@ export default function PCBuilderCompatibility() {
           setAllProducts(prodData as Product[]);
         }
 
-        // Ensure tiendaProductos is populated as well; await to avoid races
+  // Asegurarse de que `tiendaProductos` también esté poblado; usar await para evitar condiciones de carrera
         try { await cargarProductos(); } catch (err) { console.warn('cargarProductos failed from ConstructorPC', err); }
       } catch (err: any) {
         if (err?.message === 'timeout') console.error('ConstructorPC: Supabase request timed out');

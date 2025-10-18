@@ -117,7 +117,7 @@ const AdminProductForm: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // timeout helper (shared)
+  // helper de timeout compartido
   const withTimeout = async <T,>(p: Promise<T>, ms = 15000): Promise<T> => {
     let timer: any;
     const timeout = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error('timeout')), ms); });
@@ -126,7 +126,7 @@ const AdminProductForm: React.FC = () => {
     } finally { clearTimeout(timer); }
   };
 
-  // marker to detect slow requests (2.5s)
+  // marcador para detectar peticiones lentas (2.5s)
   const markSlow = (ms = 2500) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
   const performRequest = async (payloadParam: any, isEditParam: boolean, idParam?: string) => {
@@ -267,16 +267,16 @@ const AdminProductForm: React.FC = () => {
     const local = localCategorias.find(lc => lc.id === cat.id || lc.nombre.toLowerCase() === (cat.name || '').toLowerCase());
     if (local && local.alias) candidates.push(normalize(local.alias));
 
-    // debug: mostrar candidatos
-    console.debug('[AdminProductForm] resolveCategoryAlias candidates:', candidates, 'for category:', cat);
+  // debug: mostrar candidatos
+  console.debug('[AdminProductForm] candidatos alias de categoría:', candidates, 'para categoría:', cat);
     // retornar el primer candidato que tenga specs por defecto
     for (const c of candidates) {
       if (c && defaultSpecsByCategory[c]) {
-        console.debug('[AdminProductForm] resolveCategoryAlias matched alias:', c);
+        console.debug('[AdminProductForm] alias de categoría coincidente:', c);
         return c;
       }
     }
-    console.debug('[AdminProductForm] resolveCategoryAlias no match');
+    console.debug('[AdminProductForm] resolveCategoryAlias sin coincidencias');
     return null;
   };
 
@@ -288,7 +288,7 @@ const AdminProductForm: React.FC = () => {
     if (id) return;
     const selected = categories.find(c => c.id === value);
     const alias = resolveCategoryAlias(selected);
-    console.debug('[AdminProductForm] handleCategoryChange selected:', selected, 'resolved alias:', alias);
+  console.debug('[AdminProductForm] handleCategoryChange seleccionado:', selected, 'alias resuelto:', alias);
     if (alias && defaultSpecsByCategory[alias]) {
       setSpecs(defaultSpecsByCategory[alias].map(s => ({ key: s.key, value: '' })));
     } else {
@@ -303,7 +303,7 @@ const AdminProductForm: React.FC = () => {
       if (form.category_id && categories.length > 0) {
         const cat = categories.find(c => c.id === form.category_id);
         const alias = resolveCategoryAlias(cat);
-        console.debug('[AdminProductForm] effect on category change:', { category_id: form.category_id, alias, categoriesLoaded: categories.length });
+  console.debug('[AdminProductForm] efecto cambio de categoría:', { category_id: form.category_id, alias, categoriesLoaded: categories.length });
         if (alias && defaultSpecsByCategory[alias]) {
           setSpecs(defaultSpecsByCategory[alias].map(s => ({ key: s.key, value: '' })));
         } else {
@@ -329,8 +329,8 @@ const AdminProductForm: React.FC = () => {
       specs.forEach(({ key, value }) => { if (key && key.trim()) specifications[key.trim()] = value.trim(); });
       const payload = { ...form, image_url: imageUrl, specifications };
 
-      // timeout helper (shared)
-          // timeout helper (shared)
+    // helper de timeout compartido
+      // helper de timeout compartido
       
 
       // perform update or insert using direct await (no extra .then wrappers)
@@ -379,7 +379,7 @@ const AdminProductForm: React.FC = () => {
         }
       }
 
-      // If we reached here and have a res, process it. Note: if slowBannerVisible=true we DON'T navigate automatically; user can choose to accept result and navigate via banner action.
+  // Si llegamos acá y tenemos res, procesarla. Nota: si slowBannerVisible=true NO navegamos automáticamente; el usuario puede aceptar el resultado desde el banner.
       if (res?.error) {
         console.error('Request response error:', res.error);
         showNotification(id ? 'Error al actualizar producto' : 'Error al crear producto', 'error');

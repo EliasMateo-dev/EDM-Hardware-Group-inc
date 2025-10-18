@@ -12,7 +12,7 @@ export default function PaymentSuccess() {
   const externalReference = searchParams.get('external_reference');
 
   useEffect(() => {
-    // Clear cart on successful payment
+    // Vaciar carrito si el pago fue exitoso
     if (status === 'paid' || !status) { // Stripe usa 'paid' o no envía status
       vaciarCarrito();
     }

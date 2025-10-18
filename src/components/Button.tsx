@@ -1,5 +1,5 @@
 import React from 'react';
-// minimal class join helper to avoid adding external dependency
+// helper mínimo para unir clases y evitar añadir una dependencia externa
 const join = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ');
 
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';

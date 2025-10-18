@@ -31,7 +31,6 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
   const [dynamicProductPreview, setDynamicProductPreview] = useState<any | null>(null);
 
   const elementos = useTiendaCarrito((state) => state.elementos);
-  const vaciarCarrito = useTiendaCarrito((state) => state.vaciarCarrito);
   const { usuario, sesion } = useTiendaAuth();
 
   const formatearPrecio = (precio: number) =>
@@ -108,8 +107,8 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
     setErrorMessage('');
 
     try {
-      // Reuse preview if available to avoid fetching rate twice
-      const dynamicProduct = dynamicProductPreview ?? await createDynamicProduct(elementos, totalAmount);
+        // Reusar preview si está disponible para evitar pedir la cotización dos veces
+        const dynamicProduct = dynamicProductPreview ?? await createDynamicProduct(elementos, totalAmount);
       // Crear line items para Stripe en USD (unit_amount en cents)
       let lineItems: any[] = [];
       if (dynamicProduct && dynamicProduct.items && dynamicProduct.items.length > 0) {
@@ -122,7 +121,7 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
           quantity: it.quantity,
         }));
       } else {
-        // Fallback: convert ARS price per product using totalAmount (not ideal)
+          // Fallback: convertir precio ARS por producto usando totalAmount (no ideal)
         lineItems = elementos.map(elemento => ({
           price_data: {
             currency: 'usd',
@@ -360,7 +359,7 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
               disabled={isProcessing}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isProcessing ? (
+                  {isProcessing ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Procesando...
@@ -369,8 +368,8 @@ export default function PaymentModal({ isOpen, onClose, totalAmount }: PaymentMo
                 <>
                   <CreditCard className="h-4 w-4" />
                   Pagar con Stripe {dynamicProductPreview ? (
-                    // dynamicProductPreview.price is totalUsdCents
-                    // display in USD with cents
+                    // dynamicProductPreview.totalUsdCents contiene el total en centavos USD
+                    // mostrar en USD con centavos
                     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format((dynamicProductPreview.totalUsdCents || dynamicProductPreview.price || 0) / 100)
                   ) : (
                     formatearPrecio(totalAmount)

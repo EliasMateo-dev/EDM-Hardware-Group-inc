@@ -14,7 +14,7 @@ export default function Categoria() {
   const productos = obtenerProductosFiltrados();
 
   useEffect(() => {
-    // Debounce product loading to avoid rapid navigation races
+  // Debounce de carga de productos para evitar carreras por navegación rápida
     const id = setTimeout(() => cargarProductos(slug ?? null), 150);
     return () => clearTimeout(id);
   }, [cargarProductos, slug]);

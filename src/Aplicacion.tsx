@@ -13,7 +13,7 @@ import ConstructorPC from './pages/ConstructorPC';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailure from './pages/PaymentFailure';
 import PaymentPending from './pages/PaymentPending';
-// Admin imports
+// Imports del admin
 import AdminLayout from './components/AdminLayout';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminProductForm from './pages/admin/AdminProductForm';

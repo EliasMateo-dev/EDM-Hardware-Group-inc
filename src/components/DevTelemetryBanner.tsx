@@ -3,8 +3,8 @@ import { useTiendaProductos } from '../stores/tiendaProductos';
 import { useTiendaCarrito } from '../stores/tiendaCarrito';
 
 export default function DevTelemetryBanner() {
-  // Only render in development environments
-  // Vite sets import.meta.env.DEV during dev. Use a safe guard for other bundlers.
+  // Solo renderizar en desarrollo
+  // Vite define import.meta.env.DEV en dev. Esta es una protección para otros bundlers.
   // @ts-ignore
   if (typeof import.meta === 'undefined' || !import.meta.env?.DEV) return null;
 
@@ -14,9 +14,9 @@ export default function DevTelemetryBanner() {
     count: s.productos ? s.productos.length : 0,
   }));
 
-  // Compute derived values inside the selector from raw state to avoid
-  // invoking store methods that may call getState(), which can cause
-  // nested updates when used during render/effect mount.
+  // Calcular valores derivados dentro del selector a partir del estado crudo
+  // para evitar invocar métodos del store que llamen a getState() y provoquen
+  // actualizaciones anidadas durante render/efectos.
   const carritoState = useTiendaCarrito((s) => {
     const count = (s.elementos || []).reduce((acc, el) => acc + (el?.cantidad || 0), 0);
     const total = (s.elementos || []).reduce((acc, el) => acc + ((el?.producto?.price || 0) * (el?.cantidad || 0)), 0);
@@ -32,7 +32,7 @@ export default function DevTelemetryBanner() {
   const copyDebug = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
-      // best-effort visual affordance
+  // indicación visual de esfuerzo (best-effort)
       // eslint-disable-next-line no-alert
       alert('Debug info copiada al portapapeles');
     } catch (err) {

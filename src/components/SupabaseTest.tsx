@@ -14,7 +14,7 @@ export default function SupabaseTest() {
         setLoading(true);
         setError(null);
 
-        // Fetch categories
+  // Obtener categorías
         const { data: categoriesData, error: categoriesError } = await supabase
           .from('categories')
           .select('*')
@@ -24,7 +24,7 @@ export default function SupabaseTest() {
           throw categoriesError;
         }
 
-        // Fetch products
+  // Obtener productos
         const { data: productsData, error: productsError } = await supabase
           .from('products')
           .select(`

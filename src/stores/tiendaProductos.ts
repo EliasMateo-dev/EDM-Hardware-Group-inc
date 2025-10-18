@@ -3,7 +3,7 @@ import type { Product, Category } from '../utils/supabase';
 import { supabase } from '../utils/supabase';
 import { useNotificationStore } from './useNotificationStore';
 
-// Helper to apply a timeout to an async operation so callers don't await forever
+  // Helper para aplicar timeout a una operación async y evitar esperas infinitas
 const withTimeout = async <T,>(p: Promise<T>, ms = 15000): Promise<T> => {
   let timer: any;
   const timeout = new Promise<never>((_, rej) => {
@@ -43,21 +43,21 @@ export const useTiendaProductos = create<EstadoProductos>((establecer, obtener) 
 
   cargarProductos: async (aliasCategoria) => {
     const { showNotification } = useNotificationStore.getState();
-    // request-versioning to avoid races when user navigates quickly between categories
-    // We store the latest request id in a module-scoped variable outside the store closure.
-    // Create (or reuse) a counter on the function object.
+  // Versionado de requests para evitar condiciones de carrera cuando el usuario cambia rápido de categoría
+  // Guardamos el id de la última petición en una variable a nivel de módulo fuera del cierre del store.
+  // Creamos (o reutilizamos) un contador en la propiedad de la función.
     // @ts-ignore
     if (typeof useTiendaProductos._productosReqId === 'undefined') useTiendaProductos._productosReqId = 0;
-    // increment and capture this request id
+    // incrementar y capturar este id de petición
     // @ts-ignore
     const reqId = ++useTiendaProductos._productosReqId;
-    console.debug('[tiendaProductos] cargarProductos start', { aliasCategoria, reqId });
-    // mark loading for the latest request
+  console.debug('[tiendaProductos] iniciar cargarProductos', { aliasCategoria, reqId });
+  // marcar carga para la petición más reciente
     establecer({ cargando: true });
     const watchdog = setTimeout(() => {
-      console.warn('cargarProductos watchdog triggered — clearing cargando flag', { reqId });
-      // only clear loading if this is still the latest request
-      // @ts-ignore
+    console.warn('cargarProductos watchdog triggered — clearing cargando flag', { reqId });
+  // solo limpiar el flag de carga si esta sigue siendo la petición más reciente
+  // @ts-ignore
       if (useTiendaProductos._productosReqId === reqId) establecer({ cargando: false });
     }, 15000);
 
@@ -76,7 +76,7 @@ export const useTiendaProductos = create<EstadoProductos>((establecer, obtener) 
       if (productosRes?.error) throw productosRes.error;
       const data = productosRes.data;
       clearTimeout(watchdog);
-      // Only update state if this response belongs to the latest request
+  // Solo actualizar el estado si esta respuesta pertenece a la última petición
       // @ts-ignore
       if (useTiendaProductos._productosReqId === reqId) {
         establecer({
@@ -85,25 +85,25 @@ export const useTiendaProductos = create<EstadoProductos>((establecer, obtener) 
           cargando: false,
           lastError: null,
         });
-        console.debug('[tiendaProductos] cargarProductos success', { reqId, count: (data || []).length });
+  console.debug('[tiendaProductos] cargarProductos exitosa', { reqId, count: (data || []).length });
       } else {
-        console.debug('[tiendaProductos] cargarProductos response ignored (stale)', { reqId });
+  console.debug('[tiendaProductos] respuesta ignorada (obsoleta)', { reqId });
       }
     } catch (err: any) {
       console.error('cargarProductos error', err, { reqId });
       try { showNotification && showNotification('Error al cargar productos', 'error'); } catch {}
       clearTimeout(watchdog);
-      // Only set error state if this is still the latest request
+  // Solo establecer el estado de error si esta sigue siendo la última petición
       // @ts-ignore
       if (useTiendaProductos._productosReqId === reqId) {
         const msg = err?.message || String(err);
-        // If it was a timeout, keep existing productos (don't wipe) but expose the error
-        if (msg === 'timeout') {
-          console.warn('cargarProductos timed out, preserving existing productos', { reqId });
-          establecer({ cargando: false, lastError: 'timeout' });
-        } else {
-          establecer({ productos: [], categoriaSeleccionada: null, cargando: false, lastError: msg });
-        }
+        // Si fue un timeout, mantener los productos existentes (no vaciar) pero exponer el error
+              if (msg === 'timeout') {
+                console.warn('cargarProductos timed out, preserving existing productos', { reqId });
+                establecer({ cargando: false, lastError: 'timeout' });
+              } else {
+                establecer({ productos: [], categoriaSeleccionada: null, cargando: false, lastError: msg });
+              }
       }
     }
   },

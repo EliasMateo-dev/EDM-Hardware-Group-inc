@@ -24,7 +24,7 @@ export default function Carrito() {
   const vaciarCarrito = useTiendaCarrito((estado) => estado.vaciarCarrito);
   const cargarProductos = useTiendaProductos((s) => s.cargarProductos);
 
-  // derive safe elements and total using useMemo to avoid expensive recalcs or selector-induced loops
+  // derivar elementos seguros y total usando useMemo para evitar recálculos costosos o bucles inducidos por selectores
   const safeElementos = React.useMemo(() => {
     if (!Array.isArray(elementos)) return [];
     return elementos.filter((el) => el && el.producto && typeof el.producto.id === 'string');

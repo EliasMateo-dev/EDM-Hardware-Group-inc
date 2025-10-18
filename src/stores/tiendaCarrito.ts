@@ -21,8 +21,8 @@ interface ProductSnapshot {
 interface ElementoCarritoAlmacenado {
   productoId: string;
   cantidad: number;
-  // keep a small snapshot so cart can be shown even when productos store
-  // hasn't loaded yet or product was removed from catalog
+  // mantener una pequeña snapshot para que el carrito pueda mostrarse incluso cuando
+  // el store de productos no haya cargado aún o el producto haya sido removido del catálogo
   snapshot?: ProductSnapshot;
 }
 
@@ -35,23 +35,23 @@ const leerCarrito = (): ElementoCarrito[] => {
     if (!crudo) {
       return [];
     }
-    // Defensive: if localStorage payload is unexpectedly large, avoid parsing to prevent UI hang
-    // This can happen if the stored string is corrupted or extremely large. Empíricamente 200KB is a safe cap.
+  // Defensiva: si el payload en localStorage es inesperadamente grande, evitar parsear para prevenir bloqueo de UI
+  // Esto puede pasar si la cadena almacenada está corrupta o es extremadamente grande. Empíricamente 200KB es un límite seguro.
     if (crudo.length > 200 * 1024) {
       console.warn('Carrito localStorage payload too large, clearing to avoid UI hang', { length: crudo.length });
       try { window.localStorage.removeItem(CLAVE_ALMACEN_CARRITO); } catch (e) { console.error('Failed to remove oversized carrito', e); }
       return [];
     }
     const parseado = JSON.parse(crudo) as ElementoCarritoAlmacenado[];
-    // Obtener productos actuales del store
+  // Obtener productos actuales del store
     const productos = useTiendaProductos.getState().productos;
     return parseado
       .map(({ productoId, cantidad, snapshot }) => {
-        // Prefer the authoritative product from the productos store when available
+  // Preferir el producto autorizado desde el store de productos cuando esté disponible
         const producto = productos.find((p) => p.id === productoId);
         if (producto) return { producto, cantidad };
 
-        // Fallback: if we have a snapshot, create a lightweight Product-shaped object
+  // Fallback: si tenemos una snapshot, crear un objeto tipo Product ligero
         if (snapshot) {
           const productoFallback: Product = {
             id: snapshot.id,
@@ -71,7 +71,7 @@ const leerCarrito = (): ElementoCarrito[] => {
           return { producto: productoFallback, cantidad };
         }
 
-        // No product and no snapshot -> drop the item
+  // No hay producto ni snapshot -> eliminar el item
         return null;
       })
       .filter((elemento): elemento is ElementoCarrito => elemento !== null);
@@ -119,13 +119,13 @@ export const useTiendaCarrito = create<EstadoCarrito>((establecer, obtener) => (
   cargando: false,
 
   cargarCarrito: async () => {
-    // If productos haven't loaded yet, wait a short while (poll) so we can
-    // hydrate against the authoritative productos list when possible.
+    // Si productos aún no cargaron, esperar un breve tiempo (poll) para poder
+    // hidratar el carrito contra la lista de productos autorizada cuando sea posible.
     const maxWaitMs = 3000;
     const intervalMs = 250;
     let waited = 0;
 
-    // Re-check productos state on each iteration (don't capture snapshot once)
+  // Re-checkear el estado de productos en cada iteración (no tomar una snapshot fija)
     while (waited < maxWaitMs) {
       const productosState = useTiendaProductos.getState();
       if (productosState.productos.length > 0) break;
@@ -138,7 +138,7 @@ export const useTiendaCarrito = create<EstadoCarrito>((establecer, obtener) => (
     const elementosHidratados = leerCarrito();
     establecer({ elementos: elementosHidratados });
 
-    // If productos load later, reconcile snapshot entries to authoritative products
+  // Si los productos cargan más tarde, reconciliar las entradas snapshot con los productos autorizados
     const reconcileWithProducts = () => {
       const productos = useTiendaProductos.getState().productos;
       if (!productos || productos.length === 0) return;
@@ -163,7 +163,7 @@ export const useTiendaCarrito = create<EstadoCarrito>((establecer, obtener) => (
       });
     };
 
-    // Attach a short-lived listener: poll for products becoming available for up to 5s
+  // Adjuntar un listener de corta duración: hacer poll hasta 5s buscando que los productos estén disponibles
     const pollInterval = 300;
     let polled = 0;
     const maxPoll = 5000;
@@ -184,7 +184,7 @@ export const useTiendaCarrito = create<EstadoCarrito>((establecer, obtener) => (
       console.warn('Producto no encontrado para el carrito:', productoId);
       return;
     }
-    // Validar que el producto tenga nombre y precio válidos
+  // Validar que el producto tenga nombre y precio válidos
     if (!producto.name || typeof producto.price !== 'number' || isNaN(producto.price)) {
       console.warn('Producto inválido para el carrito:', producto);
       alert('Este producto no tiene información válida y no puede ser agregado al carrito.');
@@ -269,6 +269,6 @@ try {
     }
   });
 } catch (e) {
-  // subscription best-effort; log if subscribe API not available
+  // Suscripción en modo best-effort; loguear si la API subscribe no está disponible
   console.debug('tiendaCarrito: productos subscription not attached', e);
 }

@@ -1,4 +1,4 @@
-﻿// Using the automatic JSX runtime; no default React import required
+﻿// Usamos el runtime automático de JSX; no hace falta importar React por defecto
 import { Outlet } from 'react-router-dom';
 import BarraNavegacion from './BarraNavegacion';
 import DevTelemetryBanner from './DevTelemetryBanner';

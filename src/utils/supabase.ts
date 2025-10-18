@@ -3,9 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// If env vars are missing, avoid throwing at module import time so the app can run locally.
-// Export a lightweight fake client that mimics the minimal chainable API used across the app
-// and returns harmless responses (empty arrays) or an informative error message.
+// Si faltan vars de entorno, no tiramos error en la importación para que la app pueda ejecutarse localmente.
+// Exportamos un cliente falso y liviano que imita la API encadenable mínima usada en la app
+// y devuelve respuestas inofensivas (arrays vacíos) o un error informativo.
 let supabase: any;
 if (!supabaseUrl || !supabaseKey) {
   const missingMsg = 'Missing Supabase environment variables (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)';
@@ -22,7 +22,7 @@ if (!supabaseUrl || !supabaseKey) {
       single() { return b; },
       order() { return b; },
       limit() { return b; },
-      // thenable so awaiting the builder returns a predictable response
+  // hace que el builder sea thenable para que un await devuelva una respuesta predecible
       then(resolve: any) { return Promise.resolve(fakeResponse).then(resolve); },
       catch(cb: any) { return Promise.resolve(fakeResponse).catch(cb); },
     };
@@ -32,7 +32,7 @@ if (!supabaseUrl || !supabaseKey) {
   supabase = {
     from: () => makeBuilder(),
     auth: {
-      // minimal stubs
+  // stubs mínimos
       onAuthStateChange: () => ({ data: null, error: new Error(missingMsg) }),
     },
   };

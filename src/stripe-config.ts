@@ -20,8 +20,7 @@ export const stripeProducts: StripeProduct[] = [
   }
 ];
 
-// Función para crear un producto dinámico basado en el carrito
-// Create a dynamic product payload and convert ARS prices to USD using dolarapi.com
+// Función para crear un payload de producto dinámico y convertir ARS a USD usando dolarapi.com
 export const createDynamicProduct = async (items: any[], totalAmount: number) => {
   const endpoint = 'https://dolarapi.com/v1/dolares/oficial';
   const fallbackRate = Number(import.meta.env.VITE_USD_FALLBACK) || 350; // ARS per USD
@@ -34,7 +33,7 @@ export const createDynamicProduct = async (items: any[], totalAmount: number) =>
     clearTimeout(timeout);
     if (res.ok) {
       const data = await res.json();
-      // API may return an object or an array — handle both
+  // La API puede devolver un objeto o un array — manejamos ambos casos
       const info = Array.isArray(data) ? (data[0] || {}) : data || {};
       const venta = info.venta ?? info.valor ?? info.value ?? null;
       const parsed = Number(venta);
@@ -46,7 +45,7 @@ export const createDynamicProduct = async (items: any[], totalAmount: number) =>
     console.warn('[createDynamicProduct] error fetching rate, using fallback', err);
   }
 
-  // Build per-item USD amounts (Stripe expects amounts in cents)
+  // Construir montos por ítem en USD (Stripe espera valores en centavos)
   const itemsUsd = items.map((item: any) => {
     const prod = item.producto || {};
     const arsUnit = Number(prod.price || prod.precio || 0);
@@ -77,6 +76,6 @@ export const createDynamicProduct = async (items: any[], totalAmount: number) =>
   };
 };
 
-// Helper function to get product by price ID
+// Función auxiliar para obtener el producto por price ID
 export const getProductByPriceId = (priceId: string) => 
   stripeProducts.find(product => product.priceId === priceId);
