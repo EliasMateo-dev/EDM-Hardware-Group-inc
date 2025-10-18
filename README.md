@@ -2,7 +2,7 @@
 **Aclaración**: El Usuario **"CRUFTY"** y **"Elías Mateo"** son **Elías Mateo**
 
 
-Proyecto web de catálogo interactivo de componentes de hardware. Usa React + TypeScript, Vite y TailwindCSS. Incluye un catálogo consultado desde la base de datos, un carrito, un Constructor PC y un panel de administración.
+Proyecto de tienda de venta de componentes. Usa React + TypeScript, Vite y TailwindCSS. Incluye un catálogo consultado desde la base de datos, un carrito, un Constructor PC y un panel de administración.
 
 ## Tabla de contenidos
 
