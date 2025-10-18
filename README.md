@@ -2,7 +2,7 @@
 **Aclaración**: El Usuario **"CRUFTY"** y **"Elías Mateo"** son **Elías Mateo**
 
 
-Proyecto de tienda de venta de componentes. Usa React + TypeScript, Vite y TailwindCSS. Incluye un catálogo consultado desde la base de datos, un carrito, un Constructor PC y un panel de administración.
+Proyecto de tienda de venta de componentes de hardware. Usa React + TypeScript, Vite y TailwindCSS. Incluye un catálogo consultado desde la base de datos, un carrito, un Constructor PC y un panel de administración.
 
 ## Tabla de contenidos
 
@@ -21,7 +21,7 @@ Proyecto de tienda de venta de componentes. Usa React + TypeScript, Vite y Tailw
 
 ## Descripción rápida
 
-Proyecto web de catálogo interactivo de componentes de hardware. Diseñado para explorar, filtrar y preparar una PC personalizada con integración de pagos y panel de administración.
+Proyecto de tienda de venta de componentes de hardware. Diseñado para explorar, filtrar y preparar una PC personalizada con integración de pagos y panel de administración.
 
 ## Características principales
 
