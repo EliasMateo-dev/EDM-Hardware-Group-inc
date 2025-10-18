@@ -25,7 +25,7 @@ export const useTiendaAuth = create<EstadoAuth>((establecer, obtener) => ({
   cargando: true,
 
   inicializarAuth: async () => {
-    // watchdog: limpiar cargando después de 15s si algo queda colgado
+    // watchdog: limpiar cargando después de 6s si algo queda colgado
     let watchdog: any = setTimeout(() => {
       console.warn('inicializarAuth watchdog triggered — clearing cargando flag');
       establecer({ cargando: false });
