@@ -71,29 +71,31 @@ Crear un archivo `.env.local` o usar `.env.example` con estas variables:
 - `VITE_SUPABASE_URL`=
 - `VITE_SUPABASE_ANON_KEY`=
 - `VITE_STRIPE_PUBLISHABLE_KEY`=
-- `VITE_USD_FALLBACK`=350
 
 ([Ver `.env.example` en el repo](./.env.example))
 
 ## Autenticación
 
-El proyecto soporta inicio de sesión con Google mediante Supabase Auth. Para que funcione localmente:
+La aplicación utiliza Supabase Auth para la gestión de usuarios. La implementación actual integra el proveedor de Google (OAuth) a través del cliente de Supabase centralizado en `src/utils/supabase.ts`.
 
-1. Habilitá Google en tu proyecto de Supabase (con OAuth) y configurá los redirect URLs.
-2. Definí `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en tu entorno.
-3. En la interfaz pública verás un botón de "Iniciar sesión con Google" (header o modal de login según la UI).
+Detalles de implementación:
 
-Al iniciar sesión se guarda la cuenta de usuario en Supabase (email y metadata). En desarrollo, si faltan las variables de Supabase, el cliente de `src/utils/supabase.ts` usa un fallback que evita errores de importación, pero el login no funcionará.
+- El flujo de login se maneja desde el frontend: se invoca el método de Supabase para redirigir al proveedor (Google) y Supabase devuelve la sesión al completar la autenticación.
+- El estado del usuario (email, id y metadata) se mantiene en los stores de la aplicación (Zustand) para su consumo por componentes y por las rutas protegidas del panel de administración.
+
 
 ## Pagos (Stripe)
-
-El checkout usa Stripe Checkout. Para pruebas en modo test usar la tarjeta de ejemplo:
-
+Para probar el pago se debe usar esta tarjeta, ya que es un entorno de prueba.
 - Número: `4000 0003 2000 0021`
 - Expiración: `03/33`
 - CVC: `333`
 
-Usá claves de prueba en `VITE_STRIPE_PUBLISHABLE_KEY`. Nota: en producción conviene ejecutar la conversión ARS→USD y la creación de la sesión de Stripe desde el servidor para asegurar montos.
+La integración con Stripe está basada en Stripe Checkout. La aplicación construye los line_items en dólares estadounidenses y abre una sesión de Checkout para completar el pago.
+
+Detalles de implementación:
+
+- La conversión de precios (ARS → USD) se realiza actualmente en el cliente mediante una llamada a la API pública de tipo de cambio (implementada en `src/stripe-config.ts`). El servicio consulta la cotización oficial y calcula el `unit_amount` en centavos de USD para cada producto seleccionado.
+- `src/components/PaymentModal.tsx` utiliza esa utilidad para precalcular el total en USD y mostrarlo en el botón de pago (ej.: "Pagar con Stripe — USD $123.45"). Al confirmar, se construyen los `line_items` en USD cents y se inicia la sesión de Checkout.
 
 ## Panel de administración
 
