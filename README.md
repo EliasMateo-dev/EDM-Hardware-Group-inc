@@ -16,7 +16,7 @@ Proyecto web de catálogo interactivo de componentes de hardware creado por Elí
   - Nota importante: para producción es recomendable mover la conversión y la creación de la sesión de pago al servidor para evitar manipulación de montos en el cliente.
 
 ## Características principales
-- Catálogo de componentes (mockeado en `src/data/catalogo.ts`).
+- Catálogo de componentes (consultado directamente desde la base de datos).
 - Modo oscuro con persistencia en `localStorage`.
 - Buscador y filtros por categoría.
 - Carrito con persistencia local (mejoras recientes de robustez).

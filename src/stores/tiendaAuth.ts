@@ -29,7 +29,7 @@ export const useTiendaAuth = create<EstadoAuth>((establecer, obtener) => ({
     let watchdog: any = setTimeout(() => {
       console.warn('inicializarAuth watchdog triggered — clearing cargando flag');
       establecer({ cargando: false });
-    }, 15000);
+    }, 6000);
 
     try {
       // Obtener sesión actual
