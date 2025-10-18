@@ -134,7 +134,8 @@ Validaciones principales:
 - `src/stores/tiendaCarrito.ts` y `src/pages/Carrito.tsx` — defensivas en persistencia y cálculo de totales.
 - `src/utils/supabase.ts` — cliente de Supabase con fallback en desarrollo.
 
-## Pruebas rápidas (Try it) --- Atención: De forma local la página no va a funcionar correctamente debido a que no tenés acceso a nuestra base de datos. 
+## Pruebas rápidas
+**Atención**: De forma local la página no va a funcionar correctamente debido a que no tenés acceso a nuestra base de datos. 
 
 1. Copiá `.env.example` a `.env.local` y completá las claves.
 2. `npm install`
