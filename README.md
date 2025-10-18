@@ -54,12 +54,6 @@ npm install
 npm run dev
 ```
 
-3. (Opcional) Si tenés el servidor de pagos/local functions:
-
-```powershell
-npm run dev:server
-```
-
 4. Para build de producción:
 
 ```powershell
