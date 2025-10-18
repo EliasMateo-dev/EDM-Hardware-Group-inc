@@ -110,6 +110,37 @@ Si querés colaborar, forkeá el repo, hacé cambios en una rama y abrí un pull
 
 ---
 
-Hecho con dedicación por Elías Mateo, Matías Alvarez y Dylan Foster.
+Hecho con dedicación por **Elías Mateo**, **Matías Alvarez** y **Dylan Foster**.
+
+
+## Créditos y roles
+
+ - **Elías Mateo** — LÍDER DEL PROYECTO & LÍDER TÉCNICO (Frontend, Backend y Base de datos)
+  - Responsable general del proyecto y la dirección técnica.
+  - Diseñó la arquitectura global (frontend, backend y modelos de datos) y tomó las decisiones técnicas clave.
+  - Implementó y lideró el desarrollo del frontend (UI, componentes, integración con stores y ruteo) y del backend.
+  - Diseñó y creó la estructura de la base de datos en Supabase, incluidas las tablas, relaciones y los roles/permissions necesarios para la operación segura de la aplicación.
+  - Coordinó el equipo, priorizó tareas, revisó código crítico y definió el flujo de pagos y la integración con proveedores.
+  - Actuó como nexo entre producto y desarrollo, asegurando que requisitos funcionales y no funcionales se cumplieran.
+  - Fue el encargado del despliegue en Vercel y de la configuración de entornos (staging/producción), así como de la monitorización básica post-deploy.
+
+- **Dylan Foster** — TESTING & data entry
+  - Responsable de las pruebas (testing), definición y ejecución de casos de prueba.
+  - Diseñó planes de prueba (unitarios, de integración y end-to-end) para las rutas críticas de la aplicación.
+  - Ingresó datos (Data Entry) y ayudó a poblar la base de datos con contenidos y metadatos de prueba durante el desarrollo.
+  - Reportó al equipo sobre fallos/errores y verificó correcciones y apoyó la priorización de bugs.
+  - Colaboró activamente en la definición y afinamiento de las validaciones de los componentes, aportando casos de borde y criterios de aceptación.
+
+
+- **Matías Alvarez** — Segundo programador y mejoras lógicas
+  - Actuó como segundo programador, implementando mejoras lógicas, refactorizaciones y correcciones.
+  - Implementó validaciones adicionales en el carrito.
+  - Mejoró el manejo de errores y los mensajes al usuario, y realizó pequeñas optimizaciones de rendimiento en rutas críticas.
+  - Participó en code reviews y pruebas de integración para asegurar estabilidad antes de merges.
+
+---
+
+Hecho con dedicación por **Elías Mateo**, **Matías Alvarez** y **Dylan Foster**.
+
 
 
