@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, Link } from "react-router-dom";
 import { useTiendaAuth } from "../stores/tiendaAuth";
 import NotificationDisplay from "./NotificationDisplay";
 import AdminDebugPanel from "./AdminDebugPanel";
