@@ -92,7 +92,7 @@ const AdminCategories: React.FC = () => {
         </table>
       </div>
       <div className="mt-4">
-        <Button href="/admin/categories/new" variant="primary" size="lg" className="inline-flex items-center gap-3" aria-label="Crear nueva categoría">
+        <Button href="/admin/categories/new" variant="brand" size="lg" className="inline-flex items-center gap-3" aria-label="Crear nueva categoría">
           <Plus className="-ml-1 w-5 h-5 text-white" aria-hidden />
           <span className="text-sm font-semibold">Nueva Categoría</span>
         </Button>

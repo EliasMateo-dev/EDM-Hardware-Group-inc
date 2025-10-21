@@ -2,7 +2,7 @@ import React from 'react';
 // helper mínimo para unir clases y evitar añadir una dependencia externa
 const join = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ');
 
-type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
+type Variant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'brand';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
@@ -23,6 +23,8 @@ const variants: Record<Variant, string> = {
   // Elegante: degradado navy -> dorado
   primary: 'bg-gradient-to-r from-slate-800 via-slate-700 to-amber-500 text-white shadow-lg hover:from-slate-900 hover:via-slate-800 hover:to-amber-600 focus:ring-amber-300',
   secondary: 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 focus:ring-slate-300',
+  // Brand: azul sólido usado en el resto de la página (sin degradado)
+  brand: 'bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 focus:ring-blue-300 shadow-md',
   danger: 'bg-red-600 text-white hover:bg-red-700 shadow-sm focus:ring-red-400',
   ghost: 'bg-transparent text-indigo-600 hover:bg-indigo-50 focus:ring-indigo-200',
 };
