@@ -43,7 +43,7 @@ export default function Categoria() {
                 <div className="text-center">
                   <div className="mb-3 text-sm text-red-600">La carga tardó demasiado.</div>
                   <div className="flex items-center justify-center gap-2">
-                    <button onClick={() => { useTiendaProductos.getState().clearLastError(); cargarProductos(slug ?? null); }} className="bg-blue-600 text-white px-4 py-2 rounded">Reintentar</button>
+                    <button onClick={() => { useTiendaProductos.getState().clearLastError(); cargarProductos(slug ?? null); }} className="bg-sky-700 text-white px-4 py-2 rounded hover:bg-sky-800">Reintentar</button>
                   </div>
                 </div>
               )}

@@ -419,21 +419,18 @@ export default function PCBuilderCompatibility() {
             <article
               key={key}
               onClick={() => setCurrentStep(i)}
-              className={`flex cursor-pointer flex-col items-center rounded-xl border p-4 text-center transition-colors
-    ${currentStep === i
-                  ? 'border-blue-500 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20'
+              className={`flex cursor-pointer flex-col items-center rounded-xl border p-4 text-center transition-colors ${
+                currentStep === i
+                  ? 'border-sky-700 bg-sky-50 dark:border-sky-900 dark:bg-sky-900/10'
                   : (!selectedComponents[key] || selectedComponents[key]?.quantity === 0)
-                    ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
-                    : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
-                }`}
+                  ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
+                  : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
+              }`}
             >
 
-              <span className={`mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full 
-              ${currentStep === i
-
-                  ? 'bg-blue-500 text-white dark:bg-blue-600'
-                  : 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                }`}>
+              <span className={`mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full ${
+                currentStep === i ? 'bg-sky-700 text-white dark:bg-sky-700' : 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+              }`}>
                 <step.icon className="h-5 w-5" />
               </span>
               <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{step.label}</h3>
@@ -472,8 +469,8 @@ export default function PCBuilderCompatibility() {
                     ${!compatible
                       ? 'opacity-50 pointer-events-none grayscale border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60'
                       : isSelected
-                        ? 'border-blue-500 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20'
-                        : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60'
+            ? 'border-sky-700 bg-sky-50 dark:border-sky-900 dark:bg-sky-900/10'
+            : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60'
                     }`}>
                   <h3 className="font-medium text-slate-900 dark:text-slate-100">{product.name}</h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400">{product.brand} {product.model}</p>
@@ -558,7 +555,7 @@ export default function PCBuilderCompatibility() {
                           onClick={() => handleComponentSelect(slugKey, product, 1)}
                           className={`mt-4 w-full rounded-lg px-4 py-2 text-sm font-medium ${product.stock === 0
                             ? 'cursor-not-allowed bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
-                            : 'bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'
+                            : 'bg-sky-700 text-white hover:bg-sky-800 dark:bg-sky-700 dark:hover:bg-sky-800'
                             }`}
                           disabled={product.stock === 0}>Seleccionar</button>
                       )}
@@ -583,8 +580,8 @@ export default function PCBuilderCompatibility() {
         </div>
       )}
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 flex flex-col items-center gap-3">
-        <button onClick={handleAddToCart} className="w-full rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 
-        dark:bg-blue-600 dark:hover:bg-blue-700">Agregar al carrito</button>
+  <button onClick={handleAddToCart} className="w-full rounded-lg bg-sky-700 px-4 py-2 text-sm font-medium text-white hover:bg-sky-800 
+  dark:bg-sky-700 dark:hover:bg-sky-800">Agregar al carrito</button>
         <button onClick={handleResetBuild} className="w-full rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 
         dark:bg-red-600 dark:hover:bg-red-700">Reiniciar armado</button>
       </div>
