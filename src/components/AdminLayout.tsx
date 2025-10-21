@@ -30,9 +30,9 @@ const AdminLayout: React.FC = () => {
   }, [usuario, perfil, cargando, navigate]);
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Sidebar */}
-      <aside className="relative w-72 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col shadow-sm">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {}
+      <aside className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col shadow-sm overflow-y-auto z-40">
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-2">
             {}
@@ -85,8 +85,8 @@ const AdminLayout: React.FC = () => {
           <div className="h-12" />
         </div>
       </aside>
-  {/* Main content */}
-  <main className="flex-1 p-6 overflow-y-auto fade-in">
+  {/* Main content: dejar espacio a la izquierda para el sidebar fijo */}
+  <main className="ml-72 p-6 overflow-y-auto fade-in min-h-screen">
         <ErrorBoundary>
           <NotificationDisplay />
           {import.meta.env.MODE !== 'production' && <AdminDebugPanel />}
