@@ -38,9 +38,6 @@ const AdminLayout: React.FC = () => {
             {}
             <Link to="/" className="inline-flex items-center">
               <img src="/edm-logo.jpg" alt="EDM" className="w-8 h-8 rounded object-cover" onError={(e) => { const t = e.target as HTMLImageElement; t.style.display = 'none'; }} />
-              <div className="w-8 h-8 bg-gradient-to-br from-indigo-800 to-pink-700 rounded flex items-center justify-center text-white font-bold" aria-hidden>
-                EDM
-              </div>
             </Link>
             <span className="font-semibold text-lg text-gray-800 dark:text-gray-100">Admin</span>
           </div>
