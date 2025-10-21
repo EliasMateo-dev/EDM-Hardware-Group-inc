@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNotificationStore } from "../../stores/useNotificationStore";
 import Button from '../../components/Button';
+import { Plus } from 'lucide-react';
 import { supabase } from "../../utils/supabase";
 
 interface Category {
@@ -91,7 +92,10 @@ const AdminCategories: React.FC = () => {
         </table>
       </div>
       <div className="mt-4">
-        <Button href="/admin/categories/new" variant="primary" className="inline-flex items-center gap-2">Nueva Categoría</Button>
+        <Button href="/admin/categories/new" variant="primary" className="inline-flex items-center gap-3 px-5 py-2 shadow-lg" aria-label="Crear nueva categoría">
+          <Plus className="-ml-1 w-5 h-5 text-white" aria-hidden />
+          <span className="text-sm font-semibold">Nueva Categoría</span>
+        </Button>
       </div>
     </div>
   );

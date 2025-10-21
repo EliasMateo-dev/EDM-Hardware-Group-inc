@@ -4,6 +4,7 @@ import { supabase } from "../../utils/supabase";
 import { useTiendaAuth } from "../../stores/tiendaAuth";
 import { useNavigate } from "react-router-dom";
 import Button from '../../components/Button';
+import { Plus } from 'lucide-react';
 
 interface CategoryMap {
   [id: string]: string;
@@ -112,9 +113,7 @@ const AdminProducts: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Productos</h1>
         <Button href="/admin/products/new" variant="primary" className="inline-flex items-center gap-3 px-5 py-2 shadow-lg" aria-label="Crear nuevo producto">
-          <svg className="-ml-1 w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-            <path strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
+          <Plus className="-ml-1 w-5 h-5 text-white" aria-hidden />
           <span className="text-sm font-semibold">Nuevo Producto</span>
         </Button>
       </div>
