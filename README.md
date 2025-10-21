@@ -169,6 +169,94 @@ Validaciones principales:
 
 Si querés colaborar, forkeá el repo, hacé cambios en una rama y abrí un pull request describiendo la funcionalidad o corrección.
 
+## Estructura:
+
+EDM-Hardware-Group-inc/
+├── .env.example
+├── .gitignore
+├── .vite/
+│   └── deps/
+│       ├── _metadata.json
+│       └── package.json
+├── edm-logo.jpg
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── PrimerEntregableNota.txt
+├── public/
+│   └── edm-logo.jpg
+├── README.md
+├── src/
+│   ├── Aplicacion.tsx
+│   ├── components/
+│   │   ├── AdminDebugPanel.tsx
+│   │   ├── AdminLayout.tsx
+│   │   ├── AuthModal.tsx
+│   │   ├── BarraNavegacion.tsx
+│   │   ├── Button.tsx
+│   │   ├── DevTelemetryBanner.tsx
+│   │   ├── Disposicion.tsx
+│   │   ├── ErrorBoundary.tsx
+│   │   ├── NotificationDisplay.tsx
+│   │   ├── PaymentModal.tsx
+│   │   ├── SupabaseTest.tsx
+│   │   └── TarjetaProducto.tsx
+│   ├── data/
+│   │   └── catalogo.ts
+│   ├── estilos.css
+│   ├── main.tsx
+│   ├── pages/
+│   │   ├── admin/
+│   │   │   ├── AdminActivityLogs.tsx
+│   │   │   ├── AdminCategories.tsx
+│   │   │   ├── AdminCategoryForm.tsx
+│   │   │   ├── AdminProductForm.tsx
+│   │   │   ├── AdminProducts.tsx
+│   │   │   ├── AdminUserForm.tsx
+│   │   │   └── AdminUsers.tsx
+│   │   ├── Carrito.tsx
+│   │   ├── Categoria.tsx
+│   │   ├── ConstructorPC.tsx
+│   │   ├── Inicio.tsx
+│   │   ├── PaymentFailure.tsx
+│   │   ├── PaymentPending.tsx
+│   │   └── PaymentSuccess.tsx
+│   ├── stores/
+│   │   ├── tiendaAuth.ts
+│   │   ├── tiendaCarrito.ts
+│   │   ├── tiendaProductos.ts
+│   │   ├── tiendaTema.ts
+│   │   └── useNotificationStore.ts
+│   ├── stripe-config.ts
+│   ├── utils/
+│   │   └── supabase.ts
+│   └── vite-env.d.ts
+├── supabase/
+│   ├── functions/
+│   │   ├── deno.json
+│   │   ├── stripe-checkout/
+│   │   │   ├── deno.d.ts
+│   │   │   └── index.ts
+│   │   └── stripe-webhook/
+│   │       ├── deno.d.ts
+│   │       └── index.ts
+│   └── migrations/
+│       ├── 20250910040400_pink_dawn.sql
+│       ├── 20250910040430_turquoise_reef.sql
+│       ├── 20250928192241_misty_portal.sql
+│       └── 20250929013747_wandering_shape.sql
+├── tailwind.config.js
+├── tsconfig.app.json
+├── tsconfig.json
+├── tsconfig.node.json
+├── utils/
+│   └── supabase.ts
+├── vercel.json
+└── vite.config.ts
+
+
 ---
 
 Hecho con dedicación por **Elías Mateo**, **Matías Alvarez** y **Dylan Foster**.
