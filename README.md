@@ -171,26 +171,16 @@ Si querés colaborar, forkeá el repo, hacé cambios en una rama y abrí un pull
 
 ## Estructura:
 
+```
 EDM-Hardware-Group-inc/
-├── .env.example
-├── .gitignore
-├── .vite/
-│   └── deps/
+├── .vite
+│   └── deps
 │       ├── _metadata.json
 │       └── package.json
-├── edm-logo.jpg
-├── eslint.config.js
-├── index.html
-├── package-lock.json
-├── package.json
-├── postcss.config.js
-├── PrimerEntregableNota.txt
-├── public/
+├── public
 │   └── edm-logo.jpg
-├── README.md
-├── src/
-│   ├── Aplicacion.tsx
-│   ├── components/
+├── src
+│   ├── components
 │   │   ├── AdminDebugPanel.tsx
 │   │   ├── AdminLayout.tsx
 │   │   ├── AuthModal.tsx
@@ -203,12 +193,10 @@ EDM-Hardware-Group-inc/
 │   │   ├── PaymentModal.tsx
 │   │   ├── SupabaseTest.tsx
 │   │   └── TarjetaProducto.tsx
-│   ├── data/
+│   ├── data
 │   │   └── catalogo.ts
-│   ├── estilos.css
-│   ├── main.tsx
-│   ├── pages/
-│   │   ├── admin/
+│   ├── pages
+│   │   ├── admin
 │   │   │   ├── AdminActivityLogs.tsx
 │   │   │   ├── AdminCategories.tsx
 │   │   │   ├── AdminCategoryForm.tsx
@@ -223,38 +211,52 @@ EDM-Hardware-Group-inc/
 │   │   ├── PaymentFailure.tsx
 │   │   ├── PaymentPending.tsx
 │   │   └── PaymentSuccess.tsx
-│   ├── stores/
+│   ├── stores
 │   │   ├── tiendaAuth.ts
 │   │   ├── tiendaCarrito.ts
 │   │   ├── tiendaProductos.ts
 │   │   ├── tiendaTema.ts
 │   │   └── useNotificationStore.ts
-│   ├── stripe-config.ts
-│   ├── utils/
+│   ├── utils
 │   │   └── supabase.ts
+│   ├── Aplicacion.tsx
+│   ├── estilos.css
+│   ├── main.tsx
+│   ├── stripe-config.ts
 │   └── vite-env.d.ts
-├── supabase/
-│   ├── functions/
-│   │   ├── deno.json
-│   │   ├── stripe-checkout/
+├── supabase
+│   ├── functions
+│   │   ├── stripe-checkout
 │   │   │   ├── deno.d.ts
 │   │   │   └── index.ts
-│   │   └── stripe-webhook/
-│   │       ├── deno.d.ts
-│   │       └── index.ts
-│   └── migrations/
+│   │   ├── stripe-webhook
+│   │   │   ├── deno.d.ts
+│   │   │   └── index.ts
+│   │   └── deno.json
+│   └── migrations
 │       ├── 20250910040400_pink_dawn.sql
 │       ├── 20250910040430_turquoise_reef.sql
 │       ├── 20250928192241_misty_portal.sql
 │       └── 20250929013747_wandering_shape.sql
+├── utils
+│   └── supabase.ts
+├── .env.example
+├── .gitignore
+├── edm-logo.jpg
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── PrimerEntregableNota.txt
+├── README.md
 ├── tailwind.config.js
 ├── tsconfig.app.json
 ├── tsconfig.json
 ├── tsconfig.node.json
-├── utils/
-│   └── supabase.ts
 ├── vercel.json
 └── vite.config.ts
+```
 
 
 ---
