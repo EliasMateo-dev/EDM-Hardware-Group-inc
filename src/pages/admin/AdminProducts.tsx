@@ -111,11 +111,11 @@ const AdminProducts: React.FC = () => {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Productos</h1>
-        <Button href="/admin/products/new" className="inline-flex items-center gap-2" variant="primary">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <Button href="/admin/products/new" variant="primary" className="inline-flex items-center gap-3 px-5 py-2 shadow-lg" aria-label="Crear nuevo producto">
+          <svg className="-ml-1 w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
             <path strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
-          Nuevo Producto
+          <span className="text-sm font-semibold">Nuevo Producto</span>
         </Button>
       </div>
 
