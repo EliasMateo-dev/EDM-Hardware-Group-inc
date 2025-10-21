@@ -20,7 +20,8 @@ const sizes: Record<string, string> = {
 };
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg hover:from-indigo-700 hover:to-purple-700 focus:ring-indigo-400',
+  // Elegante: degradado navy -> dorado
+  primary: 'bg-gradient-to-r from-slate-800 via-slate-700 to-amber-500 text-white shadow-lg hover:from-slate-900 hover:via-slate-800 hover:to-amber-600 focus:ring-amber-300',
   secondary: 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 focus:ring-slate-300',
   danger: 'bg-red-600 text-white hover:bg-red-700 shadow-sm focus:ring-red-400',
   ghost: 'bg-transparent text-indigo-600 hover:bg-indigo-50 focus:ring-indigo-200',
