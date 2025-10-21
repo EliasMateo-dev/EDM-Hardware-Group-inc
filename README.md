@@ -11,6 +11,7 @@ Proyecto de tienda de venta de componentes de hardware. Usa React + TypeScript, 
 ## Tabla de contenidos
 
 - [Descripción rápida](#descripción-rápida)
+- [Estructura del proyecto](#estructura-del-proyecto)
 - [Características principales](#características-principales)
 - [Arquitectura y tecnologías](#arquitectura-y-tecnologías)
 - [Cómo ejecutar (desarrollo)](#cómo-ejecutar-desarrollo)
@@ -26,6 +27,17 @@ Proyecto de tienda de venta de componentes de hardware. Usa React + TypeScript, 
 ## Descripción rápida
 
 Proyecto de tienda de venta de componentes de hardware. Diseñado para explorar, filtrar y preparar una PC personalizada con integración de pagos y panel de administración.
+
+## Estructura del proyecto
+
+Para una visión completa y detallada de la estructura del proyecto, incluyendo:
+- 📁 Árbol de directorios completo
+- 🏗️ Diagramas de arquitectura
+- 🔄 Flujos de datos principales
+- 📦 Descripción de componentes
+- 🛠️ Stack tecnológico
+
+**👉 Consulta [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)**
 
 ## Características principales
 
