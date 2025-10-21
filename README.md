@@ -240,6 +240,7 @@ EDM-Hardware-Group-inc/
 │       └── 20250929013747_wandering_shape.sql
 ├── utils
 │   └── supabase.ts
+├── .env
 ├── .env.example
 ├── .gitignore
 ├── edm-logo.jpg
