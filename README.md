@@ -22,6 +22,7 @@ Proyecto de tienda de venta de componentes de hardware. Usa React + TypeScript, 
 - [Pruebas rápidas](#pruebas-rápidas-try-it)
 - [Créditos y roles](#créditos-y-roles)
 - [Contribuir](#contribuir)
+- [Estructura](#Estructura)
 
 ## Descripción rápida
 
