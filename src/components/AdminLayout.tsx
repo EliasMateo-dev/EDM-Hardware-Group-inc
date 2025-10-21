@@ -35,7 +35,13 @@ const AdminLayout: React.FC = () => {
       <aside className="relative w-72 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col shadow-sm">
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-800 to-pink-700 rounded flex items-center justify-center text-white font-bold">EDM</div>
+            {/* Logo real: imagen clickable que regresa a la página principal */}
+            <Link to="/" className="inline-flex items-center">
+              <img src="/edm-logo.jpg" alt="EDM" className="w-8 h-8 rounded object-cover" onError={(e) => { const t = e.target as HTMLImageElement; t.style.display = 'none'; }} />
+              <div className="w-8 h-8 bg-gradient-to-br from-indigo-800 to-pink-700 rounded flex items-center justify-center text-white font-bold" aria-hidden>
+                EDM
+              </div>
+            </Link>
             <span className="font-semibold text-lg text-gray-800 dark:text-gray-100">Admin</span>
           </div>
           <button
