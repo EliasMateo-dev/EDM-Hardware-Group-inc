@@ -81,8 +81,8 @@ const AdminCategories: React.FC = () => {
                   <td className="px-4 py-2 text-center">{c.icon || "-"}</td>
                   <td className="px-4 py-2 text-center align-middle">
                     <div className="flex justify-center gap-2">
-                      <a href={`/admin/categories/edit/${c.id}`} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Editar</a>
-                      <button onClick={() => handleDelete(c.id)} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">Eliminar</button>
+                      <Button href={`/admin/categories/edit/${c.id}`} variant="secondary" size="sm">Editar</Button>
+                      <Button type="button" variant="danger" size="sm" onClick={() => handleDelete(c.id)}>Eliminar</Button>
                     </div>
                   </td>
                 </tr>
@@ -92,7 +92,7 @@ const AdminCategories: React.FC = () => {
         </table>
       </div>
       <div className="mt-4">
-        <Button href="/admin/categories/new" variant="primary" className="inline-flex items-center gap-3 px-5 py-2 shadow-lg" aria-label="Crear nueva categoría">
+        <Button href="/admin/categories/new" variant="primary" size="lg" className="inline-flex items-center gap-3" aria-label="Crear nueva categoría">
           <Plus className="-ml-1 w-5 h-5 text-white" aria-hidden />
           <span className="text-sm font-semibold">Nueva Categoría</span>
         </Button>
