@@ -1,5 +1,6 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
 import { ShoppingCart, Check } from 'lucide-react';
+import LeerMas from './LeerMas';
 import type { Product } from '../utils/supabase';
 
 import { useTiendaCarrito } from '../stores/tiendaCarrito';
@@ -108,7 +109,9 @@ export default function TarjetaProducto({ producto, confirmOnAdd = false }: Prop
           <h3 className="text-lg font-semibold leading-tight text-slate-900 dark:text-slate-100">
             {producto.name}
           </h3>
-          <p className="mt-1 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">{producto.description}</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <LeerMas maxChars={140}>{producto.description}</LeerMas>
+          </p>
         </header>
 
         {puntosDestacados.length > 0 && (
@@ -153,7 +156,7 @@ export default function TarjetaProducto({ producto, confirmOnAdd = false }: Prop
 
                 {/* Contenido principal (texto e iconos) */}
                 <span
-                  className={`relative z-[2] inline-flex items-center gap-2 transition-transform transition-opacity duration-500 ${
+                  className={`relative z-[2] inline-flex items-center gap-2 transition-opacity duration-500 ${
                     confirmOnAdd && faseAnimacion === 'car' ? 'translate-y-[2px] scale-y-90 opacity-0 translate-x-2' : ''
                   } ${esFaseVerde ? 'text-white dark:text-white' : ''}`}
                 >

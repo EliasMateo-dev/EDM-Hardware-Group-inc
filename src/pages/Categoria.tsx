@@ -1,4 +1,5 @@
-﻿import React, { useEffect } from 'react';
+﻿import { useEffect } from 'react';
+import LeerMas from '../components/LeerMas';
 import { useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useTiendaProductos } from '../stores/tiendaProductos';
@@ -29,7 +30,9 @@ export default function Categoria() {
           {categoriaActual?.name ?? 'Componentes'}
         </h1>
         {categoriaActual?.description && (
-          <p className="max-w-2xl text-sm text-slate-500 dark:text-slate-400 text-center">{categoriaActual.description}</p>
+          <p className="max-w-2xl text-sm text-slate-500 dark:text-slate-400 text-center">
+            <LeerMas maxChars={300}>{categoriaActual.description}</LeerMas>
+          </p>
         )}
       </header>
       {cargando ? (
