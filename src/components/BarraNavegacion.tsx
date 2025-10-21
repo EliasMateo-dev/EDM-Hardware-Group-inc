@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Cpu, Menu, Moon, Search, ShoppingCart, Sun, X, User, LogOut } from 'lucide-react';
+import { Menu, Moon, Search, ShoppingCart, Sun, X, User, LogOut } from 'lucide-react';
 import { useTiendaCarrito } from '../stores/tiendaCarrito';
 import { useTiendaProductos } from '../stores/tiendaProductos';
 import { useTiendaTema } from '../stores/tiendaTema';
@@ -57,8 +57,8 @@ export default function BarraNavegacion() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-3 text-slate-900 transition-colors dark:text-slate-100">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-900">
-              <Cpu className="h-5 w-5" />
+            <span className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-900">
+              <img src="/edm-logo.jpg" alt="EDM Hardware" className="h-10 w-10 object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/vite.svg'; }} />
             </span>
             <span className="text-lg font-semibold tracking-wide">EDM Hardware</span>
           </Link>
