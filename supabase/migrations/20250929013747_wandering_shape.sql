@@ -1,14 +1,5 @@
-/*
-  # Actualizar trigger para perfiles
 
-  1. Función actualizada
-    - Maneja mejor los metadatos de Google OAuth
-    - Extrae nombre completo y avatar de user_metadata
-  
-  2. Trigger
-    - Se ejecuta cuando se crea un nuevo usuario
-    - Crea automáticamente el perfil con datos de Google
-*/
+-- Trigger para crear perfiles automáticamente al registrar usuarios (simplificado)
 
 -- Actualizar la función del trigger
 CREATE OR REPLACE FUNCTION handle_new_user()

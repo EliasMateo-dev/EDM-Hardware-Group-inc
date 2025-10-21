@@ -1,5 +1,5 @@
 /// <reference lib="deno.ns" />
-// @deno-types="npm:@types/stripe"
+
 import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.58.0';
 
@@ -10,19 +10,19 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
-  // Log request method y headers
+
   console.log('Request method:', req.method);
   console.log('Request headers:', Object.fromEntries(req.headers.entries()));
-  // Handle CORS preflight requests
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // Log raw body para debug
+
     const rawBody = await req.text();
     console.log('Raw request body:', rawBody);
-    // Volver a crear el request para parsear JSON si es POST
+
     let reqForJson = req;
     if (req.method === 'POST') {
       reqForJson = new Request(req.url, {
@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
         body: rawBody
       });
     }
-    // Initialize Supabase client
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Initialize Stripe
+
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
     if (!stripeSecretKey) {
       console.error('Missing Stripe secret key');
@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
       apiVersion: '2022-11-15',
     });
 
-    // Verify authentication
+
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Parse request body
+  
     let requestBody;
     try {
       requestBody = await reqForJson.json();
@@ -115,7 +115,8 @@ Deno.serve(async (req) => {
       metadata = {} 
     } = requestBody;
 
-    // Validate required fields
+
+    
     if (!line_items || !Array.isArray(line_items) || line_items.length === 0) {
       return new Response(
         JSON.stringify({ error: 'Line items are required' }),
@@ -136,7 +137,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Find or create Stripe customer
+
+    
     let customerId: string;
     
     try {
@@ -151,7 +153,8 @@ Deno.serve(async (req) => {
         customerId = existingCustomer.customer_id;
         console.log('Using existing customer:', customerId);
       } else {
-        // Create new Stripe customer
+
+        
         const stripeCustomer = await stripe.customers.create({
           email: customer_data?.email || user.email || '',
           name: customer_data?.name || user.user_metadata?.full_name || '',
@@ -161,7 +164,8 @@ Deno.serve(async (req) => {
           },
         });
 
-        // Save to database
+
+        
         const { error: insertError } = await supabase
           .from('stripe_customers')
           .insert({
@@ -171,7 +175,8 @@ Deno.serve(async (req) => {
 
         if (insertError) {
           console.error('Error saving customer to database:', insertError);
-          // Continue anyway, don't fail the payment
+
+          
         }
 
         customerId = stripeCustomer.id;
@@ -188,7 +193,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Create Stripe checkout session
+
+    
     try {
       const session = await stripe.checkout.sessions.create({
         customer: customerId,

@@ -95,7 +95,6 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
   }
 
   if (mode === 'payment' && payment_status === 'paid') {
-    // Manejar pago único
     try {
       const { error: orderError } = await supabase
         .from('stripe_orders')
@@ -121,7 +120,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
       console.error('Error procesando pago único:', error);
     }
   } else if (mode === 'subscription') {
-    // Manejar suscripción
+    
     await syncCustomerFromStripe(customer, supabase, stripe);
   }
 }
@@ -129,9 +128,9 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
 async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent, supabase: any) {
   console.log(`Payment intent succeeded: ${paymentIntent.id}`);
   
-  // Solo procesar si no es parte de una factura (pago único)
+
   if (!('invoice' in paymentIntent) || paymentIntent.invoice === null) {
-    // Actualizar estado del pago si es necesario
+
     const { error } = await supabase
       .from('stripe_orders')
       .update({ 
@@ -157,7 +156,6 @@ async function syncCustomerFromStripe(customerId: string, supabase: any, stripe:
   try {
     console.log(`Sincronizando cliente desde Stripe: ${customerId}`);
     
-    // Obtener suscripciones del cliente
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       limit: 1,
@@ -183,10 +181,8 @@ async function syncCustomerFromStripe(customerId: string, supabase: any, stripe:
       return;
     }
 
-    // asumo que un cliente solo puede tener una suscripción
     const subscription = subscriptions.data[0];
 
-    // Actualiza estado de suscripción
     const updateData: any = {
       customer_id: customerId,
       subscription_id: subscription.id,
@@ -196,8 +192,6 @@ async function syncCustomerFromStripe(customerId: string, supabase: any, stripe:
       cancel_at_period_end: subscription.cancel_at_period_end,
       status: subscription.status,
     };
-
-    // Agregar información del método de pago si está disponible
     if (subscription.default_payment_method && 
         typeof subscription.default_payment_method !== 'string') {
       const paymentMethod = subscription.default_payment_method as Stripe.PaymentMethod;

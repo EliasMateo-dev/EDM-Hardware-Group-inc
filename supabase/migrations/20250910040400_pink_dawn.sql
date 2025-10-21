@@ -14,22 +14,7 @@ begin
   end if;
 end;
 $$;
-/*
-  # Schema inicial para e-commerce de hardware
-
-  1. Nuevas tablas
-    - `profiles` - Perfiles de usuario con datos adicionales
-    - `categories` - Categorías de productos (CPU, Mother, RAM, etc.)
-    - `products` - Productos con especificaciones técnicas
-    - `cart_items` - Items del carrito de cada usuario
-    - `orders` - Órdenes de compra
-    - `order_items` - Items de cada orden
-
-  2. Seguridad:
-    - Habilitar RLS en todas las tablas
-    - Políticas para usuarios autenticados
-    - Políticas de admin para gestión de productos
-*/
+-- Schema inicial: tablas principales y políticas RLS
 
 -- Crear tabla de perfiles de usuario
 CREATE TABLE IF NOT EXISTS profiles (

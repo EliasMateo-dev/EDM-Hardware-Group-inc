@@ -1,15 +1,5 @@
-/*
-  # Productos de muestra para el catálogo inicial
 
-  1. Productos por categoría
-    - CPUs: AMD e Intel con especificaciones reales
-    - Motherboards: Compatible con los CPUs
-    - RAM: DDR4 y DDR5
-    - GPUs: NVIDIA y AMD
-    - PSUs: Diferentes potencias
-    - Gabinetes: Varios tamaños
-    - SSDs: NVMe y SATA
-*/
+-- Datos de ejemplo: inserciones iniciales de productos por categoría
 
 -- CPUs
 INSERT INTO products (category_id, name, brand, model, description, price, stock, image_url, specifications) 

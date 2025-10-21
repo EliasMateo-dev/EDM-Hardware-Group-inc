@@ -1,37 +1,5 @@
-/*
-  # Stripe Integration Schema
 
-  1. New Tables
-    - `stripe_customers`: Links Supabase users to Stripe customers
-      - Includes `user_id` (references `auth.users`)
-      - Stores Stripe `customer_id`
-      - Implements soft delete
-
-    - `stripe_subscriptions`: Manages subscription data
-      - Tracks subscription status, periods, and payment details
-      - Links to `stripe_customers` via `customer_id`
-      - Custom enum type for subscription status
-      - Implements soft delete
-
-    - `stripe_orders`: Stores order/purchase information
-      - Records checkout sessions and payment intents
-      - Tracks payment amounts and status
-      - Custom enum type for order status
-      - Implements soft delete
-
-  2. Views
-    - `stripe_user_subscriptions`: Secure view for user subscription data
-      - Joins customers and subscriptions
-      - Filtered by authenticated user
-
-    - `stripe_user_orders`: Secure view for user order history
-      - Joins customers and orders
-      - Filtered by authenticated user
-
-  3. Security
-    - Enables Row Level Security (RLS) on all tables
-    - Implements policies for authenticated users to view their own data
-*/
+-- Esquema Stripe: tablas, vistas y políticas RLS para integración de pagos
 
 CREATE TABLE IF NOT EXISTS stripe_customers (
   id bigint primary key generated always as identity,
