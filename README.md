@@ -1,7 +1,7 @@
 # EDM Hardware
-Página Web: [edm-hardware.vercel.app/](https://edm-hardware.vercel.app/)
-.
-Proyecto de [Trello](https://trello.com/b/WPKPxOpJ/edm-hardware-group-inc)
+-Página Web: [edm-hardware.vercel.app/](https://edm-hardware.vercel.app/)
+
+-Proyecto de [Trello](https://trello.com/b/WPKPxOpJ/edm-hardware-group-inc)
 
 **Aclaración**: El Usuario **"CRUFTY"** y **"Elías Mateo"** son **Elías Mateo**
 
