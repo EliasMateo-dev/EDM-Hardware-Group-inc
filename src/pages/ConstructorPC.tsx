@@ -378,19 +378,7 @@ export default function PCBuilderCompatibility() {
           </div>
         </div>
       )}
-
-      <div className="mb-12 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900">
-        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Lo que está en proceso</h2>
-        <ul className="mt-6 grid gap-4 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-2">
-          <li className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors dark:border-slate-800 dark:bg-slate-800/60 line-through">Compatibilidad de socket y chipset al instante.</li>
-          <li className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors dark:border-slate-800 dark:bg-slate-800/60 line-through">Validacion de memoria DDR4 o DDR5 y cantidad maxima.</li>
-          <li className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors dark:border-slate-800 dark:bg-slate-800/60 line-through">Calculo automatico de potencia recomendada para la PSU.</li>
-          <li className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors dark:border-slate-800 dark:bg-slate-800/60 line-through">Verificacion de espacio para placas de video y cooling.</li>
-          <li className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors dark:border-slate-800 dark:bg-slate-800/60">Alertas de cuellos de botella segun CPU y GPU elegidos.</li>
-          <li className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors dark:border-slate-800 dark:bg-slate-800/60">Sugerencias de upgrades rapidos segun tu presupuesto.</li>
-        </ul>
-      </div>
-
+      
       <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-slate-100">Consumo estimado</h2>
         <div className="space-y-2">
