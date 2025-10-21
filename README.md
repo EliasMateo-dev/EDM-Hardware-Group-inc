@@ -190,6 +190,7 @@ EDM-Hardware-Group-inc/
 │   │   ├── DevTelemetryBanner.tsx
 │   │   ├── Disposicion.tsx
 │   │   ├── ErrorBoundary.tsx
+│   │   ├── LeerMas.tsx
 │   │   ├── NotificationDisplay.tsx
 │   │   ├── PaymentModal.tsx
 │   │   ├── SupabaseTest.tsx
