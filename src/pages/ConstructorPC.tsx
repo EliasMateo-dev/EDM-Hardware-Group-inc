@@ -356,9 +356,6 @@ export default function PCBuilderCompatibility() {
       <header className="mb-12 space-y-4 text-center text-slate-900 dark:text-slate-100">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Construí tu PC</p>
         <h1 className="text-4xl font-semibold">PC Builder</h1>
-        <p className="mx-auto max-w-2xl text-sm text-slate-500 dark:text-slate-400">
-          Estamos preparando nuestro PC Builder para CPU, memoria, gabinetes y mucho más!. Mientras tanto podés llenar tu carrito con el catálogo actual.
-        </p>
       </header>
 
       {validationErrors.general && (
